@@ -23,9 +23,8 @@ An LLM-powered conversational data collection system where teams submit QA metri
 - [ ] **Phase 5**: Polish & Production Readiness (Week 5)
 
 ### Next Immediate Tasks
-1. Add error handling for ambiguous inputs
-2. Add edge-case conversation tests
-3. Document env configuration for LLM settings
+1. Add edge-case conversation tests
+2. Document env configuration for LLM settings
 
 **Blockers**: None
 
@@ -245,7 +244,7 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
 **5. Use Cases**
 - [x] Implement `ExtractStructuredDataUseCase` to orchestrate LLM calls
 - [x] Implement `SubmitTeamDataUseCase` (validate → persist → trigger dashboard)
-- [ ] Add error handling for ambiguous inputs
+- [x] Add error handling for ambiguous inputs
 
 **6. Testing**
 - [x] Write unit tests with mock LLM responses
@@ -706,7 +705,7 @@ Key decisions to document:
 ### Phase 2
 - [ ] LLM adapter extracting structured data
 - [ ] Integration tests with Ollama
-- [ ] Error handling for ambiguous inputs
+- [x] Error handling for ambiguous inputs
 
 ### Phase 3
 - [ ] Gradio chatbot accepting natural language

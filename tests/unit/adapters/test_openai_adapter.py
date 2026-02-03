@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from qa_chatbot.adapters.output.llm.openai import OpenAIAdapter, OpenAISettings
-from qa_chatbot.domain import LLMExtractionError, TeamId, TimeWindow
+from qa_chatbot.domain import AmbiguousExtractionError, LLMExtractionError, TeamId, TimeWindow
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -123,3 +123,27 @@ def test_extract_time_window_supports_current_keyword() -> None:
     result = adapter.extract_time_window("current", date(2026, 2, 10))
 
     assert result == TimeWindow.from_year_month(2026, 2)
+
+
+def test_extract_team_id_raises_for_blank_response() -> None:
+    """Raise when team id is missing."""
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"team_id": ""}'))])])
+    adapter = OpenAIAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeClient(responses),
+    )
+
+    with pytest.raises(AmbiguousExtractionError):
+        adapter.extract_team_id("Unknown")
+
+
+def test_extract_qa_metrics_raises_for_missing_counts() -> None:
+    """Raise when QA metrics counts are missing."""
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"tests_passed": null}'))])])
+    adapter = OpenAIAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeClient(responses),
+    )
+
+    with pytest.raises(LLMExtractionError):
+        adapter.extract_qa_metrics("No metrics provided")

@@ -2,6 +2,7 @@
 
 from .entities import Submission, TeamData
 from .exceptions import (
+    AmbiguousExtractionError,
     InvalidDailyUpdateError,
     InvalidProjectStatusError,
     InvalidQAMetricsError,
@@ -15,6 +16,7 @@ from .services import ValidationService
 from .value_objects import DailyUpdate, ProjectStatus, QAMetrics, TeamId, TimeWindow
 
 __all__ = [
+    "AmbiguousExtractionError",
     "DailyUpdate",
     "InvalidDailyUpdateError",
     "InvalidProjectStatusError",

@@ -12,7 +12,15 @@ from pydantic import BaseModel, ValidationError
 
 from qa_chatbot.application.dtos import ExtractionResult
 from qa_chatbot.application.ports.output import LLMPort
-from qa_chatbot.domain import DailyUpdate, LLMExtractionError, ProjectStatus, QAMetrics, TeamId, TimeWindow
+from qa_chatbot.domain import (
+    AmbiguousExtractionError,
+    DailyUpdate,
+    LLMExtractionError,
+    ProjectStatus,
+    QAMetrics,
+    TeamId,
+    TimeWindow,
+)
 
 from .client import build_client
 from .prompts import (
@@ -80,18 +88,22 @@ class OpenAIAdapter(LLMPort):
         """Extract a team identifier from a conversation."""
         payload = self._extract_json(conversation, TEAM_ID_PROMPT)
         data = self._parse_schema(payload, TeamIdSchema)
+        self._raise_if_blank(data.team_id, "team identifier")
         return TeamId.from_raw(data.team_id)
 
     def extract_time_window(self, conversation: str, current_date: date) -> TimeWindow:
         """Extract the reporting time window."""
         payload = self._extract_json(conversation, TIME_WINDOW_PROMPT)
         data = self._parse_schema(payload, TimeWindowSchema)
+        self._raise_if_blank(data.month, "time window")
         return self._resolve_time_window(data.month, current_date)
 
     def extract_qa_metrics(self, conversation: str) -> QAMetrics:
         """Extract QA metrics from a conversation."""
         payload = self._extract_json(conversation, QA_METRICS_PROMPT)
         data = self._parse_schema(payload, QAMetricsSchema)
+        self._raise_if_missing_int(data.tests_passed, "tests_passed")
+        self._raise_if_missing_int(data.tests_failed, "tests_failed")
         return QAMetrics(
             tests_passed=data.tests_passed,
             tests_failed=data.tests_failed,
@@ -105,6 +117,8 @@ class OpenAIAdapter(LLMPort):
         """Extract project status updates from a conversation."""
         payload = self._extract_json(conversation, PROJECT_STATUS_PROMPT)
         data = self._parse_schema(payload, ProjectStatusSchema)
+        if data.sprint_progress_percent is None and not data.blockers and not data.milestones_completed:
+            self._raise_if_ambiguous("project status")
         return ProjectStatus(
             sprint_progress_percent=data.sprint_progress_percent,
             blockers=tuple(data.blockers),
@@ -116,6 +130,8 @@ class OpenAIAdapter(LLMPort):
         """Extract a daily update from a conversation."""
         payload = self._extract_json(conversation, DAILY_UPDATE_PROMPT)
         data = self._parse_schema(payload, DailyUpdateSchema)
+        if not data.completed_tasks and not data.planned_tasks and data.capacity_hours is None:
+            self._raise_if_ambiguous("daily update")
         return DailyUpdate(
             completed_tasks=tuple(data.completed_tasks),
             planned_tasks=tuple(data.planned_tasks),
@@ -141,6 +157,11 @@ class OpenAIAdapter(LLMPort):
         qa_data = self._parse_schema(qa_payload, QAMetricsSchema)
         project_data = self._parse_schema(project_payload, ProjectStatusSchema)
         daily_data = self._parse_schema(daily_payload, DailyUpdateSchema)
+
+        self._raise_if_blank(team_data.team_id, "team identifier")
+        self._raise_if_blank(time_data.month, "time window")
+        self._raise_if_missing_int(qa_data.tests_passed, "tests_passed")
+        self._raise_if_missing_int(qa_data.tests_failed, "tests_failed")
 
         team_id = TeamId.from_raw(team_data.team_id)
         time_window = self._resolve_time_window(time_data.month, current_date)
@@ -241,6 +262,23 @@ class OpenAIAdapter(LLMPort):
         """Sleep with exponential backoff between retries."""
         delay = self._settings.backoff_seconds * (2**attempt)
         time.sleep(delay)
+
+    @staticmethod
+    def _raise_if_blank(value: str, label: str) -> None:
+        """Raise when a required string value is blank."""
+        if not value.strip():
+            raise AmbiguousExtractionError(label, is_missing=True)
+
+    @staticmethod
+    def _raise_if_missing_int(value: int | None, label: str) -> None:
+        """Raise when a required integer is missing."""
+        if value is None:
+            raise AmbiguousExtractionError(label, is_missing=True)
+
+    @staticmethod
+    def _raise_if_ambiguous(label: str) -> None:
+        """Raise when LLM response lacks required detail."""
+        raise AmbiguousExtractionError(label, is_missing=False)
 
     @staticmethod
     def _normalize_history(history: list[dict[str, str]] | None) -> list[dict[str, str]]:
