@@ -12,7 +12,7 @@ An LLM-powered conversational data collection system where teams submit QA metri
 
 ## Progress Overview
 
-**Current Phase**: Pre-Implementation Planning  
+**Current Phase**: Phase 1 - Core Domain & Storage Foundation  
 **Overall Completion**: 0/5 phases (0%)
 
 ### Implementation Phases Status
@@ -23,9 +23,9 @@ An LLM-powered conversational data collection system where teams submit QA metri
 - [ ] **Phase 5**: Polish & Production Readiness (Week 5)
 
 ### Next Immediate Tasks
-1. Set up project structure and tooling
-2. Create domain models
-3. Implement storage layer
+1. Define storage port
+2. Implement SQLite adapter
+3. Add tests for storage + domain
 
 **Blockers**: None
 
@@ -63,7 +63,7 @@ An LLM-powered conversational data collection system where teams submit QA metri
 ### Hexagonal Architecture Layers
 
 ```
-src/xm_qa_chatbot/
+src/qa_chatbot/
 ├── domain/                           # Core business logic
 │   ├── entities/
 │   │   ├── team_data.py             # TeamData aggregate
@@ -161,20 +161,20 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
 #### Tasks
 
 **1. Project Setup**
-- [ ] Initialize Python project with `pyproject.toml`
-- [ ] Configure dev tools (ruff, mypy, pytest)
-- [ ] Set up directory structure
-- [ ] Create initial ADR for hexagonal architecture choice
+- [x] Initialize Python project with `pyproject.toml`
+- [x] Configure dev tools (ruff, mypy, pytest)
+- [x] Set up directory structure
+- [x] Create initial ADR for hexagonal architecture choice
 
 **2. Domain Layer**
-- [ ] Create `TeamId` value object with validation
-- [ ] Create `TimeWindow` value object with smart defaults
-- [ ] Create `QAMetrics` value object
-- [ ] Create `ProjectStatus` value object
-- [ ] Create `DailyUpdate` value object
-- [ ] Create `Submission` entity
-- [ ] Create `TeamData` aggregate (collection of submissions)
-- [ ] Define domain exceptions: `InvalidTeamIdError`, `InvalidTimeWindowError`, etc.
+- [x] Create `TeamId` value object with validation
+- [x] Create `TimeWindow` value object with smart defaults
+- [x] Create `QAMetrics` value object
+- [x] Create `ProjectStatus` value object
+- [x] Create `DailyUpdate` value object
+- [x] Create `Submission` entity
+- [x] Create `TeamData` aggregate (collection of submissions)
+- [x] Define domain exceptions: `InvalidTeamIdError`, `InvalidTimeWindowError`, etc.
 
 **3. Storage Port Definition**
 - [ ] Define `StoragePort` protocol interface
@@ -577,7 +577,7 @@ OPENAI_API_KEY=ollama                       # Not required for Ollama
 OPENAI_MODEL=llama2                         # Model name
 
 # Storage Configuration
-DATABASE_URL=sqlite:///./xm_qa_chatbot.db
+DATABASE_URL=sqlite:///./qa_chatbot.db
 DATABASE_ECHO=false                         # SQLAlchemy logging
 
 # Dashboard Configuration
@@ -607,7 +607,7 @@ ollama serve
 ollama pull llama2
 
 # Start chatbot
-python -m xm_qa_chatbot.main
+python -m qa_chatbot.main
 
 # Access: http://localhost:7860
 ```
@@ -625,7 +625,7 @@ services:
       - "7860:7860"
     environment:
       - OPENAI_BASE_URL=http://ollama:11434/v1
-      - DATABASE_URL=sqlite:////data/xm_qa_chatbot.db
+      - DATABASE_URL=sqlite:////data/qa_chatbot.db
       - DASHBOARD_OUTPUT_DIR=/output
     volumes:
       - chatbot-data:/data
@@ -790,7 +790,7 @@ ollama pull llama2
 pytest tests/
 
 # Start chatbot
-python -m xm_qa_chatbot.main
+python -m qa_chatbot.main
 
 # Access dashboard
 open dashboard_html/overview.html
