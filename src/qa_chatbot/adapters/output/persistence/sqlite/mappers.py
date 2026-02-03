@@ -5,13 +5,13 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from .......domain import DailyUpdate, ProjectStatus, QAMetrics, Submission, TeamId, TimeWindow
+from qa_chatbot.domain import DailyUpdate, ProjectStatus, QAMetrics, Submission, TeamId, TimeWindow
+
 from .models import SubmissionModel
 
 
 def submission_to_model(submission: Submission) -> SubmissionModel:
     """Map a domain submission to an ORM model."""
-
     return SubmissionModel(
         id=str(submission.id),
         team_id=submission.team_id.value,
@@ -26,7 +26,6 @@ def submission_to_model(submission: Submission) -> SubmissionModel:
 
 def model_to_submission(model: SubmissionModel) -> Submission:
     """Map an ORM model to a domain submission."""
-
     created_at = model.created_at
     if isinstance(created_at, str):
         created_at = datetime.fromisoformat(created_at)

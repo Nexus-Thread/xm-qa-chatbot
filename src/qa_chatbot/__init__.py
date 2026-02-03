@@ -1,3 +1,3 @@
 """XM QA chatbot package."""
 
-__all__ = []
+__all__: list[str] = []

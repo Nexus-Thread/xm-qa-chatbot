@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from typing import TYPE_CHECKING
 
-from ..exceptions import InvalidTimeWindowError
+from qa_chatbot.domain.exceptions import InvalidTimeWindowError
+
+if TYPE_CHECKING:
+    from datetime import date
 
 
 @dataclass(frozen=True)
@@ -16,29 +19,30 @@ class TimeWindow:
     month: int
 
     def __post_init__(self) -> None:
+        """Validate time window bounds."""
         if self.year < 2000 or self.year > 2100:
-            raise InvalidTimeWindowError("Year must be between 2000 and 2100")
+            message = "Year must be between 2000 and 2100"
+            raise InvalidTimeWindowError(message)
         if self.month < 1 or self.month > 12:
-            raise InvalidTimeWindowError("Month must be between 1 and 12")
+            message = "Month must be between 1 and 12"
+            raise InvalidTimeWindowError(message)
 
     @classmethod
-    def from_date(cls, value: date) -> "TimeWindow":
+    def from_date(cls, value: date) -> TimeWindow:
         """Create a time window from a date."""
-
         return cls(year=value.year, month=value.month)
 
     @classmethod
-    def from_year_month(cls, year: int, month: int) -> "TimeWindow":
+    def from_year_month(cls, year: int, month: int) -> TimeWindow:
         """Create a time window from explicit year/month values."""
-
         return cls(year=year, month=month)
 
     @classmethod
-    def default_for(cls, today: date, grace_period_days: int = 2) -> "TimeWindow":
+    def default_for(cls, today: date, grace_period_days: int = 2) -> TimeWindow:
         """Select the default window based on a grace period into the next month."""
-
         if grace_period_days < 0:
-            raise InvalidTimeWindowError("Grace period must be non-negative")
+            message = "Grace period must be non-negative"
+            raise InvalidTimeWindowError(message)
 
         if today.day <= grace_period_days:
             month = today.month - 1
@@ -52,5 +56,4 @@ class TimeWindow:
 
     def to_iso_month(self) -> str:
         """Return the window in YYYY-MM format."""
-
         return f"{self.year:04d}-{self.month:02d}"

@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from ..services import ValidationService
-from ..value_objects import DailyUpdate, ProjectStatus, QAMetrics, TeamId, TimeWindow
+from qa_chatbot.domain.services import ValidationService
+
+if TYPE_CHECKING:
+    from qa_chatbot.domain.value_objects import DailyUpdate, ProjectStatus, QAMetrics, TeamId, TimeWindow
 
 
 @dataclass(frozen=True)
@@ -24,6 +27,7 @@ class Submission:
     raw_conversation: str | None = None
 
     def __post_init__(self) -> None:
+        """Ensure submissions contain at least one data category."""
         ValidationService.ensure_submission_has_data(
             qa_metrics=self.qa_metrics,
             project_status=self.project_status,
@@ -31,7 +35,7 @@ class Submission:
         )
 
     @classmethod
-    def create(
+    def create(  # noqa: PLR0913
         cls,
         team_id: TeamId,
         month: TimeWindow,
@@ -40,9 +44,8 @@ class Submission:
         daily_update: DailyUpdate | None,
         raw_conversation: str | None = None,
         created_at: datetime | None = None,
-    ) -> "Submission":
+    ) -> Submission:
         """Create a submission with generated identifiers."""
-
         return cls(
             id=uuid4(),
             team_id=team_id,
@@ -51,5 +54,5 @@ class Submission:
             project_status=project_status,
             daily_update=daily_update,
             raw_conversation=raw_conversation,
-            created_at=created_at or datetime.utcnow(),
+            created_at=created_at or datetime.now(tz=UTC),
         )

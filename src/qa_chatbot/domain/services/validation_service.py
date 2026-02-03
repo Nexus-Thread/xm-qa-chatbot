@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
-from ..exceptions import MissingSubmissionDataError
-from ..value_objects import DailyUpdate, ProjectStatus, QAMetrics
+from typing import TYPE_CHECKING
+
+from qa_chatbot.domain.exceptions import MissingSubmissionDataError
+
+if TYPE_CHECKING:
+    from qa_chatbot.domain.value_objects import DailyUpdate, ProjectStatus, QAMetrics
 
 
 class ValidationService:
@@ -16,6 +20,6 @@ class ValidationService:
         daily_update: DailyUpdate | None,
     ) -> None:
         """Ensure at least one data section is present."""
-
         if not any([qa_metrics, project_status, daily_update]):
-            raise MissingSubmissionDataError("Submission must include at least one data section")
+            msg = "Submission must include at least one data section"
+            raise MissingSubmissionDataError(msg)

@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter
 from qa_chatbot.domain import DailyUpdate, Submission, TeamId, TimeWindow
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
 
 def test_sqlite_adapter_persists_and_queries(tmp_path: Path) -> None:
+    """Persist and query submissions through the adapter."""
     database_path = tmp_path / "qa_chatbot.db"
     adapter = SQLiteAdapter(database_url=f"sqlite:///{database_path}")
     adapter.initialize_schema()

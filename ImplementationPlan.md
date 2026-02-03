@@ -4,28 +4,28 @@
 
 An LLM-powered conversational data collection system where teams submit QA metrics, project tracking data, and daily updates through natural language chat. The system extracts structured data, stores it by team and month, and generates a multi-view HTML dashboard.
 
-**Core Architecture**: Hexagonal (ports & adapters)  
-**Primary Technologies**: Python 3.11+, Gradio, OpenAI SDK (Ollama/OpenAI), SQLite, Jinja2  
+**Core Architecture**: Hexagonal (ports & adapters)
+**Primary Technologies**: Python 3.11+, Gradio, OpenAI SDK (Ollama/OpenAI), SQLite, Jinja2
 **Deployment**: Docker containerized
 
 ---
 
 ## Progress Overview
 
-**Current Phase**: Phase 1 - Core Domain & Storage Foundation  
-**Overall Completion**: 0/5 phases (0%)
+**Current Phase**: Phase 1 - Core Domain & Storage Foundation
+**Overall Completion**: 1/5 phases (20%)
 
 ### Implementation Phases Status
-- [ ] **Phase 1**: Core Domain & Storage Foundation (Week 1)
+- [x] **Phase 1**: Core Domain & Storage Foundation (Week 1)
 - [ ] **Phase 2**: LLM Integration & Extraction (Week 2)
 - [ ] **Phase 3**: Gradio Chatbot Interface (Week 3)
 - [ ] **Phase 4**: Dashboard Generation (Week 4)
 - [ ] **Phase 5**: Polish & Production Readiness (Week 5)
 
 ### Next Immediate Tasks
-1. Define storage port
-2. Implement SQLite adapter
-3. Add tests for storage + domain
+1. Implement LLM port definition
+2. Build OpenAI adapter scaffolding
+3. Add extraction prompts and schemas
 
 **Blockers**: None
 
@@ -177,8 +177,8 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
 - [x] Define domain exceptions: `InvalidTeamIdError`, `InvalidTimeWindowError`, etc.
 
 **3. Storage Port Definition**
-- [ ] Define `StoragePort` protocol interface
-- [ ] Document port methods and contracts
+- [x] Define `StoragePort` protocol interface
+- [x] Document port methods and contracts
    ```python
    class StoragePort(Protocol):
        def save_submission(self, submission: Submission) -> None: ...
@@ -188,15 +188,15 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
    ```
 
 **4. SQLite Adapter**
-- [ ] Create SQLAlchemy models with JSON fields for flexible schema
-- [ ] Implement mapper classes (domain ↔ ORM)
+- [x] Create SQLAlchemy models with JSON fields for flexible schema
+- [x] Implement mapper classes (domain ↔ ORM)
 - [ ] Set up Alembic for migrations
 - [ ] Create initial migration scripts
-- [ ] Implement connection management
+- [x] Implement connection management
 
 **5. Testing**
-- [ ] Write unit tests for domain logic
-- [ ] Write integration tests for SQLite adapter
+- [x] Write unit tests for domain logic
+- [x] Write integration tests for SQLite adapter
 - [ ] Create test fixtures for sample data
 - [ ] Verify 90%+ test coverage on domain layer
 
@@ -808,7 +808,7 @@ open dashboard_html/overview.html
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: 2026-02-03  
-**Status**: Planning Phase  
+**Document Version**: 1.0
+**Last Updated**: 2026-02-03
+**Status**: Planning Phase
 **Next Review**: After Phase 1 completion

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from ..exceptions import InvalidProjectStatusError
+from qa_chatbot.domain.exceptions import InvalidProjectStatusError
 
 
 @dataclass(frozen=True)
@@ -17,11 +17,16 @@ class ProjectStatus:
     risks: tuple[str, ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:
+        """Validate project status values."""
         if self.sprint_progress_percent is not None and not 0 <= self.sprint_progress_percent <= 100:
-            raise InvalidProjectStatusError("Sprint progress must be between 0 and 100")
+            msg = "Sprint progress must be between 0 and 100"
+            raise InvalidProjectStatusError(msg)
         if any(not item.strip() for item in self.blockers):
-            raise InvalidProjectStatusError("Blockers must not include empty items")
+            msg = "Blockers must not include empty items"
+            raise InvalidProjectStatusError(msg)
         if any(not item.strip() for item in self.milestones_completed):
-            raise InvalidProjectStatusError("Milestones must not include empty items")
+            msg = "Milestones must not include empty items"
+            raise InvalidProjectStatusError(msg)
         if any(not item.strip() for item in self.risks):
-            raise InvalidProjectStatusError("Risks must not include empty items")
+            msg = "Risks must not include empty items"
+            raise InvalidProjectStatusError(msg)

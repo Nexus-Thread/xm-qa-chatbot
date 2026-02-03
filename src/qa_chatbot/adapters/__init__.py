@@ -1,3 +1,3 @@
 """Adapters for external integrations."""
 
-__all__ = []
+__all__: list[str] = []
