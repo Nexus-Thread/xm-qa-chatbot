@@ -12,20 +12,20 @@ An LLM-powered conversational data collection system where teams submit QA metri
 
 ## Progress Overview
 
-**Current Phase**: Phase 1 - Core Domain & Storage Foundation
-**Overall Completion**: 1/5 phases (20%)
+**Current Phase**: Phase 2 - LLM Integration & Extraction
+**Overall Completion**: 1/5 phases complete (Phase 2 in progress)
 
 ### Implementation Phases Status
 - [x] **Phase 1**: Core Domain & Storage Foundation (Week 1)
-- [ ] **Phase 2**: LLM Integration & Extraction (Week 2)
+- [ ] **Phase 2**: LLM Integration & Extraction (Week 2) - In progress
 - [ ] **Phase 3**: Gradio Chatbot Interface (Week 3)
 - [ ] **Phase 4**: Dashboard Generation (Week 4)
 - [ ] **Phase 5**: Polish & Production Readiness (Week 5)
 
 ### Next Immediate Tasks
-1. Implement LLM port definition
-2. Build OpenAI adapter scaffolding
-3. Add extraction prompts and schemas
+1. Add error handling for ambiguous inputs
+2. Add edge-case conversation tests
+3. Document env configuration for LLM settings
 
 **Blockers**: None
 
@@ -117,8 +117,9 @@ src/qa_chatbot/
         │   ├── openai/
         │   │   ├── __init__.py
         │   │   ├── adapter.py       # OpenAI SDK adapter
+        │   │   ├── client.py        # OpenAI client construction
         │   │   ├── prompts.py       # Extraction prompts
-        │   │   ├── function_schemas.py # Structured output schemas
+        │   │   ├── schemas.py       # Pydantic structured schemas
         │   │   └── retry_logic.py   # Error handling
         │   └── __init__.py
         │
@@ -190,15 +191,15 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
 **4. SQLite Adapter**
 - [x] Create SQLAlchemy models with JSON fields for flexible schema
 - [x] Implement mapper classes (domain ↔ ORM)
-- [ ] Set up Alembic for migrations
-- [ ] Create initial migration scripts
+- [x] Set up Alembic for migrations
+- [x] Create initial migration scripts
 - [x] Implement connection management
 
 **5. Testing**
 - [x] Write unit tests for domain logic
 - [x] Write integration tests for SQLite adapter
-- [ ] Create test fixtures for sample data
-- [ ] Verify 90%+ test coverage on domain layer
+- [x] Create test fixtures for sample data
+- [x] Verify 90%+ test coverage on domain layer
 
 **Deliverable**: Functioning persistence layer with tests
 
@@ -211,8 +212,8 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
 #### Tasks
 
 **1. LLM Port Definition**
-- [ ] Define `LLMPort` protocol interface
-- [ ] Document extraction methods and contracts
+- [x] Define `LLMPort` protocol interface
+- [x] Document extraction methods and contracts
    ```python
    class LLMPort(Protocol):
        def extract_team_id(self, conversation: str) -> TeamId: ...
@@ -223,32 +224,32 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
    ```
 
 **2. OpenAI Adapter**
-- [ ] Implement configuration for `base_url` (Ollama/OpenAI) and `api_key`
-- [ ] Create client initialization and connection testing
-- [ ] Implement error handling and retry logic
-- [ ] Add token usage tracking
+- [x] Implement configuration for `base_url` (Ollama/OpenAI) and `api_key`
+- [x] Create client initialization and connection testing
+- [x] Implement error handling and retry logic
+- [x] Add token usage tracking
 
 **3. Structured Extraction**
-- [ ] Define Pydantic schemas for function calling
-- [ ] Create prompt templates for each data category
-- [ ] Design system prompt for chatbot personality
-- [ ] Implement context management for multi-turn conversations
+- [x] Define Pydantic schemas for function calling
+- [x] Create prompt templates for each data category
+- [x] Design system prompt for chatbot personality
+- [x] Implement context management for multi-turn conversations
 
 **4. Extraction Prompts Design**
-- [ ] Create team identification prompts
-- [ ] Create month selection prompts with smart defaults
-- [ ] Create QA metrics extraction prompts
-- [ ] Create project tracking extraction prompts
-- [ ] Create daily updates extraction prompts
+- [x] Create team identification prompts
+- [x] Create month selection prompts with smart defaults
+- [x] Create QA metrics extraction prompts
+- [x] Create project tracking extraction prompts
+- [x] Create daily updates extraction prompts
 
 **5. Use Cases**
-- [ ] Implement `ExtractStructuredDataUseCase` to orchestrate LLM calls
-- [ ] Implement `SubmitTeamDataUseCase` (validate → persist → trigger dashboard)
+- [x] Implement `ExtractStructuredDataUseCase` to orchestrate LLM calls
+- [x] Implement `SubmitTeamDataUseCase` (validate → persist → trigger dashboard)
 - [ ] Add error handling for ambiguous inputs
 
 **6. Testing**
-- [ ] Write unit tests with mock LLM responses
-- [ ] Write integration tests with Ollama (if available)
+- [x] Write unit tests with mock LLM responses
+- [x] Write integration tests with Ollama (if available)
 - [ ] Test conversation flows with edge cases
 
 **Deliverable**: Working LLM extraction pipeline with tests
@@ -467,14 +468,8 @@ class Submission:
 ### System Prompt
 
 ```
-You are a helpful data collection assistant for software development teams.
-Your role is to extract structured information from natural conversations about:
-1. QA metrics (test results, bugs, coverage)
-2. Project tracking (progress, blockers, milestones)
-3. Daily updates (tasks, capacity, issues)
-
-Be conversational, ask clarifying questions, and confirm understanding before saving data.
-Always identify the team and the reporting month first.
+You are a careful data extraction assistant for software development teams.
+Return structured JSON that matches the provided schema, without commentary.
 ```
 
 ### Extraction Functions (OpenAI Function Calling)
@@ -810,5 +805,5 @@ open dashboard_html/overview.html
 
 **Document Version**: 1.0
 **Last Updated**: 2026-02-03
-**Status**: Planning Phase
-**Next Review**: After Phase 1 completion
+**Status**: Phase 2 In Progress
+**Next Review**: After Phase 2 completion

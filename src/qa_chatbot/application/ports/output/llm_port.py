@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Protocol
 if TYPE_CHECKING:
     from datetime import date
 
+    from qa_chatbot.application.dtos import ExtractionResult
     from qa_chatbot.domain import DailyUpdate, ProjectStatus, QAMetrics, TeamId, TimeWindow
 
 
@@ -27,3 +28,11 @@ class LLMPort(Protocol):
 
     def extract_daily_update(self, conversation: str) -> DailyUpdate:
         """Extract a daily update from a conversation."""
+
+    def extract_with_history(
+        self,
+        conversation: str,
+        history: list[dict[str, str]] | None,
+        current_date: date,
+    ) -> ExtractionResult:
+        """Extract structured data using conversation history."""

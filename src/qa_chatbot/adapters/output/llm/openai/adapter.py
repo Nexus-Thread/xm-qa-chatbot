@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 from openai import APIError
 from pydantic import BaseModel, ValidationError
 
+from qa_chatbot.application.dtos import ExtractionResult
 from qa_chatbot.application.ports.output import LLMPort
 from qa_chatbot.domain import DailyUpdate, LLMExtractionError, ProjectStatus, QAMetrics, TeamId, TimeWindow
 
@@ -85,16 +86,7 @@ class OpenAIAdapter(LLMPort):
         """Extract the reporting time window."""
         payload = self._extract_json(conversation, TIME_WINDOW_PROMPT)
         data = self._parse_schema(payload, TimeWindowSchema)
-        if data.month.strip().lower() in {"current", "current_month"}:
-            return TimeWindow.from_date(current_date)
-        if data.month.strip().lower() in {"previous", "previous_month", "last"}:
-            return TimeWindow.default_for(current_date, grace_period_days=31)
-        try:
-            year_str, month_str = data.month.split("-")
-            return TimeWindow.from_year_month(int(year_str), int(month_str))
-        except ValueError as err:
-            message = "Time window must be in YYYY-MM format"
-            raise LLMExtractionError(message) from err
+        return self._resolve_time_window(data.month, current_date)
 
     def extract_qa_metrics(self, conversation: str) -> QAMetrics:
         """Extract QA metrics from a conversation."""
@@ -131,16 +123,70 @@ class OpenAIAdapter(LLMPort):
             issues=tuple(data.issues),
         )
 
-    def _extract_json(self, conversation: str, prompt: str) -> dict[str, Any]:
+    def extract_with_history(
+        self,
+        conversation: str,
+        history: list[dict[str, str]] | None,
+        current_date: date,
+    ) -> ExtractionResult:
+        """Extract structured data using conversation history."""
+        team_payload = self._extract_json(conversation, TEAM_ID_PROMPT, history)
+        time_payload = self._extract_json(conversation, TIME_WINDOW_PROMPT, history)
+        qa_payload = self._extract_json(conversation, QA_METRICS_PROMPT, history)
+        project_payload = self._extract_json(conversation, PROJECT_STATUS_PROMPT, history)
+        daily_payload = self._extract_json(conversation, DAILY_UPDATE_PROMPT, history)
+
+        team_data = self._parse_schema(team_payload, TeamIdSchema)
+        time_data = self._parse_schema(time_payload, TimeWindowSchema)
+        qa_data = self._parse_schema(qa_payload, QAMetricsSchema)
+        project_data = self._parse_schema(project_payload, ProjectStatusSchema)
+        daily_data = self._parse_schema(daily_payload, DailyUpdateSchema)
+
+        team_id = TeamId.from_raw(team_data.team_id)
+        time_window = self._resolve_time_window(time_data.month, current_date)
+
+        return ExtractionResult(
+            team_id=team_id,
+            time_window=time_window,
+            qa_metrics=QAMetrics(
+                tests_passed=qa_data.tests_passed,
+                tests_failed=qa_data.tests_failed,
+                test_coverage_percent=qa_data.test_coverage_percent,
+                bug_count=qa_data.bug_count,
+                critical_bugs=qa_data.critical_bugs,
+                deployment_ready=qa_data.deployment_ready,
+            ),
+            project_status=ProjectStatus(
+                sprint_progress_percent=project_data.sprint_progress_percent,
+                blockers=tuple(project_data.blockers),
+                milestones_completed=tuple(project_data.milestones_completed),
+                risks=tuple(project_data.risks),
+            ),
+            daily_update=DailyUpdate(
+                completed_tasks=tuple(daily_data.completed_tasks),
+                planned_tasks=tuple(daily_data.planned_tasks),
+                capacity_hours=daily_data.capacity_hours,
+                issues=tuple(daily_data.issues),
+            ),
+        )
+
+    def _extract_json(
+        self,
+        conversation: str,
+        prompt: str,
+        history: list[dict[str, str]] | None = None,
+    ) -> dict[str, Any]:
         """Call the OpenAI API and extract JSON content."""
         for attempt in range(self._settings.max_retries):
             try:
+                messages = [
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    *self._normalize_history(history),
+                    {"role": "user", "content": f"{prompt}\n\nConversation:\n{conversation}"},
+                ]
                 response = self._client.chat.completions.create(
                     model=self._settings.model,
-                    messages=[
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": f"{prompt}\n\nConversation:\n{conversation}"},
-                    ],
+                    messages=messages,
                     response_format={"type": "json_object"},
                     temperature=0,
                 )
@@ -177,10 +223,35 @@ class OpenAIAdapter(LLMPort):
             msg = "LLM response did not match expected schema"
             raise LLMExtractionError(msg) from err
 
+    def _resolve_time_window(self, value: str, current_date: date) -> TimeWindow:
+        """Resolve time window values into TimeWindow objects."""
+        cleaned = value.strip().lower()
+        if cleaned in {"current", "current_month"}:
+            return TimeWindow.from_date(current_date)
+        if cleaned in {"previous", "previous_month", "last"}:
+            return TimeWindow.default_for(current_date, grace_period_days=31)
+        try:
+            year_str, month_str = value.split("-")
+            return TimeWindow.from_year_month(int(year_str), int(month_str))
+        except ValueError as err:
+            message = "Time window must be in YYYY-MM format"
+            raise LLMExtractionError(message) from err
+
     def _sleep_backoff(self, attempt: int) -> None:
         """Sleep with exponential backoff between retries."""
         delay = self._settings.backoff_seconds * (2**attempt)
         time.sleep(delay)
+
+    @staticmethod
+    def _normalize_history(history: list[dict[str, str]] | None) -> list[dict[str, str]]:
+        """Normalize history into chat message dicts."""
+        if not history:
+            return []
+        return [
+            {"role": entry.get("role", "user"), "content": entry.get("content", "")}
+            for entry in history
+            if entry.get("content")
+        ]
 
     @staticmethod
     def _extract_usage(response: Any) -> TokenUsage | None:

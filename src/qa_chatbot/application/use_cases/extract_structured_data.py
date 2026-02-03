@@ -34,3 +34,12 @@ class ExtractStructuredDataUseCase:
             project_status=project_status,
             daily_update=daily_update,
         )
+
+    def execute_with_history(
+        self,
+        conversation: str,
+        history: list[dict[str, str]] | None,
+        current_date: date,
+    ) -> ExtractionResult:
+        """Extract structured data using conversation history."""
+        return self.llm_port.extract_with_history(conversation, history, current_date)
