@@ -12,19 +12,19 @@ An LLM-powered conversational data collection system where teams submit QA metri
 
 ## Progress Overview
 
-**Current Phase**: Phase 3 - Gradio Chatbot Interface
-**Overall Completion**: 2/5 phases complete (Phase 2 complete)
+**Current Phase**: Phase 4 - Dashboard Generation
+**Overall Completion**: 3/5 phases complete (Phase 3 complete)
 
 ### Implementation Phases Status
 - [x] **Phase 1**: Core Domain & Storage Foundation (Week 1)
 - [x] **Phase 2**: LLM Integration & Extraction (Week 2)
-- [ ] **Phase 3**: Gradio Chatbot Interface (Week 3)
+- [x] **Phase 3**: Gradio Chatbot Interface (Week 3)
 - [ ] **Phase 4**: Dashboard Generation (Week 4)
 - [ ] **Phase 5**: Polish & Production Readiness (Week 5)
 
 ### Next Immediate Tasks
-1. Define Phase 3 conversation state machine and transitions
-2. Implement Gradio adapter wiring and conversation manager
+1. Define DashboardPort and HTML adapter scope
+2. Build dashboard templates and aggregation use cases
 
 **Blockers**: None
 
@@ -267,45 +267,52 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
 #### Tasks
 
 **1. Conversation State Management**
-- [ ] Define conversation state machine (states, transitions, guard conditions)
-- [ ] Implement session state tracking (team identified? month selected? data collected?)
-- [ ] Add conversation history persistence
-- [ ] Create multi-step flow orchestration
+- [x] Define conversation state machine (states, transitions, guard conditions)
+- [x] Implement session state tracking (team identified? month selected? data collected?)
+- [x] Add conversation history persistence
+- [x] Create multi-step flow orchestration
 
 **2. Gradio Input Adapter**
-- [ ] Set up Gradio chat interface
-- [ ] Implement message handling and routing
-- [ ] Integrate with `SubmitTeamDataUseCase`
-- [ ] Add error message formatting
-- [ ] Define adapter module structure (`adapters/input/gradio/adapter.py`, `conversation_manager.py`, `formatters.py`)
+- [x] Set up Gradio chat interface
+- [x] Implement message handling and routing
+- [x] Integrate with `SubmitTeamDataUseCase`
+- [x] Add error message formatting
+- [x] Define adapter module structure (`adapters/input/gradio/adapter.py`, `conversation_manager.py`, `formatters.py`)
 
 **3. Conversation Flow Implementation**
-- [ ] Implement welcome message
-- [ ] Implement team identification (extract from first message or prompt)
-- [ ] Implement month selection with grace period logic
-- [ ] Implement QA metrics data collection
-- [ ] Implement project status data collection
-- [ ] Implement daily updates data collection
-- [ ] Implement confirmation and storage step
-- [ ] Implement success message
-- [ ] Define fallback prompts for missing/ambiguous inputs
+- [x] Implement welcome message
+- [x] Implement team identification (extract from first message or prompt)
+- [x] Implement month selection with grace period logic
+- [x] Implement QA metrics data collection
+- [x] Implement project status data collection
+- [x] Implement daily updates data collection
+- [x] Implement confirmation and storage step
+- [x] Implement success message
+- [x] Define fallback prompts for missing/ambiguous inputs
 
 **4. User Experience**
-- [ ] Design clear prompts and guidance
-- [ ] Implement error messages in natural language
-- [ ] Create confirmation summaries before saving
-- [ ] Add option to edit/retry
+- [x] Design clear prompts and guidance
+- [x] Implement error messages in natural language
+- [x] Create confirmation summaries before saving
+- [x] Add option to edit/retry
 
 **5. Configuration**
-- [ ] Set up environment variables for LLM settings
-- [ ] Configure Gradio server settings
+- [x] Set up environment variables for LLM settings
+- [x] Configure Gradio server settings
 - [ ] Set up logging
 
 **6. Testing**
-- [ ] Perform manual testing with various conversation styles
-- [ ] Write E2E tests with Gradio test client (happy path + correction loop)
-- [ ] Test error scenarios (invalid team, wrong month format, etc.)
-- [ ] Add E2E fixtures for multi-turn conversations
+- [x] Perform manual testing with various conversation styles
+- [x] Write E2E tests with Gradio test client (happy path + correction loop)
+- [x] Test error scenarios (invalid team, wrong month format, etc.)
+- [x] Add E2E fixtures for multi-turn conversations
+
+**Phase 3 Notes (Completed)**
+- Added Gradio adapter, conversation manager, and formatter helpers.
+- Implemented main entry point (`qa_chatbot.main`) wired to OpenAI + SQLite adapters.
+- Updated runtime behaviors to align with Gradio v6.5.1 (messages dict history).
+- Added E2E conversation tests and aligned test fakes with ports.
+- Quality gate run: `ruff format .`, `ruff check . --fix`, `ruff check .`, `mypy src/ tests/`, `pytest tests/`.
 
 **Deliverable**: Functional chatbot for data submission
 
@@ -707,9 +714,9 @@ Key decisions to document:
 ## Success Criteria
 
 ### Phase 1
-- [ ] Domain models with comprehensive tests
-- [ ] SQLite adapter with CRUD operations
-- [ ] 90%+ unit test coverage on domain layer
+- [x] Domain models with comprehensive tests
+- [x] SQLite adapter with CRUD operations
+- [x] 90%+ unit test coverage on domain layer
 
 ### Phase 2
 - [x] LLM adapter extracting structured data
@@ -717,9 +724,9 @@ Key decisions to document:
 - [x] Error handling for ambiguous inputs
 
 ### Phase 3
-- [ ] Gradio chatbot accepting natural language
-- [ ] Multi-turn conversation state management
-- [ ] E2E test for full submission flow
+- [x] Gradio chatbot accepting natural language
+- [x] Multi-turn conversation state management
+- [x] E2E test for full submission flow
 
 ### Phase 4
 - [ ] Three dashboard views (overview, team, trends)
@@ -811,7 +818,7 @@ open dashboard_html/overview.html
 
 ---
 
-**Document Version**: 1.0
+**Document Version**: 1.1
 **Last Updated**: 2026-02-03
-**Status**: Phase 2 Complete
-**Next Review**: After Phase 3 completion
+**Status**: Phase 3 Complete
+**Next Review**: After Phase 4 completion
