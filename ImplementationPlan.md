@@ -299,7 +299,7 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
 **5. Configuration**
 - [x] Set up environment variables for LLM settings
 - [x] Configure Gradio server settings
-- [ ] Set up logging
+- [x] Logging deferred to Phase 5
 
 **6. Testing**
 - [x] Perform manual testing with various conversation styles
@@ -381,7 +381,7 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
 - [ ] Write configuration documentation
 
 **2. Error Handling & Observability**
-- [ ] Implement structured logging (JSON format)
+- [ ] Implement structured logging (JSON format) (deferred from Phase 3)
 - [ ] Set up error tracking and alerting
 - [ ] Add metrics collection (submission counts, LLM latency)
 - [ ] Create health check endpoint
