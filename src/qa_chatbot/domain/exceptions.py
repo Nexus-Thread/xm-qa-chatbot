@@ -31,3 +31,7 @@ class MissingSubmissionDataError(DomainError):
 
 class InvalidSubmissionTeamError(DomainError):
     """Raised when a submission references the wrong team."""
+
+
+class LLMExtractionError(DomainError):
+    """Raised when LLM extraction fails or returns invalid data."""

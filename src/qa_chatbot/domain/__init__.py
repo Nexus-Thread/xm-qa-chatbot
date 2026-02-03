@@ -8,6 +8,7 @@ from .exceptions import (
     InvalidSubmissionTeamError,
     InvalidTeamIdError,
     InvalidTimeWindowError,
+    LLMExtractionError,
     MissingSubmissionDataError,
 )
 from .services import ValidationService
@@ -21,6 +22,7 @@ __all__ = [
     "InvalidSubmissionTeamError",
     "InvalidTeamIdError",
     "InvalidTimeWindowError",
+    "LLMExtractionError",
     "MissingSubmissionDataError",
     "ProjectStatus",
     "QAMetrics",

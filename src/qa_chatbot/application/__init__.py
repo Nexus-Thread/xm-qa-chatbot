@@ -1,5 +1,12 @@
 """Application layer for QA chatbot."""
 
-from .ports import StoragePort
+from .dtos import ExtractionResult
+from .ports import LLMPort, StoragePort
+from .use_cases import ExtractStructuredDataUseCase
 
-__all__ = ["StoragePort"]
+__all__ = [
+    "ExtractStructuredDataUseCase",
+    "ExtractionResult",
+    "LLMPort",
+    "StoragePort",
+]
