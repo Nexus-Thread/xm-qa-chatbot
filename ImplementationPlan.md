@@ -12,19 +12,19 @@ An LLM-powered conversational data collection system where teams submit QA metri
 
 ## Progress Overview
 
-**Current Phase**: Phase 2 - LLM Integration & Extraction
-**Overall Completion**: 1/5 phases complete (Phase 2 in progress)
+**Current Phase**: Phase 3 - Gradio Chatbot Interface
+**Overall Completion**: 2/5 phases complete (Phase 2 complete)
 
 ### Implementation Phases Status
 - [x] **Phase 1**: Core Domain & Storage Foundation (Week 1)
-- [ ] **Phase 2**: LLM Integration & Extraction (Week 2) - In progress
+- [x] **Phase 2**: LLM Integration & Extraction (Week 2)
 - [ ] **Phase 3**: Gradio Chatbot Interface (Week 3)
 - [ ] **Phase 4**: Dashboard Generation (Week 4)
 - [ ] **Phase 5**: Polish & Production Readiness (Week 5)
 
 ### Next Immediate Tasks
-1. Add edge-case conversation tests
-2. Document env configuration for LLM settings
+1. Define Phase 3 conversation state machine and transitions
+2. Implement Gradio adapter wiring and conversation manager
 
 **Blockers**: None
 
@@ -249,7 +249,12 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
 **6. Testing**
 - [x] Write unit tests with mock LLM responses
 - [x] Write integration tests with Ollama (if available)
-- [ ] Test conversation flows with edge cases
+- [x] Test conversation flows with edge cases
+  - Ambiguous or missing team identifiers
+  - Missing month selection with default/grace period resolution
+  - Partial QA metrics requiring follow-up extraction
+  - Correction loop after confirmation summary
+  - Conflicting values across turns resolved by latest input
 
 **Deliverable**: Working LLM extraction pipeline with tests
 
@@ -262,6 +267,7 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
 #### Tasks
 
 **1. Conversation State Management**
+- [ ] Define conversation state machine (states, transitions, guard conditions)
 - [ ] Implement session state tracking (team identified? month selected? data collected?)
 - [ ] Add conversation history persistence
 - [ ] Create multi-step flow orchestration
@@ -271,6 +277,7 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
 - [ ] Implement message handling and routing
 - [ ] Integrate with `SubmitTeamDataUseCase`
 - [ ] Add error message formatting
+- [ ] Define adapter module structure (`adapters/input/gradio/adapter.py`, `conversation_manager.py`, `formatters.py`)
 
 **3. Conversation Flow Implementation**
 - [ ] Implement welcome message
@@ -281,6 +288,7 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
 - [ ] Implement daily updates data collection
 - [ ] Implement confirmation and storage step
 - [ ] Implement success message
+- [ ] Define fallback prompts for missing/ambiguous inputs
 
 **4. User Experience**
 - [ ] Design clear prompts and guidance
@@ -295,8 +303,9 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
 
 **6. Testing**
 - [ ] Perform manual testing with various conversation styles
-- [ ] Write E2E tests with Gradio test client
+- [ ] Write E2E tests with Gradio test client (happy path + correction loop)
 - [ ] Test error scenarios (invalid team, wrong month format, etc.)
+- [ ] Add E2E fixtures for multi-turn conversations
 
 **Deliverable**: Functional chatbot for data submission
 
@@ -703,8 +712,8 @@ Key decisions to document:
 - [ ] 90%+ unit test coverage on domain layer
 
 ### Phase 2
-- [ ] LLM adapter extracting structured data
-- [ ] Integration tests with Ollama
+- [x] LLM adapter extracting structured data
+- [x] Integration tests with Ollama
 - [x] Error handling for ambiguous inputs
 
 ### Phase 3
@@ -804,5 +813,5 @@ open dashboard_html/overview.html
 
 **Document Version**: 1.0
 **Last Updated**: 2026-02-03
-**Status**: Phase 2 In Progress
-**Next Review**: After Phase 2 completion
+**Status**: Phase 2 Complete
+**Next Review**: After Phase 3 completion

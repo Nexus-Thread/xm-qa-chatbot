@@ -12,20 +12,21 @@ description = "LLM-powered QA metrics collection chatbot"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "alembic>=1.13.0",
-    "openai>=1.40.0",
-    "pydantic>=2.8.0",
-    "SQLAlchemy>=2.0",
+    "alembic>=1.18.3",
+    "gradio>=6.5.1",
+    "openai>=2.16.0",
+    "pydantic>=2.12.5",
+    "SQLAlchemy>=2.0.46",
 ]
 
 [dependency-groups]
 dev = [
-    "mypy>=1.15.0",
+    "mypy>=1.19.1",
     "pre-commit>=4.5.1",
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
     "pytest-xdist>=3.8.0",
-    "ruff>=0.14.14",
+    "ruff>=0.15.0",
 ]
 
 [tool.pytest.ini_options]

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import time
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from openai import APIError
 from pydantic import BaseModel, ValidationError
@@ -40,10 +40,10 @@ from .schemas import (
     TimeWindowSchema,
 )
 
+SchemaT = TypeVar("SchemaT", bound=BaseModel)
+
 if TYPE_CHECKING:
     from datetime import date
-
-    from openai import OpenAI
 
 
 @dataclass(frozen=True)
@@ -72,7 +72,7 @@ class OpenAIAdapter(LLMPort):
     def __init__(
         self,
         settings: OpenAISettings,
-        client: OpenAI | None = None,
+        client: Any | None = None,
     ) -> None:
         """Initialize the adapter configuration."""
         self._settings = settings
@@ -236,7 +236,7 @@ class OpenAIAdapter(LLMPort):
             raise LLMExtractionError(msg) from err
 
     @staticmethod
-    def _parse_schema(payload: dict[str, Any], schema: type[BaseModel]) -> BaseModel:
+    def _parse_schema(payload: dict[str, Any], schema: type[SchemaT]) -> SchemaT:
         """Validate payload against a Pydantic schema."""
         try:
             return schema.model_validate(payload)
