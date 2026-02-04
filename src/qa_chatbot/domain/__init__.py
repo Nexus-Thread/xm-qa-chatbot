@@ -3,7 +3,9 @@
 from .entities import Submission, TeamData
 from .exceptions import (
     AmbiguousExtractionError,
+    DashboardRenderError,
     DomainError,
+    InvalidConfigurationError,
     InvalidDailyUpdateError,
     InvalidProjectStatusError,
     InvalidQAMetricsError,
@@ -19,7 +21,9 @@ from .value_objects import DailyUpdate, ProjectStatus, QAMetrics, TeamId, TimeWi
 __all__ = [
     "AmbiguousExtractionError",
     "DailyUpdate",
+    "DashboardRenderError",
     "DomainError",
+    "InvalidConfigurationError",
     "InvalidDailyUpdateError",
     "InvalidProjectStatusError",
     "InvalidQAMetricsError",

@@ -20,6 +20,6 @@ class ValidationService:
         daily_update: DailyUpdate | None,
     ) -> None:
         """Ensure at least one data section is present."""
-        if not any([qa_metrics, project_status, daily_update]):
+        if not (qa_metrics or project_status or daily_update):
             msg = "Submission must include at least one data section"
             raise MissingSubmissionDataError(msg)

@@ -18,15 +18,16 @@ class DailyUpdate:
 
     def __post_init__(self) -> None:
         """Validate daily update values."""
+        self._ensure_non_empty_items(self.completed_tasks, "Completed tasks")
+        self._ensure_non_empty_items(self.planned_tasks, "Planned tasks")
+        self._ensure_non_empty_items(self.issues, "Issues")
         if self.capacity_hours is not None and self.capacity_hours < 0:
             msg = "Capacity hours must be non-negative"
             raise InvalidDailyUpdateError(msg)
-        if any(not item.strip() for item in self.completed_tasks):
-            msg = "Completed tasks must not include empty items"
-            raise InvalidDailyUpdateError(msg)
-        if any(not item.strip() for item in self.planned_tasks):
-            msg = "Planned tasks must not include empty items"
-            raise InvalidDailyUpdateError(msg)
-        if any(not item.strip() for item in self.issues):
-            msg = "Issues must not include empty items"
+
+    @staticmethod
+    def _ensure_non_empty_items(items: tuple[str, ...], label: str) -> None:
+        """Ensure each entry is non-empty after trimming."""
+        if any(not item.strip() for item in items):
+            msg = f"{label} must not include empty items"
             raise InvalidDailyUpdateError(msg)
