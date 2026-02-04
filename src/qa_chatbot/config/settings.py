@@ -44,7 +44,7 @@ class AppSettings(BaseSettings):
     def load(cls) -> Self:
         """Load settings and surface configuration errors cleanly."""
         try:
-            return cls()
+            return cls()  # type: ignore[call-arg]
         except Exception as exc:  # pragma: no cover - handled as startup validation
             message = f"Invalid configuration: {exc}"
             raise InvalidConfigurationError(message) from exc

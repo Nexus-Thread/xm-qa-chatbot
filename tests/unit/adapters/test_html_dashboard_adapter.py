@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -12,6 +11,8 @@ from qa_chatbot.adapters.output.dashboard.html import HtmlDashboardAdapter
 from qa_chatbot.domain import DailyUpdate, ProjectStatus, QAMetrics, Submission, TeamId, TimeWindow
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter
 
 

@@ -63,7 +63,7 @@ This document lists only unfinished work as of 2026-02-04.
 
 ### Testing & Quality Gate
 - [x] Generate coverage report (target >80%)
-  - [x] `pytest --cov=src --cov-report=term-missing` (71% overall; gaps in gradio adapters, logging config, settings, main)
+  - [x] `pytest --cov=src --cov-report=term-missing` (79% overall; gaps in gradio adapter/conversation manager and LLM adapter)
 - [x] Run integration smoke tests
   - [x] `pytest tests/integration/`
 - [x] Run local quality gate per `.clinerules/09-tooling-and-ci.md`
@@ -77,7 +77,7 @@ This document lists only unfinished work as of 2026-02-04.
 ## Open Success Criteria
 
 - [x] Documentation complete (ADRs + `docs/ports.md` + README updates)
-- [ ] Migration path to OpenAI validated (adapter retries + config documented)
+- [x] Migration path to OpenAI validated (adapter retries + config documented)
 - [x] Coverage report generated (>80%) with gaps identified
 - [x] Integration smoke tests passing
 - [x] Dashboard HTML served locally via documented command
@@ -86,5 +86,5 @@ This document lists only unfinished work as of 2026-02-04.
 
 ## Next Immediate Tasks
 
-1. Address coverage gaps (focus: gradio adapter, logging config, settings, main).
-2. Validate OpenAI migration path and document retry/config expectations.
+1. Address remaining coverage gaps (gradio adapter/conversation manager, OpenAI adapter).
+2. Proceed with error tracking, security, and performance tasks in Phase 5.

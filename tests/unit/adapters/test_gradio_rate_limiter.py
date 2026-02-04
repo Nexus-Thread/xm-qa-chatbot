@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from qa_chatbot.adapters.input.gradio.adapter import _RateLimiter
+from qa_chatbot.adapters.input.gradio.adapter import _RateLimiter, _sanitize_input
 from qa_chatbot.adapters.input.gradio.conversation_manager import ConversationSession
 
 
@@ -44,3 +44,10 @@ def test_rate_limiter_resets_after_window(monkeypatch: MonkeyPatch) -> None:
     fake_datetime_later = type("Fake", (), {"now": classmethod(fake_now_later)})
     monkeypatch.setattr("qa_chatbot.adapters.input.gradio.adapter.datetime", fake_datetime_later)
     assert limiter.allow(session) is True
+
+
+def test_sanitize_input_trims_and_limits_length() -> None:
+    """Trim whitespace and enforce max length."""
+    message = "  hello world  "
+    assert _sanitize_input(message, max_chars=20) == "hello world"
+    assert _sanitize_input(message, max_chars=5) == "hello"

@@ -30,6 +30,16 @@ Then open `http://127.0.0.1:8000/overview.html` in your browser.
 Copy `.env.example` to `.env` and adjust values as needed. Environment variables override `.env` values.
 The application validates configuration at startup and will raise an error if values are missing or invalid.
 
+## OpenAI migration notes
+
+The LLM adapter uses an OpenAI-compatible API. To switch from a local provider (e.g. Ollama) to OpenAI:
+
+1. Set `OPENAI_BASE_URL` to `https://api.openai.com/v1`.
+2. Set `OPENAI_API_KEY` to your OpenAI API key.
+3. Update `OPENAI_MODEL` to an OpenAI chat model (e.g., `gpt-4o-mini`).
+
+Retries use exponential backoff defined in `src/qa_chatbot/adapters/output/llm/openai/retry_logic.py`.
+
 ## Environment variables
 
 | Variable | Default | Description |

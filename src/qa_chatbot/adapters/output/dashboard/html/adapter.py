@@ -13,7 +13,7 @@ from qa_chatbot.application.use_cases import GetDashboardDataUseCase
 from qa_chatbot.domain.exceptions import DashboardRenderError
 
 if TYPE_CHECKING:
-    from qa_chatbot.application.dtos import TrendsDashboardData, TrendSeries
+    from qa_chatbot.application.dtos import TeamDetailDashboardData, TrendsDashboardData, TrendSeries
     from qa_chatbot.domain import TeamId, TimeWindow
 
 
@@ -106,7 +106,7 @@ class HtmlDashboardAdapter(DashboardPort):
         return {"label": label, "values": list(values)}
 
     @staticmethod
-    def _build_team_detail_chart_payload(data: object) -> dict[str, object]:
+    def _build_team_detail_chart_payload(data: TeamDetailDashboardData) -> dict[str, object]:
         """Build JSON payloads for the team detail charts."""
         snapshots = data.snapshots
         return {
