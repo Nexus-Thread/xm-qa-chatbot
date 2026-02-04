@@ -15,7 +15,6 @@ def test_main_wires_components(monkeypatch: pytest.MonkeyPatch) -> None:
     """Ensure main constructs adapters and launches Gradio."""
     settings = MagicMock(
         log_level="INFO",
-        log_format="json",
         database_url="sqlite:///./qa_chatbot.db",
         database_echo=False,
         dashboard_output_dir="./dashboard_html",

@@ -54,7 +54,6 @@ Retries use exponential backoff defined in `src/qa_chatbot/adapters/output/llm/o
 | `GRADIO_SERVER_PORT` | `7860` | Gradio server port. |
 | `GRADIO_SHARE` | `false` | Generate a public Gradio share link. |
 | `LOG_LEVEL` | `INFO` | Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`). |
-| `LOG_FORMAT` | `json` | Log format (`json` or `text`). |
 | `INPUT_MAX_CHARS` | `2000` | Max characters accepted per chat message. |
 | `RATE_LIMIT_REQUESTS` | `8` | Max messages per session within the rate limit window. |
 | `RATE_LIMIT_WINDOW_SECONDS` | `60` | Rate limit window size in seconds. |

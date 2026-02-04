@@ -25,7 +25,6 @@ class AppSettings(BaseSettings):
     server_port: int = Field(7860, validation_alias="GRADIO_SERVER_PORT", ge=1, le=65535)
     share: bool = Field(default=False, validation_alias="GRADIO_SHARE")
     log_level: str = Field("INFO", validation_alias="LOG_LEVEL")
-    log_format: str = Field("json", validation_alias="LOG_FORMAT")
     input_max_chars: int = Field(2000, validation_alias="INPUT_MAX_CHARS", ge=1, le=10000)
     rate_limit_requests: int = Field(8, validation_alias="RATE_LIMIT_REQUESTS", ge=1, le=100)
     rate_limit_window_seconds: int = Field(60, validation_alias="RATE_LIMIT_WINDOW_SECONDS", ge=1, le=3600)
@@ -41,7 +40,6 @@ class AppSettings(BaseSettings):
         self._validate_non_empty("OPENAI_MODEL", self.openai_model)
         self._validate_non_empty("DATABASE_URL", self.database_url)
         self._validate_choice("LOG_LEVEL", self.log_level, {"DEBUG", "INFO", "WARNING", "ERROR"})
-        self._validate_choice("LOG_FORMAT", self.log_format, {"json", "text"})
 
     @classmethod
     def load(cls) -> Self:
