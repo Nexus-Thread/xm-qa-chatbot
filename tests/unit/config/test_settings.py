@@ -13,7 +13,7 @@ def test_settings_loads_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("OPENAI_BASE_URL", raising=False)
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("OPENAI_MODEL", raising=False)
-    settings = AppSettings()  # type: ignore[call-arg]
+    settings = AppSettings()
 
     assert settings.openai_base_url
     assert settings.openai_api_key

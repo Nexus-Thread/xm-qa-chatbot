@@ -54,7 +54,7 @@ class SQLiteAdapter(StoragePort):
     def get_all_teams(self) -> list[TeamId]:
         """Return all team identifiers in sorted order."""
         statement = select(SubmissionModel.team_id).distinct().order_by(SubmissionModel.team_id)
-        rows = self._execute_scalar(statement)
+        rows: list[str] = self._execute_scalar(statement)
         return [TeamId(value) for value in rows]
 
     def get_submissions_by_month(self, month: TimeWindow) -> list[Submission]:
@@ -65,7 +65,7 @@ class SQLiteAdapter(StoragePort):
     def get_recent_months(self, limit: int) -> list[TimeWindow]:
         """Return most recent reporting months in descending order."""
         statement = select(SubmissionModel.month).distinct().order_by(SubmissionModel.month.desc()).limit(limit)
-        rows = self._execute_scalar(statement)
+        rows: list[str] = self._execute_scalar(statement)
         return [time_window_from_iso(month) for month in rows]
 
     @property
@@ -75,7 +75,7 @@ class SQLiteAdapter(StoragePort):
 
     def _execute_and_map(self, statement: Select) -> list[Submission]:
         """Execute a query and map ORM rows to domain submissions."""
-        models = self._execute_scalar(statement)
+        models: list[SubmissionModel] = self._execute_scalar(statement)
         return [model_to_submission(model) for model in models]
 
     def _execute_scalar(self, statement: Select[tuple[ScalarType]]) -> list[ScalarType]:
