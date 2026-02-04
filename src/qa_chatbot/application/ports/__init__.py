@@ -1,5 +1,5 @@
 """Application ports."""
 
-from .output import DashboardPort, LLMPort, StoragePort
+from .output import DashboardPort, LLMPort, MetricsPort, StoragePort
 
-__all__ = ["DashboardPort", "LLMPort", "StoragePort"]
+__all__ = ["DashboardPort", "LLMPort", "MetricsPort", "StoragePort"]

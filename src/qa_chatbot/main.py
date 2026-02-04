@@ -6,7 +6,14 @@ from pathlib import Path
 
 from qa_chatbot.adapters.input import GradioAdapter, GradioSettings
 from qa_chatbot.adapters.input.gradio.conversation_manager import ConversationManager
-from qa_chatbot.adapters.output import HtmlDashboardAdapter, OpenAIAdapter, SQLiteAdapter
+from qa_chatbot.adapters.output import (
+    HealthCheckAdapter,
+    HealthCheckSettings,
+    HtmlDashboardAdapter,
+    InMemoryMetricsAdapter,
+    OpenAIAdapter,
+    SQLiteAdapter,
+)
 from qa_chatbot.adapters.output.llm.openai import OpenAISettings
 from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitTeamDataUseCase
 from qa_chatbot.config import AppSettings, LoggingSettings, configure_logging
@@ -34,11 +41,29 @@ def main() -> None:
             model=settings.openai_model,
         )
     )
-    extractor = ExtractStructuredDataUseCase(llm_port=llm_adapter)
-    submitter = SubmitTeamDataUseCase(storage_port=storage, dashboard_port=dashboard_adapter)
+    metrics_adapter = InMemoryMetricsAdapter()
+    extractor = ExtractStructuredDataUseCase(llm_port=llm_adapter, metrics_port=metrics_adapter)
+    submitter = SubmitTeamDataUseCase(
+        storage_port=storage,
+        dashboard_port=dashboard_adapter,
+        metrics_port=metrics_adapter,
+    )
     manager = ConversationManager(extractor=extractor, submitter=submitter)
 
-    gradio_settings = GradioSettings(server_port=settings.server_port, share=settings.share)
+    health_check = HealthCheckAdapter(
+        storage_port=storage,
+        metrics_adapter=metrics_adapter,
+        settings=HealthCheckSettings(port=settings.healthcheck_port),
+    )
+    health_check.start()
+
+    gradio_settings = GradioSettings(
+        server_port=settings.server_port,
+        share=settings.share,
+        input_max_chars=settings.input_max_chars,
+        rate_limit_requests=settings.rate_limit_requests,
+        rate_limit_window_seconds=settings.rate_limit_window_seconds,
+    )
     GradioAdapter(manager=manager, settings=gradio_settings).launch()
 
 

@@ -6,7 +6,6 @@ An LLM-powered conversational data collection system where teams submit QA metri
 
 **Core Architecture**: Hexagonal (ports & adapters)
 **Primary Technologies**: Python 3.11+, Gradio, OpenAI SDK (Ollama/OpenAI), SQLite, Jinja2
-**Deployment**: Docker containerized
 
 ---
 
@@ -23,8 +22,8 @@ An LLM-powered conversational data collection system where teams submit QA metri
 - [ ] **Phase 5**: Polish & Production Readiness (Week 5)
 
 ### Next Immediate Tasks
-1. Implement production readiness items (logging, Docker)
-2. Extend documentation for deployment and contribution workflows
+1. Finalize remaining Phase 5 items (coverage report, integration smoke tests)
+2. Document ADRs and API docs (ports)
 
 **Blockers**: None
 
@@ -379,7 +378,7 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
 
 ### Phase 5: Polish & Production Readiness (Week 5)
 
-**Goal**: Production-grade deployment and documentation
+**Goal**: Production-grade reliability and documentation
 
 #### Tasks
 
@@ -391,31 +390,25 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
 **2. Error Handling & Observability**
 - [x] Implement structured logging (JSON format) (deferred from Phase 3)
 - [ ] Set up error tracking and alerting
-- [ ] Add metrics collection (submission counts, LLM latency)
-- [ ] Create health check endpoint
+- [x] Add metrics collection (submission counts, LLM latency)
+- [x] Create health check endpoint
 
-**3. Docker Deployment**
-- [ ] Create multi-stage Dockerfile
-- [ ] Set up Docker Compose for local development
-- [ ] Configure volume mounting for persistence
-- [ ] Document environment configuration
-
-**4. Documentation**
-- [ ] Write comprehensive `README.md` (setup, usage, configuration)
+**3. Documentation**
+- [x] Update README with health checks, metrics, and security safeguards
 - [ ] Document ADRs for key decisions
 - [ ] Create API documentation for ports
 
-**5. Security**
+**4. Security**
 - [ ] Implement API key management (environment variables, secrets)
-- [ ] Add input sanitization
-- [ ] Configure rate limiting for Gradio
+- [x] Add input sanitization
+- [x] Configure rate limiting for Gradio
 
-**6. Performance**
+**5. Performance**
 - [ ] Add database indexing
 - [ ] Implement LLM response caching (optional)
 - [ ] Create dashboard caching strategy
 
-**7. Testing & Quality Gate**
+**6. Testing & Quality Gate**
 - [x] Run full test suite execution (ruff, mypy, pytest)
 - [ ] Generate coverage report (aim for >80%)
 - [x] Execute linting and type checking
@@ -608,69 +601,16 @@ GRADIO_SHARE=false                          # Public link
 # Logging
 LOG_LEVEL=INFO
 LOG_FORMAT=json                             # json or text
+
+# Health checks & safeguards
+HEALTHCHECK_PORT=8081
+INPUT_MAX_CHARS=2000
+RATE_LIMIT_REQUESTS=8
+RATE_LIMIT_WINDOW_SECONDS=60
 ```
 
 ---
 
-## Deployment Architecture
-
-### Local Development
-
-```bash
-# Start Ollama (separate terminal)
-ollama serve
-
-# Pull model
-ollama pull llama2
-
-# Start chatbot
-python -m qa_chatbot.main
-
-# Access: http://localhost:7860
-```
-
-### Docker Deployment
-
-```yaml
-# docker-compose.yml
-version: '3.8'
-
-services:
-  chatbot:
-    build: .
-    ports:
-      - "7860:7860"
-    environment:
-      - OPENAI_BASE_URL=http://ollama:11434/v1
-      - DATABASE_URL=sqlite:////data/qa_chatbot.db
-      - DASHBOARD_OUTPUT_DIR=/output
-    volumes:
-      - chatbot-data:/data
-      - dashboard-output:/output
-    depends_on:
-      - ollama
-
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama-data:/root/.ollama
-
-  dashboard-server:
-    image: nginx:alpine
-    ports:
-      - "8080:80"
-    volumes:
-      - dashboard-output:/usr/share/nginx/html:ro
-
-volumes:
-  chatbot-data:
-  ollama-data:
-  dashboard-output:
-```
-
----
 
 ## Migration Path: Ollama → OpenAI
 
@@ -741,8 +681,8 @@ Key decisions to document:
 - [x] Responsive design
 
 ### Phase 5
-- [ ] Docker deployment working
 - [ ] Documentation complete
+- [x] Observability + safeguards implemented (metrics, health checks, rate limiting)
 - [x] Quality gate passing (lint, type, test)
 - [ ] Migration path to OpenAI validated
 

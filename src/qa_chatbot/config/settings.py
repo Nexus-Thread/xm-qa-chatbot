@@ -26,6 +26,10 @@ class AppSettings(BaseSettings):
     share: bool = Field(default=False, validation_alias="GRADIO_SHARE")
     log_level: str = Field("INFO", validation_alias="LOG_LEVEL")
     log_format: str = Field("json", validation_alias="LOG_FORMAT")
+    healthcheck_port: int = Field(8081, validation_alias="HEALTHCHECK_PORT", ge=1, le=65535)
+    input_max_chars: int = Field(2000, validation_alias="INPUT_MAX_CHARS", ge=1, le=10000)
+    rate_limit_requests: int = Field(8, validation_alias="RATE_LIMIT_REQUESTS", ge=1, le=100)
+    rate_limit_window_seconds: int = Field(60, validation_alias="RATE_LIMIT_WINDOW_SECONDS", ge=1, le=3600)
 
     def model_post_init(self, __context: object, /) -> None:
         """Validate non-empty values after parsing."""
