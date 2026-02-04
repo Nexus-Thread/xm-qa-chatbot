@@ -12,6 +12,11 @@
    ```
 3. Open the UI at `http://localhost:7860`.
 
+## Configuration
+
+Copy `.env.example` to `.env` and adjust values as needed. Environment variables override `.env` values.
+The application validates configuration at startup and will raise an error if values are missing or invalid.
+
 ## Environment variables
 
 | Variable | Default | Description |

@@ -12,19 +12,19 @@ An LLM-powered conversational data collection system where teams submit QA metri
 
 ## Progress Overview
 
-**Current Phase**: Phase 4 - Dashboard Generation
-**Overall Completion**: 3/5 phases complete (Phase 3 complete)
+**Current Phase**: Phase 5 - Polish & Production Readiness
+**Overall Completion**: 4/5 phases complete (Phase 4 complete)
 
 ### Implementation Phases Status
 - [x] **Phase 1**: Core Domain & Storage Foundation (Week 1)
 - [x] **Phase 2**: LLM Integration & Extraction (Week 2)
 - [x] **Phase 3**: Gradio Chatbot Interface (Week 3)
-- [ ] **Phase 4**: Dashboard Generation (Week 4)
+- [x] **Phase 4**: Dashboard Generation (Week 4)
 - [ ] **Phase 5**: Polish & Production Readiness (Week 5)
 
 ### Next Immediate Tasks
-1. Define DashboardPort and HTML adapter scope
-2. Build dashboard templates and aggregation use cases
+1. Implement production readiness items (logging, config validation, Docker)
+2. Extend documentation for deployment and contribution workflows
 
 **Blockers**: None
 
@@ -325,8 +325,8 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
 #### Tasks
 
 **1. Dashboard Port Definition**
-- [ ] Define `DashboardPort` protocol interface
-- [ ] Document dashboard generation methods
+- [x] Define `DashboardPort` protocol interface
+- [x] Document dashboard generation methods
    ```python
    class DashboardPort(Protocol):
        def generate_overview(self, month: TimeWindow) -> Path: ...
@@ -335,35 +335,43 @@ User → Gradio → ConversationPort → SubmitTeamDataUseCase
    ```
 
 **2. HTML Templates (Jinja2)**
-- [ ] Create overview template with cards for each team's latest submission
-- [ ] Create team detail template with historical data and charts
-- [ ] Create trends template with cross-team comparison and time-series analysis
-- [ ] Set up Jinja2 template engine
+- [x] Create overview template with cards for each team's latest submission
+- [x] Create team detail template with historical data and charts
+- [x] Create trends template with cross-team comparison and time-series analysis
+- [x] Set up Jinja2 template engine
 
 **3. Data Aggregation**
-- [ ] Implement `GetDashboardDataQuery` use case
-- [ ] Create aggregation logic for metrics
-- [ ] Implement trend calculation (week-over-week, month-over-month)
+- [x] Implement `GetDashboardDataQuery` use case
+- [x] Create aggregation logic for metrics
+- [x] Implement trend calculation (month-over-month trend series)
 
 **4. Static Assets**
-- [ ] Integrate CSS framework (Tailwind or Bootstrap)
-- [ ] Add JavaScript for interactivity (Chart.js for visualizations)
-- [ ] Implement responsive design
+- [x] Integrate CSS framework (Tailwind)
+- [x] Add JavaScript for interactivity (Chart.js for visualizations)
+- [x] Implement responsive design
 
 **5. Dashboard Update Strategy**
-- [ ] Implement event-driven regeneration on new submission
+- [x] Implement event-driven regeneration on new submission
 - [ ] Add optional scheduled periodic updates (cron job)
-- [ ] Implement atomic file replacement for zero-downtime updates
+- [x] Implement atomic file replacement for zero-downtime updates
 
 **6. File Output**
-- [ ] Configure output directory
+- [x] Configure output directory
 - [ ] Set up static file server (optional: simple HTTP server)
 - [ ] Add cloud storage integration (optional: S3, GCS)
 
 **7. Testing**
 - [ ] Write snapshot tests for HTML output
 - [ ] Add visual regression tests (optional: Playwright)
-- [ ] Test data aggregation logic
+- [x] Test data aggregation logic
+
+**Phase 4 Notes (Completed)**
+- Added HTML dashboard adapter with Jinja2 templates (overview, team detail, trends).
+- Implemented dashboard aggregation use case and DTOs.
+- Wired dashboard regeneration into the submission flow and main configuration.
+- Added dashboard output directory configuration and documented it.
+- Added unit tests for dashboard aggregation and updated fakes/fixtures.
+- Quality gate run: `ruff format .`, `ruff check . --fix`, `ruff check .`, `mypy src/ tests/`, `pytest tests/`.
 
 **Deliverable**: Multi-view dashboard with auto-updates
 
@@ -729,9 +737,9 @@ Key decisions to document:
 - [x] E2E test for full submission flow
 
 ### Phase 4
-- [ ] Three dashboard views (overview, team, trends)
-- [ ] Auto-regeneration on new submissions
-- [ ] Responsive design
+- [x] Three dashboard views (overview, team, trends)
+- [x] Auto-regeneration on new submissions
+- [x] Responsive design
 
 ### Phase 5
 - [ ] Docker deployment working
@@ -819,6 +827,6 @@ open dashboard_html/overview.html
 ---
 
 **Document Version**: 1.1
-**Last Updated**: 2026-02-03
-**Status**: Phase 3 Complete
-**Next Review**: After Phase 4 completion
+**Last Updated**: 2026-02-04
+**Status**: Phase 4 Complete
+**Next Review**: After Phase 5 completion
