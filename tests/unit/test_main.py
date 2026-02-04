@@ -22,7 +22,6 @@ def test_main_wires_components(monkeypatch: pytest.MonkeyPatch) -> None:
         openai_base_url="http://localhost",
         openai_api_key="test",
         openai_model="gpt-test",
-        healthcheck_port=8081,
         server_port=7860,
         share=False,
         input_max_chars=2000,
@@ -40,13 +39,10 @@ def test_main_wires_components(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(main_module, "ExtractStructuredDataUseCase", lambda **_: MagicMock())
     monkeypatch.setattr(main_module, "SubmitTeamDataUseCase", lambda **_: MagicMock())
     monkeypatch.setattr(main_module, "ConversationManager", lambda **_: MagicMock())
-    health_check = MagicMock()
-    monkeypatch.setattr(main_module, "HealthCheckAdapter", lambda **_: health_check)
     gradio_adapter = MagicMock()
     monkeypatch.setattr(main_module, "GradioAdapter", lambda **_: gradio_adapter)
 
     main_module.main()
 
     fake_storage.initialize_schema.assert_called_once()
-    health_check.start.assert_called_once()
     gradio_adapter.launch.assert_called_once()

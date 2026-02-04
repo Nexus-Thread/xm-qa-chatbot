@@ -7,8 +7,6 @@ from pathlib import Path
 from qa_chatbot.adapters.input import GradioAdapter, GradioSettings
 from qa_chatbot.adapters.input.gradio.conversation_manager import ConversationManager
 from qa_chatbot.adapters.output import (
-    HealthCheckAdapter,
-    HealthCheckSettings,
     HtmlDashboardAdapter,
     InMemoryMetricsAdapter,
     OpenAIAdapter,
@@ -49,13 +47,6 @@ def main() -> None:
         metrics_port=metrics_adapter,
     )
     manager = ConversationManager(extractor=extractor, submitter=submitter)
-
-    health_check = HealthCheckAdapter(
-        storage_port=storage,
-        metrics_adapter=metrics_adapter,
-        settings=HealthCheckSettings(port=settings.healthcheck_port),
-    )
-    health_check.start()
 
     gradio_settings = GradioSettings(
         server_port=settings.server_port,

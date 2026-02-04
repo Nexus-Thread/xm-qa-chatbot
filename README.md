@@ -13,7 +13,6 @@ Project navigation map: [docs/project-navigation.md](docs/project-navigation.md)
    python -m qa_chatbot.main
    ```
 3. Open the UI at `http://localhost:7860`.
-4. Health check endpoint: `http://localhost:8081/health`.
 
 ## Dashboard HTML
 
@@ -56,14 +55,12 @@ Retries use exponential backoff defined in `src/qa_chatbot/adapters/output/llm/o
 | `GRADIO_SHARE` | `false` | Generate a public Gradio share link. |
 | `LOG_LEVEL` | `INFO` | Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`). |
 | `LOG_FORMAT` | `json` | Log format (`json` or `text`). |
-| `HEALTHCHECK_PORT` | `8081` | Port for the HTTP health check endpoint. |
 | `INPUT_MAX_CHARS` | `2000` | Max characters accepted per chat message. |
 | `RATE_LIMIT_REQUESTS` | `8` | Max messages per session within the rate limit window. |
 | `RATE_LIMIT_WINDOW_SECONDS` | `60` | Rate limit window size in seconds. |
 
 ## Observability and safeguards
 
-- **Metrics**: The app tracks submission counts and recent LLM latency in memory and includes them in the `/health` payload.
-- **Health checks**: `/health` reports database connectivity and recent metrics.
+- **Metrics**: The app tracks submission counts and recent LLM latency in memory.
 - **Rate limiting**: Per-session sliding window rate limiter (defaults to 8 messages/minute).
 - **Input limits**: Messages are trimmed to `INPUT_MAX_CHARS` to prevent oversized payloads.

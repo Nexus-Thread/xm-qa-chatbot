@@ -35,8 +35,6 @@
   - `output/dashboard/html/` - Static HTML dashboard renderer
     - `adapter.py` - HTML dashboard adapter
     - `templates/` - Jinja templates
-  - `output/health/` - Health check adapter
-    - `adapter.py` - Health endpoint payload assembly
   - `output/llm/openai/` - OpenAI-compatible LLM adapter
     - `adapter.py` - LLM adapter implementation
     - `client.py` - OpenAI client wrapper
@@ -55,7 +53,7 @@
   - `logging_config.py` - Logging setup
 
 ## Entry Points
-- `python -m qa_chatbot.main` - Gradio UI + health endpoint bootstrap
+- `python -m qa_chatbot.main` - Gradio UI bootstrap
 - `scripts/serve_dashboard.py` - Serve generated HTML dashboards
 
 ## Test Structure
