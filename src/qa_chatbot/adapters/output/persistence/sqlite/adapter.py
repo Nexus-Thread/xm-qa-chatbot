@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import logging
 from contextlib import contextmanager
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
@@ -11,7 +12,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from qa_chatbot.application.ports import StoragePort
 from qa_chatbot.domain import Submission, TeamId, TimeWindow
 
-from .mappers import model_to_submission, submission_to_model
+from .mappers import model_to_submission, submission_to_model, time_window_from_iso
 from .models import Base, SubmissionModel
 
 if TYPE_CHECKING:
@@ -19,6 +20,8 @@ if TYPE_CHECKING:
 
     from sqlalchemy.engine import Engine
     from sqlalchemy.sql import Select
+
+    ScalarType = TypeVar("ScalarType")
 
 
 class SQLiteAdapter(StoragePort):
@@ -28,6 +31,7 @@ class SQLiteAdapter(StoragePort):
         """Initialize the adapter with a database connection."""
         self._engine = create_engine(database_url, echo=echo, future=True)
         self._session_factory = sessionmaker(bind=self._engine, expire_on_commit=False)
+        self._logger = logging.getLogger(self.__class__.__name__)
 
     def initialize_schema(self) -> None:
         """Create database tables if needed."""
@@ -50,8 +54,7 @@ class SQLiteAdapter(StoragePort):
     def get_all_teams(self) -> list[TeamId]:
         """Return all team identifiers in sorted order."""
         statement = select(SubmissionModel.team_id).distinct().order_by(SubmissionModel.team_id)
-        with self._session_scope() as session:
-            rows = session.execute(statement).scalars().all()
+        rows = self._execute_scalar(statement)
         return [TeamId(value) for value in rows]
 
     def get_submissions_by_month(self, month: TimeWindow) -> list[Submission]:
@@ -62,13 +65,8 @@ class SQLiteAdapter(StoragePort):
     def get_recent_months(self, limit: int) -> list[TimeWindow]:
         """Return most recent reporting months in descending order."""
         statement = select(SubmissionModel.month).distinct().order_by(SubmissionModel.month.desc()).limit(limit)
-        with self._session_scope() as session:
-            rows = session.execute(statement).scalars().all()
-        months = []
-        for month in rows:
-            year, month_value = month.split("-")
-            months.append(TimeWindow.from_year_month(int(year), int(month_value)))
-        return months
+        rows = self._execute_scalar(statement)
+        return [time_window_from_iso(month) for month in rows]
 
     @property
     def engine(self) -> Engine:
@@ -77,9 +75,13 @@ class SQLiteAdapter(StoragePort):
 
     def _execute_and_map(self, statement: Select) -> list[Submission]:
         """Execute a query and map ORM rows to domain submissions."""
-        with self._session_scope() as session:
-            models = session.execute(statement).scalars().all()
+        models = self._execute_scalar(statement)
         return [model_to_submission(model) for model in models]
+
+    def _execute_scalar(self, statement: Select[tuple[ScalarType]]) -> list[ScalarType]:
+        """Execute a statement and return scalar rows."""
+        with self._session_scope() as session:
+            return list(session.execute(statement).scalars().all())
 
     @contextmanager
     def _session_scope(self) -> Iterator[Session]:
@@ -89,6 +91,7 @@ class SQLiteAdapter(StoragePort):
             yield session
             session.commit()
         except Exception:
+            self._logger.exception("SQLite session error")
             session.rollback()
             raise
         finally:

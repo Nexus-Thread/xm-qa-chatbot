@@ -33,7 +33,7 @@ def model_to_submission(model: SubmissionModel) -> Submission:
     return Submission(
         id=UUID(model.id),
         team_id=TeamId(model.team_id),
-        month=_time_window_from_iso(model.month),
+        month=time_window_from_iso(model.month),
         qa_metrics=_qa_metrics_from_dict(model.qa_metrics),
         project_status=_project_status_from_dict(model.project_status),
         daily_update=_daily_update_from_dict(model.daily_update),
@@ -112,6 +112,7 @@ def _daily_update_from_dict(payload: dict | None) -> DailyUpdate | None:
     )
 
 
-def _time_window_from_iso(value: str) -> TimeWindow:
+def time_window_from_iso(value: str) -> TimeWindow:
+    """Parse YYYY-MM into a TimeWindow."""
     year_str, month_str = value.split("-")
     return TimeWindow.from_year_month(year=int(year_str), month=int(month_str))

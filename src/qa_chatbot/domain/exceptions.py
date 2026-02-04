@@ -42,10 +42,7 @@ class AmbiguousExtractionError(LLMExtractionError):
 
     def __init__(self, label: str, *, is_missing: bool) -> None:
         """Initialize error message for ambiguous extraction."""
-        if is_missing:
-            message = f"Missing {label} in LLM response"
-        else:
-            message = f"Ambiguous {label} in LLM response"
+        message = f"Missing {label} in LLM response" if is_missing else f"Ambiguous {label} in LLM response"
         super().__init__(message)
 
 
