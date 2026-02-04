@@ -1,5 +1,7 @@
 # xm-qa-chatbot
 
+Project navigation map: [docs/project-navigation.md](docs/project-navigation.md)
+
 ## Running the chatbot
 
 1. Install dependencies:
