@@ -12,11 +12,7 @@ from qa_chatbot.application.ports import DashboardPort, StoragePort
 from qa_chatbot.application.use_cases import GetDashboardDataUseCase
 
 if TYPE_CHECKING:
-    from qa_chatbot.application.dtos import (
-        OverviewDashboardData,
-        TeamDetailDashboardData,
-        TrendsDashboardData,
-    )
+    from qa_chatbot.application.dtos import TrendsDashboardData, TrendSeries
     from qa_chatbot.domain import TeamId, TimeWindow
 
 
@@ -50,20 +46,22 @@ class HtmlDashboardAdapter(DashboardPort):
     def generate_team_detail(self, team_id: TeamId, months: list[TimeWindow]) -> Path:
         """Generate the team detail dashboard."""
         data = self._use_case.build_team_detail(team_id, months)
+        chart_payload = self._build_team_detail_chart_payload(data)
         file_name = f"team-{team_id.value.lower()}.html"
         return self._render_template(
             template_name="team_detail.html",
             output_name=file_name,
-            context={"data": data},
+            context={"data": data, "chart_payload": chart_payload},
         )
 
     def generate_trends(self, teams: list[TeamId], months: list[TimeWindow]) -> Path:
         """Generate the trends dashboard."""
         data = self._use_case.build_trends(teams, months)
+        chart_payload = self._build_chart_payload(data)
         return self._render_template(
             template_name="trends.html",
             output_name="trends.html",
-            context={"data": data},
+            context={"data": data, "chart_payload": chart_payload},
         )
 
     def _render_template(
@@ -71,7 +69,7 @@ class HtmlDashboardAdapter(DashboardPort):
         *,
         template_name: str,
         output_name: str,
-        context: dict[str, OverviewDashboardData | TeamDetailDashboardData | TrendsDashboardData],
+        context: dict[str, object],
     ) -> Path:
         template = self._environment.get_template(template_name)
         rendered = template.render(**context)
@@ -83,3 +81,35 @@ class HtmlDashboardAdapter(DashboardPort):
         temp_path.write_text(content, encoding="utf-8")
         temp_path.replace(path)
         return path
+
+    def _build_chart_payload(self, data: TrendsDashboardData) -> dict[str, object]:
+        """Build JSON-serializable payloads for chart rendering."""
+        return {
+            "months": [month.to_iso_month() for month in data.months],
+            "qa_metric_series": {
+                metric: [self._series_payload(series) for series in series_list]
+                for metric, series_list in data.qa_metric_series.items()
+            },
+            "project_metric_series": {
+                metric: [self._series_payload(series) for series in series_list]
+                for metric, series_list in data.project_metric_series.items()
+            },
+        }
+
+    @staticmethod
+    def _series_payload(series: TrendSeries) -> dict[str, object]:
+        """Convert a trend series into JSON-safe data."""
+        label = series.label
+        values = series.values
+        return {"label": label, "values": list(values)}
+
+    @staticmethod
+    def _build_team_detail_chart_payload(data: object) -> dict[str, object]:
+        """Build JSON payloads for the team detail charts."""
+        snapshots = data.snapshots
+        return {
+            "labels": [snapshot.month.to_iso_month() for snapshot in snapshots],
+            "tests_passed": [snapshot.qa_metrics["tests_passed"] for snapshot in snapshots],
+            "tests_failed": [snapshot.qa_metrics["tests_failed"] for snapshot in snapshots],
+            "coverage": [snapshot.qa_metrics["test_coverage_percent"] for snapshot in snapshots],
+        }

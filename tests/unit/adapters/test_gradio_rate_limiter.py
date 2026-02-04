@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from qa_chatbot.adapters.input.gradio.adapter import _RateLimiter
 from qa_chatbot.adapters.input.gradio.conversation_manager import ConversationSession
@@ -18,17 +19,21 @@ def test_rate_limiter_allows_until_limit() -> None:
     assert limiter.allow(session) is False
 
 
-def test_rate_limiter_resets_after_window(monkeypatch: object) -> None:
+if TYPE_CHECKING:
+    from _pytest.monkeypatch import MonkeyPatch
+
+
+def test_rate_limiter_resets_after_window(monkeypatch: MonkeyPatch) -> None:
     """Allow requests again after the time window passes."""
     limiter = _RateLimiter(max_requests=1, window_seconds=10)
     session = ConversationSession()
     start = datetime(2026, 1, 1, tzinfo=UTC)
 
-    def fake_now(_: object, tz: object = None) -> datetime:
+    def fake_now(_: object, tz: object | None = None) -> datetime:
         _ = tz
         return start
 
-    def fake_now_later(_: object, tz: object = None) -> datetime:
+    def fake_now_later(_: object, tz: object | None = None) -> datetime:
         _ = tz
         return start.replace(second=start.second + 11)
 

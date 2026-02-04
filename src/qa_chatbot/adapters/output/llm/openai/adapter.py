@@ -200,6 +200,7 @@ class OpenAIAdapter(LLMPort):
         history: list[dict[str, str]] | None = None,
     ) -> dict[str, Any]:
         """Call the OpenAI API and extract JSON content."""
+        client: Any = self._client
         for attempt in range(self._settings.max_retries):
             try:
                 started_at = time.perf_counter()
@@ -208,7 +209,7 @@ class OpenAIAdapter(LLMPort):
                     *self._normalize_history(history),
                     {"role": "user", "content": f"{prompt}\n\nConversation:\n{conversation}"},
                 ]
-                response = self._client.chat.completions.create(
+                response = client.chat.completions.create(
                     model=self._settings.model,
                     messages=messages,
                     response_format={"type": "json_object"},

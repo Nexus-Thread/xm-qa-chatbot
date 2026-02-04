@@ -71,11 +71,11 @@
     </main>
 
     <script>
-      const labels = {{ data.snapshots | map(attribute="month.to_iso_month") | list | tojson }};
+      const labels = {{ chart_payload.labels | tojson }};
       const qaMetrics = {
-        testsPassed: {{ data.snapshots | map(attribute="qa_metrics.tests_passed") | list | tojson }},
-        testsFailed: {{ data.snapshots | map(attribute="qa_metrics.tests_failed") | list | tojson }},
-        coverage: {{ data.snapshots | map(attribute="qa_metrics.test_coverage_percent") | list | tojson }},
+        testsPassed: {{ chart_payload.tests_passed | tojson }},
+        testsFailed: {{ chart_payload.tests_failed | tojson }},
+        coverage: {{ chart_payload.coverage | tojson }},
       };
 
       const ctx = document.getElementById("qaTrendChart");

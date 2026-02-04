@@ -37,10 +37,10 @@
     </main>
 
     <script>
-      const monthLabels = {{ data.months | map(attribute="to_iso_month") | list | tojson }};
-      const coverageSeries = {{ data.qa_metric_series.test_coverage_percent | tojson }};
-      const bugSeries = {{ data.qa_metric_series.bug_count | tojson }};
-      const progressSeries = {{ data.project_metric_series.sprint_progress_percent | tojson }};
+      const monthLabels = {{ chart_payload.months | tojson }};
+      const coverageSeries = {{ chart_payload.qa_metric_series.test_coverage_percent | tojson }};
+      const bugSeries = {{ chart_payload.qa_metric_series.bug_count | tojson }};
+      const progressSeries = {{ chart_payload.project_metric_series.sprint_progress_percent | tojson }};
 
       function buildDatasets(series, colors) {
         return series.map((item, index) => ({

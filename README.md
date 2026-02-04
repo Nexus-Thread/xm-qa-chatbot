@@ -13,6 +13,18 @@
 3. Open the UI at `http://localhost:7860`.
 4. Health check endpoint: `http://localhost:8081/health`.
 
+## Dashboard HTML
+
+Each submission refreshes static dashboard pages under `DASHBOARD_OUTPUT_DIR` (default: `./dashboard_html`).
+
+Serve the generated dashboard HTML locally:
+
+```bash
+python scripts/serve_dashboard.py --directory ./dashboard_html --host 127.0.0.1 --port 8000
+```
+
+Then open `http://127.0.0.1:8000/overview.html` in your browser.
+
 ## Configuration
 
 Copy `.env.example` to `.env` and adjust values as needed. Environment variables override `.env` values.
