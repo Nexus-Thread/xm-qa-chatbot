@@ -5,4 +5,5 @@
 .venv/
 .vscode/
 __pycache__/
+dashboard_html/
 qa_chatbot.db
