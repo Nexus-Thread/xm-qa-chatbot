@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from qa_chatbot.adapters.output.llm.openai import OpenAIAdapter, OpenAISettings
-from qa_chatbot.domain import AmbiguousExtractionError, LLMExtractionError, TeamId, TimeWindow
+from qa_chatbot.domain import AmbiguousExtractionError, LLMExtractionError, ProjectId, TimeWindow
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -74,17 +74,17 @@ class FakeClient:
         self.chat = FakeChat(responses)
 
 
-def test_extract_team_id_parses_response() -> None:
-    """Parse a team identifier from JSON response."""
-    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"team_id": "Team A"}'))])])
+def test_extract_project_id_parses_response() -> None:
+    """Parse a project identifier from JSON response."""
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": "Project A"}'))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeClient(responses),
     )
 
-    result = adapter.extract_team_id("We are Team A")
+    result = adapter.extract_project_id("We are Project A")
 
-    assert result == TeamId("Team A")
+    assert result == ProjectId("Project A")
 
 
 def test_extract_time_window_parses_month() -> None:
@@ -125,25 +125,25 @@ def test_extract_time_window_supports_current_keyword() -> None:
     assert result == TimeWindow.from_year_month(2026, 2)
 
 
-def test_extract_team_id_raises_for_blank_response() -> None:
-    """Raise when team id is missing."""
-    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"team_id": ""}'))])])
+def test_extract_project_id_raises_for_blank_response() -> None:
+    """Raise when project id is missing."""
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": ""}'))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeClient(responses),
     )
 
     with pytest.raises(AmbiguousExtractionError):
-        adapter.extract_team_id("Unknown")
+        adapter.extract_project_id("Unknown")
 
 
-def test_extract_qa_metrics_raises_for_missing_counts() -> None:
-    """Raise when QA metrics counts are missing."""
-    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"tests_passed": null}'))])])
+def test_extract_test_coverage_raises_for_missing_counts() -> None:
+    """Raise when coverage counts are missing."""
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"manual_total": null}'))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeClient(responses),
     )
 
     with pytest.raises(LLMExtractionError):
-        adapter.extract_qa_metrics("No metrics provided")
+        adapter.extract_test_coverage("No metrics provided")

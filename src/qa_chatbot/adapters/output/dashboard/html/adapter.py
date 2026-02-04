@@ -8,13 +8,18 @@ from typing import TYPE_CHECKING
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from qa_chatbot.adapters.output.jira_mock import MockJiraAdapter
+from qa_chatbot.adapters.output.releases_mock import MockReleaseAdapter
 from qa_chatbot.application.ports import DashboardPort, StoragePort
-from qa_chatbot.application.use_cases import GetDashboardDataUseCase
+from qa_chatbot.application.services.reporting_calculations import EdgeCasePolicy
+from qa_chatbot.application.use_cases import GenerateMonthlyReportUseCase, GetDashboardDataUseCase
+from qa_chatbot.config import ReportingConfig
+from qa_chatbot.domain import RegressionTimeEntry
 from qa_chatbot.domain.exceptions import DashboardRenderError
 
 if TYPE_CHECKING:
     from qa_chatbot.application.dtos import TeamDetailDashboardData, TrendsDashboardData, TrendSeries
-    from qa_chatbot.domain import TeamId, TimeWindow
+    from qa_chatbot.domain import ProjectId, TimeWindow
 
 
 @dataclass
@@ -23,6 +28,7 @@ class HtmlDashboardAdapter(DashboardPort):
 
     storage_port: StoragePort
     output_dir: Path
+    report_timezone: str = "UTC"
 
     def __post_init__(self) -> None:
         """Prepare template environment and output directory."""
@@ -34,18 +40,39 @@ class HtmlDashboardAdapter(DashboardPort):
             autoescape=select_autoescape(["html"]),
         )
         self._use_case = GetDashboardDataUseCase(self.storage_port)
+        report_config = ReportingConfig.load(path=Path("config/reporting_config.yaml"))
+        registry = report_config.to_registry()
+        edge_case_policy = EdgeCasePolicy.from_config(report_config.edge_case_policy)
+        regression_suites = tuple(
+            RegressionTimeEntry(
+                category=suite.category,
+                suite_name=suite.name,
+                platform=suite.platform,
+                duration_minutes=120.0,
+            )
+            for suite in report_config.regression_suites
+        )
+        self._report_use_case = GenerateMonthlyReportUseCase(
+            storage_port=self.storage_port,
+            jira_port=MockJiraAdapter(config=report_config),
+            release_port=MockReleaseAdapter(config=report_config),
+            registry=registry,
+            regression_suites=regression_suites,
+            timezone=self.report_timezone,
+            edge_case_policy=edge_case_policy,
+        )
 
     def generate_overview(self, month: TimeWindow) -> Path:
         """Generate the overview dashboard for a month."""
-        data = self._use_case.build_overview(month)
+        report = self._report_use_case.execute(month)
         return self._render_template(
             template_name="overview.html",
             output_name="overview.html",
-            context={"data": data},
+            context={"report": report},
         )
 
-    def generate_team_detail(self, team_id: TeamId, months: list[TimeWindow]) -> Path:
-        """Generate the team detail dashboard."""
+    def generate_team_detail(self, team_id: ProjectId, months: list[TimeWindow]) -> Path:
+        """Generate the project detail dashboard."""
         data = self._use_case.build_team_detail(team_id, months)
         chart_payload = self._build_team_detail_chart_payload(data)
         file_name = f"team-{team_id.value.lower()}.html"
@@ -55,7 +82,7 @@ class HtmlDashboardAdapter(DashboardPort):
             context={"data": data, "chart_payload": chart_payload},
         )
 
-    def generate_trends(self, teams: list[TeamId], months: list[TimeWindow]) -> Path:
+    def generate_trends(self, teams: list[ProjectId], months: list[TimeWindow]) -> Path:
         """Generate the trends dashboard."""
         data = self._use_case.build_trends(teams, months)
         chart_payload = self._build_chart_payload(data)
@@ -111,9 +138,9 @@ class HtmlDashboardAdapter(DashboardPort):
         snapshots = data.snapshots
         return {
             "labels": [snapshot.month.to_iso_month() for snapshot in snapshots],
-            "tests_passed": [snapshot.qa_metrics["tests_passed"] for snapshot in snapshots],
-            "tests_failed": [snapshot.qa_metrics["tests_failed"] for snapshot in snapshots],
-            "coverage": [snapshot.qa_metrics["test_coverage_percent"] for snapshot in snapshots],
+            "manual_total": [snapshot.qa_metrics["manual_total"] for snapshot in snapshots],
+            "automated_total": [snapshot.qa_metrics["automated_total"] for snapshot in snapshots],
+            "percentage_automation": [snapshot.qa_metrics["percentage_automation"] for snapshot in snapshots],
         }
 
     @staticmethod

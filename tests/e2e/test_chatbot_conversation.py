@@ -10,17 +10,17 @@ import pytest
 from qa_chatbot.adapters.input.gradio.conversation_manager import ConversationManager, ConversationSession
 from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitTeamDataUseCase
 from qa_chatbot.application.dtos import ExtractionResult
-from qa_chatbot.domain import DailyUpdate, ProjectStatus, QAMetrics, Submission, TeamId, TimeWindow
+from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWindow
 
 
 @dataclass
 class FakeLLM:
     """Deterministic LLM adapter for testing."""
 
-    def extract_team_id(self, conversation: str) -> TeamId:
-        """Return a fixed team ID."""
+    def extract_project_id(self, conversation: str) -> ProjectId:
+        """Return a fixed project ID."""
         _ = conversation
-        return TeamId("QA Team")
+        return ProjectId("qa-project")
 
     def extract_time_window(self, conversation: str, current_date: date) -> TimeWindow:
         """Return a fixed time window."""
@@ -28,20 +28,23 @@ class FakeLLM:
         _ = current_date
         return TimeWindow.from_year_month(2026, 1)
 
-    def extract_qa_metrics(self, conversation: str) -> QAMetrics:
-        """Return a fixed QA metrics payload."""
+    def extract_test_coverage(self, conversation: str) -> TestCoverageMetrics:
+        """Return a fixed coverage payload."""
         _ = conversation
-        return QAMetrics(tests_passed=10, tests_failed=2, test_coverage_percent=92.0)
+        return TestCoverageMetrics(
+            manual_total=10,
+            automated_total=5,
+            manual_created_last_month=1,
+            manual_updated_last_month=1,
+            automated_created_last_month=1,
+            automated_updated_last_month=1,
+            percentage_automation=33.33,
+        )
 
-    def extract_project_status(self, conversation: str) -> ProjectStatus:
-        """Return a fixed project status payload."""
+    def extract_overall_test_cases(self, conversation: str) -> int | None:
+        """Return a fixed overall test case count."""
         _ = conversation
-        return ProjectStatus(sprint_progress_percent=75.0, blockers=("None",))
-
-    def extract_daily_update(self, conversation: str) -> DailyUpdate:
-        """Return a fixed daily update payload."""
-        _ = conversation
-        return DailyUpdate(completed_tasks=("Fixed bugs",), planned_tasks=("Release",))
+        return 20
 
     def extract_with_history(
         self,
@@ -54,11 +57,10 @@ class FakeLLM:
         _ = history
         _ = current_date
         return ExtractionResult(
-            team_id=TeamId("QA Team"),
+            project_id=ProjectId("qa-project"),
             time_window=TimeWindow.from_year_month(2026, 1),
-            qa_metrics=None,
-            project_status=None,
-            daily_update=None,
+            test_coverage=None,
+            overall_test_cases=None,
         )
 
 
@@ -72,13 +74,13 @@ class FakeStorage:
         """Store submissions in memory."""
         self.submissions.append(submission)
 
-    def get_submissions_by_team(self, team_id: TeamId, month: TimeWindow) -> list[Submission]:
+    def get_submissions_by_project(self, project_id: ProjectId, month: TimeWindow) -> list[Submission]:
         """Return empty results for testing."""
-        _ = team_id
+        _ = project_id
         _ = month
         return []
 
-    def get_all_teams(self) -> list[TeamId]:
+    def get_all_projects(self) -> list[ProjectId]:
         """Return empty results for testing."""
         return []
 
@@ -105,21 +107,18 @@ def conversation_manager() -> ConversationManager:
 def test_conversation_happy_path(conversation_manager: ConversationManager) -> None:
     """Walk through the full conversation flow and save."""
     session, welcome = conversation_manager.start_session(date(2026, 1, 15))
-    assert "Which team" in welcome
+    assert "Which project" in welcome
 
-    response, session = conversation_manager.handle_message("QA Team", session, date(2026, 1, 15))
+    response, session = conversation_manager.handle_message("QA Project", session, date(2026, 1, 15))
     assert "reporting month" in response
 
     response, session = conversation_manager.handle_message("2026-01", session, date(2026, 1, 15))
-    assert "QA metrics" in response
+    assert "test coverage" in response
 
-    response, session = conversation_manager.handle_message("metrics", session, date(2026, 1, 15))
-    assert "project status" in response
+    response, session = conversation_manager.handle_message("coverage", session, date(2026, 1, 15))
+    assert "portfolio" in response
 
-    response, session = conversation_manager.handle_message("status", session, date(2026, 1, 15))
-    assert "daily updates" in response
-
-    response, session = conversation_manager.handle_message("updates", session, date(2026, 1, 15))
+    response, session = conversation_manager.handle_message("skip", session, date(2026, 1, 15))
     assert "Here is what I captured" in response
 
     response, session = conversation_manager.handle_message("yes", session, date(2026, 1, 15))
@@ -136,9 +135,9 @@ def test_conversation_skip_section(conversation_manager: ConversationManager) ->
     _, session = conversation_manager.handle_message("2026-01", session, date(2026, 1, 15))
 
     response, session = conversation_manager.handle_message("skip", session, date(2026, 1, 15))
-    assert "skip QA metrics" in response
+    assert "skip test coverage" in response
 
     response, session = conversation_manager.handle_message("yes", session, date(2026, 1, 15))
-    assert "project status" in response
+    assert "portfolio" in response
 
     assert isinstance(session, ConversationSession)

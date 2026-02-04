@@ -1,0 +1,552 @@
+version: "1.0"
+streams:
+  - id: affiliates
+    name: Affiliates
+    order: 10
+  - id: backbone_bridge
+    name: Backbone Systems / Bridge
+    order: 20
+  - id: backbone_platform
+    name: Backbone Systems / Platform Systems
+    order: 30
+  - id: backbone_trading
+    name: Backbone Systems / Trading Platform
+    order: 40
+  - id: client_engagement
+    name: Client Engagement
+    order: 50
+  - id: client_journey
+    name: Client Journey
+    order: 60
+  - id: funding
+    name: Funding
+    order: 70
+  - id: internal_systems
+    name: Internal Systems
+    order: 80
+  - id: mobile
+    name: Mobile
+    order: 90
+  - id: www_cfa
+    name: WWW / Client Face Application (CFA)
+    order: 100
+projects:
+  - id: affiliate
+    name: Affiliate
+    business_stream_id: affiliates
+    order: 10
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: affiliate_numerator
+      denominator:
+        jira_source_key: affiliate_denominator
+  - id: bridge
+    name: Bridge
+    business_stream_id: backbone_bridge
+    order: 10
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: bridge_numerator
+      denominator:
+        jira_source_key: bridge_denominator
+  - id: jthales
+    name: JThales
+    business_stream_id: backbone_platform
+    order: 10
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: jthales_numerator
+      denominator:
+        jira_source_key: jthales_denominator
+  - id: jmanager_server_portal
+    name: jManager Server and Portal
+    business_stream_id: backbone_platform
+    order: 20
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: jmanager_numerator
+      denominator:
+        jira_source_key: jmanager_denominator
+    jira_sources:
+      - key: jmanager_default
+        project_key: JMGR
+        issue_types:
+          - Bug
+  - id: symbols_management_service
+    name: Symbols Management Service
+    business_stream_id: backbone_platform
+    order: 30
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: symbols_numerator
+      denominator:
+        jira_source_key: symbols_denominator
+    jira_sources:
+      - key: symbols_default
+        project_key: SYM
+        issue_types:
+          - Bug
+  - id: local_depositors_service
+    name: Local Depositors Service
+    business_stream_id: backbone_platform
+    order: 40
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: lds_numerator
+      denominator:
+        jira_source_key: lds_denominator
+    jira_sources:
+      - key: lds_default
+        project_key: LDS
+        issue_types:
+          - Bug
+  - id: fees_management_service
+    name: Fees Management Service
+    business_stream_id: backbone_platform
+    order: 50
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: fees_numerator
+      denominator:
+        jira_source_key: fees_denominator
+    jira_sources:
+      - key: fees_default
+        project_key: FEES
+        issue_types:
+          - Bug
+  - id: admin_tools_service
+    name: Admin Tools Service
+    business_stream_id: backbone_platform
+    order: 60
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: admin_tools_numerator
+      denominator:
+        jira_source_key: admin_tools_denominator
+    jira_sources:
+      - key: admin_tools_default
+        project_key: ADMIN
+        issue_types:
+          - Bug
+  - id: funding_service
+    name: Funding Service (Not Live)
+    business_stream_id: backbone_platform
+    order: 70
+    is_active: false
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: funding_service_numerator
+      denominator:
+        jira_source_key: funding_service_denominator
+  - id: jtools
+    name: JTools
+    business_stream_id: backbone_platform
+    order: 80
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: jtools_numerator
+      denominator:
+        jira_source_key: jtools_denominator
+  - id: data_access_layer
+    name: Data Access Layer (DAL)
+    business_stream_id: backbone_platform
+    order: 90
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: dal_numerator
+      denominator:
+        jira_source_key: dal_denominator
+    jira_sources:
+      - key: dal_default
+        project_key: DAL
+        issue_types:
+          - Bug
+  - id: metaproxy
+    name: MetaProxy
+    business_stream_id: backbone_trading
+    order: 10
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: metaproxy_numerator
+      denominator:
+        jira_source_key: metaproxy_denominator
+    jira_sources:
+      - key: metaproxy_default
+        project_key: META
+        issue_types:
+          - Bug
+  - id: plugins
+    name: Plugins
+    business_stream_id: backbone_trading
+    order: 20
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: plugins_numerator
+      denominator:
+        jira_source_key: plugins_denominator
+    jira_sources:
+      - key: plugins_default
+        project_key: PLUG
+        issue_types:
+          - Bug
+  - id: tsda
+    name: TSDA
+    business_stream_id: backbone_trading
+    order: 30
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: tsda_numerator
+      denominator:
+        jira_source_key: tsda_denominator
+    jira_sources:
+      - key: tsda_default
+        project_key: TSDA
+        issue_types:
+          - Bug
+  - id: horn
+    name: HORN
+    business_stream_id: backbone_trading
+    order: 40
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: horn_numerator
+      denominator:
+        jira_source_key: horn_denominator
+    jira_sources:
+      - key: horn_default
+        project_key: HORN
+        issue_types:
+          - Bug
+  - id: social_trading_copy
+    name: Social Trading – Copy Trading
+    business_stream_id: client_engagement
+    order: 10
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: social_copy_trading_numerator
+      denominator:
+        jira_source_key: social_copy_trading_denominator
+  - id: social_trading_competitions
+    name: Social Trading – Competitions
+    business_stream_id: client_engagement
+    order: 20
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: social_competitions_numerator
+      denominator:
+        jira_source_key: social_competitions_denominator
+  - id: promotions_tool
+    name: Promotions Tool
+    business_stream_id: client_engagement
+    order: 30
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: promotions_tool_numerator
+      denominator:
+        jira_source_key: promotions_tool_denominator
+  - id: client_loyalty_loyalty
+    name: Client Loyalty – Loyalty
+    business_stream_id: client_engagement
+    order: 40
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: loyalty_numerator
+      denominator:
+        jira_source_key: loyalty_denominator
+  - id: client_loyalty_bonus
+    name: Client Loyalty – Bonus
+    business_stream_id: client_engagement
+    order: 50
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: bonus_numerator
+      denominator:
+        jira_source_key: bonus_denominator
+  - id: market_intelligence
+    name: Market Intelligence
+    business_stream_id: client_engagement
+    order: 60
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: market_intelligence_numerator
+      denominator:
+        jira_source_key: market_intelligence_denominator
+  - id: artificial_intelligence
+    name: Artificial Intelligence (AI)
+    business_stream_id: client_engagement
+    order: 70
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: artificial_intelligence_numerator
+      denominator:
+        jira_source_key: artificial_intelligence_denominator
+  - id: client_communication
+    name: Client Communication
+    business_stream_id: client_engagement
+    order: 80
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: client_communication_numerator
+      denominator:
+        jira_source_key: client_communication_denominator
+  - id: education
+    name: Education
+    business_stream_id: client_engagement
+    order: 90
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: education_numerator
+      denominator:
+        jira_source_key: education_denominator
+  - id: client_support
+    name: Client Support
+    business_stream_id: client_journey
+    order: 10
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: client_support_numerator
+      denominator:
+        jira_source_key: client_support_denominator
+  - id: client_authentication
+    name: Client Authentication
+    business_stream_id: client_journey
+    order: 20
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: client_authentication_numerator
+      denominator:
+        jira_source_key: client_authentication_denominator
+  - id: client_trading
+    name: Client Trading
+    business_stream_id: client_journey
+    order: 30
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: client_trading_numerator
+      denominator:
+        jira_source_key: client_trading_denominator
+    jira_sources:
+      - key: client_trading_default
+        project_key: CLTR
+        issue_types:
+          - Bug
+  - id: onboarding_account_mgmt
+    name: Onboarding & Account Management
+    business_stream_id: client_journey
+    order: 40
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: onboarding_numerator
+      denominator:
+        jira_source_key: onboarding_denominator
+  - id: realtime_communications
+    name: Realtime Communications
+    business_stream_id: client_journey
+    order: 50
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: realtime_communications_numerator
+      denominator:
+        jira_source_key: realtime_communications_denominator
+  - id: payments
+    name: Payments
+    business_stream_id: funding
+    order: 10
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: payments_numerator
+      denominator:
+        jira_source_key: payments_denominator
+    jira_sources:
+      - key: payments_default
+        project_key: PAY
+        issue_types:
+          - Bug
+  - id: withdrawals
+    name: Withdrawals
+    business_stream_id: funding
+    order: 20
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: withdrawals_numerator
+      denominator:
+        jira_source_key: withdrawals_denominator
+  - id: kyc
+    name: KYC
+    business_stream_id: internal_systems
+    order: 10
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: kyc_numerator
+      denominator:
+        jira_source_key: kyc_denominator
+  - id: scc
+    name: SCC
+    business_stream_id: internal_systems
+    order: 20
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: scc_numerator
+      denominator:
+        jira_source_key: scc_denominator
+  - id: crm
+    name: CRM
+    business_stream_id: internal_systems
+    order: 30
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: crm_numerator
+      denominator:
+        jira_source_key: crm_denominator
+  - id: digital_marketing
+    name: Digital Marketing
+    business_stream_id: internal_systems
+    order: 40
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: digital_marketing_numerator
+      denominator:
+        jira_source_key: digital_marketing_denominator
+  - id: mobile_trading_point
+    name: Mobile – XM Trading Point
+    business_stream_id: mobile
+    order: 10
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: mobile_xm_trading_point_numerator
+      denominator:
+        jira_source_key: mobile_xm_trading_point_denominator
+  - id: angular_core_web
+    name: Angular Core Web
+    business_stream_id: www_cfa
+    order: 10
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: angular_core_web_numerator
+      denominator:
+        jira_source_key: angular_core_web_denominator
+  - id: angular_www
+    name: Angular WWW
+    business_stream_id: www_cfa
+    order: 20
+    release_source:
+      source: manual
+    defect_leakage:
+      numerator:
+        jira_source_key: angular_www_numerator
+      denominator:
+        jira_source_key: angular_www_denominator
+jira:
+  url: https://jira.example.com
+  time_window_field: created
+  priority_mapping:
+    p1_p2:
+      - P1
+      - P2
+    p3_p4:
+      - P3
+      - P4
+  qa_found_logic:
+    reporter_groups: []
+    labels: []
+    components: []
+  query_templates:
+    bugs_found: "project in ({project_keys}) AND created >= {start} AND created < {end}"
+    production_incidents: "project in ({project_keys}) AND created >= {start} AND created < {end}"
+    capa: "project in ({project_keys}) AND created >= {start} AND created < {end}"
+    defect_leakage_numerator: "project in ({project_keys}) AND created >= {start} AND created < {end}"
+    defect_leakage_denominator: "project in ({project_keys}) AND created >= {start} AND created < {end}"
+release_sources:
+  manual:
+    enabled: true
+  jira_fix_version:
+    enabled: false
+  release_calendar:
+    enabled: false
+regression_suites:
+  - key: manual_web
+    name: Manual Web Regression
+    category: manual
+    platform: web
+  - key: automation_api
+    name: API Automation
+    category: automation
+    platform: backend
+edge_case_policy:
+  leakage_zero_denominator: zero
+  automation_zero_total: zero
+  rounding_decimals: 2

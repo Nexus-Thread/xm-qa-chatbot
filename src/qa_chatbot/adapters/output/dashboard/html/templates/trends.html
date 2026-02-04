@@ -22,25 +22,25 @@
 
       <section class="grid gap-6">
         <article class="bg-white rounded-xl shadow-sm p-6">
-          <h2 class="text-lg font-semibold mb-4">Test Coverage %</h2>
-          <canvas id="coverageChart" height="120"></canvas>
+          <h2 class="text-lg font-semibold mb-4">Manual Test Cases</h2>
+          <canvas id="manualChart" height="120"></canvas>
         </article>
         <article class="bg-white rounded-xl shadow-sm p-6">
-          <h2 class="text-lg font-semibold mb-4">Bug Count</h2>
-          <canvas id="bugChart" height="120"></canvas>
+          <h2 class="text-lg font-semibold mb-4">Automated Test Cases</h2>
+          <canvas id="automatedChart" height="120"></canvas>
         </article>
         <article class="bg-white rounded-xl shadow-sm p-6">
-          <h2 class="text-lg font-semibold mb-4">Sprint Progress %</h2>
-          <canvas id="progressChart" height="120"></canvas>
+          <h2 class="text-lg font-semibold mb-4">Automation %</h2>
+          <canvas id="automationChart" height="120"></canvas>
         </article>
       </section>
     </main>
 
     <script>
       const monthLabels = {{ chart_payload.months | tojson }};
-      const coverageSeries = {{ chart_payload.qa_metric_series.test_coverage_percent | tojson }};
-      const bugSeries = {{ chart_payload.qa_metric_series.bug_count | tojson }};
-      const progressSeries = {{ chart_payload.project_metric_series.sprint_progress_percent | tojson }};
+      const manualSeries = {{ chart_payload.qa_metric_series.manual_total | tojson }};
+      const automatedSeries = {{ chart_payload.qa_metric_series.automated_total | tojson }};
+      const automationSeries = {{ chart_payload.qa_metric_series.percentage_automation | tojson }};
 
       function buildDatasets(series, colors) {
         return series.map((item, index) => ({
@@ -54,19 +54,19 @@
 
       const palette = ["#2563eb", "#16a34a", "#f97316", "#dc2626", "#7c3aed"];
 
-      new Chart(document.getElementById("coverageChart"), {
+      new Chart(document.getElementById("manualChart"), {
         type: "line",
-        data: { labels: monthLabels, datasets: buildDatasets(coverageSeries, palette) },
+        data: { labels: monthLabels, datasets: buildDatasets(manualSeries, palette) },
       });
 
-      new Chart(document.getElementById("bugChart"), {
+      new Chart(document.getElementById("automatedChart"), {
         type: "line",
-        data: { labels: monthLabels, datasets: buildDatasets(bugSeries, palette) },
+        data: { labels: monthLabels, datasets: buildDatasets(automatedSeries, palette) },
       });
 
-      new Chart(document.getElementById("progressChart"), {
+      new Chart(document.getElementById("automationChart"), {
         type: "line",
-        data: { labels: monthLabels, datasets: buildDatasets(progressSeries, palette) },
+        data: { labels: monthLabels, datasets: buildDatasets(automationSeries, palette) },
       });
     </script>
   </body>

@@ -11,19 +11,19 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter
-from qa_chatbot.domain import DailyUpdate, Submission, TeamId, TimeWindow
+from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWindow
 
 
 @pytest.fixture
-def team_id_a() -> TeamId:
-    """Provide a default team identifier."""
-    return TeamId("Team A")
+def project_id_a() -> ProjectId:
+    """Provide a default project identifier."""
+    return ProjectId("project-a")
 
 
 @pytest.fixture
-def team_id_b() -> TeamId:
-    """Provide a secondary team identifier."""
-    return TeamId("Team B")
+def project_id_b() -> ProjectId:
+    """Provide a secondary project identifier."""
+    return ProjectId("project-b")
 
 
 @pytest.fixture
@@ -39,24 +39,31 @@ def time_window_feb() -> TimeWindow:
 
 
 @pytest.fixture
-def daily_update_done() -> DailyUpdate:
-    """Provide a minimal daily update payload."""
-    return DailyUpdate(completed_tasks=("Done",))
+def test_coverage_done() -> TestCoverageMetrics:
+    """Provide a minimal test coverage payload."""
+    return TestCoverageMetrics(
+        manual_total=10,
+        automated_total=5,
+        manual_created_last_month=1,
+        manual_updated_last_month=1,
+        automated_created_last_month=1,
+        automated_updated_last_month=1,
+        percentage_automation=33.33,
+    )
 
 
 @pytest.fixture
-def submission_team_a_jan(
-    team_id_a: TeamId,
+def submission_project_a_jan(
+    project_id_a: ProjectId,
     time_window_jan: TimeWindow,
-    daily_update_done: DailyUpdate,
+    test_coverage_done: TestCoverageMetrics,
 ) -> Submission:
-    """Provide a submission for Team A in January."""
+    """Provide a submission for Project A in January."""
     return Submission.create(
-        team_id=team_id_a,
+        project_id=project_id_a,
         month=time_window_jan,
-        qa_metrics=None,
-        project_status=None,
-        daily_update=daily_update_done,
+        test_coverage=test_coverage_done,
+        overall_test_cases=25,
     )
 
 

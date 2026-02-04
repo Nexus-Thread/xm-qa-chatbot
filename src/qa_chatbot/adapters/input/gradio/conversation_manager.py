@@ -7,24 +7,23 @@ from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from qa_chatbot.adapters.input.gradio import formatters
-from qa_chatbot.domain import DomainError, MissingSubmissionDataError, TeamId, TimeWindow
+from qa_chatbot.domain import DomainError, MissingSubmissionDataError, ProjectId, TimeWindow, build_default_registry
 
 if TYPE_CHECKING:
     from datetime import date
 
     from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitTeamDataUseCase
     from qa_chatbot.application.dtos import SubmissionCommand
-    from qa_chatbot.domain.value_objects import DailyUpdate, ProjectStatus, QAMetrics
+    from qa_chatbot.domain.value_objects import TestCoverageMetrics
 
 
 class ConversationState(StrEnum):
     """Supported conversation states."""
 
-    TEAM_ID = "team_id"
+    PROJECT_ID = "project_id"
     TIME_WINDOW = "time_window"
-    QA_METRICS = "qa_metrics"
-    PROJECT_STATUS = "project_status"
-    DAILY_UPDATE = "daily_update"
+    TEST_COVERAGE = "test_coverage"
+    OVERALL_TEST_CASES = "overall_test_cases"
     SKIP_CONFIRMATION = "skip_confirmation"
     CONFIRMATION = "confirmation"
     SAVED = "saved"
@@ -34,12 +33,11 @@ class ConversationState(StrEnum):
 class ConversationSession:
     """Conversation session state."""
 
-    state: ConversationState = ConversationState.TEAM_ID
-    team_id: TeamId | None = None
+    state: ConversationState = ConversationState.PROJECT_ID
+    project_id: ProjectId | None = None
     time_window: TimeWindow | None = None
-    qa_metrics: QAMetrics | None = None
-    project_status: ProjectStatus | None = None
-    daily_update: DailyUpdate | None = None
+    test_coverage: TestCoverageMetrics | None = None
+    overall_test_cases: int | None = None
     pending_section: ConversationState | None = None
     history: list[dict[str, str]] = field(default_factory=list)
 
@@ -85,11 +83,10 @@ class ConversationManager:
         self._append_history(session, role="user", content=normalized)
 
         handlers = {
-            ConversationState.TEAM_ID: self._handle_team_id,
+            ConversationState.PROJECT_ID: self._handle_project_id,
             ConversationState.TIME_WINDOW: self._handle_time_window,
-            ConversationState.QA_METRICS: self._handle_qa_metrics,
-            ConversationState.PROJECT_STATUS: self._handle_project_status,
-            ConversationState.DAILY_UPDATE: self._handle_daily_update,
+            ConversationState.TEST_COVERAGE: self._handle_test_coverage,
+            ConversationState.OVERALL_TEST_CASES: self._handle_overall_test_cases,
             ConversationState.SKIP_CONFIRMATION: self._handle_skip_confirmation,
             ConversationState.CONFIRMATION: self._handle_confirmation,
         }
@@ -103,16 +100,21 @@ class ConversationManager:
         self._append_history(session, role="assistant", content=response)
         return response, session
 
-    def _handle_team_id(self, message: str, session: ConversationSession, today: date) -> str:
-        """Handle team identification."""
+    def _handle_project_id(self, message: str, session: ConversationSession, today: date) -> str:
+        """Handle project identification."""
         try:
-            team_id = self._extractor.extract_team_id(message)
-            session.team_id = team_id
+            project_id = self._extractor.extract_project_id(message)
+            session.project_id = project_id
         except DomainError:
-            try:
-                session.team_id = TeamId.from_raw(message)
-            except DomainError as err:
-                return formatters.format_error_message(str(err)) + " " + formatters.prompt_for_team_id()
+            registry = build_default_registry()
+            project = registry.find_project(message)
+            if project is None:
+                try:
+                    session.project_id = ProjectId.from_raw(message)
+                except DomainError as err:
+                    return formatters.format_error_message(str(err)) + " " + formatters.prompt_for_project_id()
+            else:
+                session.project_id = ProjectId.from_raw(project.id)
 
         session.state = ConversationState.TIME_WINDOW
         default_window = TimeWindow.default_for(today)
@@ -131,44 +133,32 @@ class ConversationManager:
                 )
 
         session.time_window = parsed_window
-        session.state = ConversationState.QA_METRICS
-        return formatters.prompt_for_qa_metrics()
+        session.state = ConversationState.TEST_COVERAGE
+        return formatters.prompt_for_test_coverage()
 
-    def _handle_qa_metrics(self, message: str, session: ConversationSession, today: date) -> str:
-        """Handle QA metrics collection."""
+    def _handle_test_coverage(self, message: str, session: ConversationSession, today: date) -> str:
+        """Handle test coverage collection."""
         _ = today
         if self._is_skip_request(message):
-            return self._request_skip_confirmation(session, ConversationState.QA_METRICS, "QA metrics")
+            return self._request_skip_confirmation(session, ConversationState.TEST_COVERAGE, "test coverage")
         try:
-            session.qa_metrics = self._extractor.extract_qa_metrics(message)
+            session.test_coverage = self._extractor.extract_test_coverage(message)
         except DomainError as err:
-            return formatters.format_error_message(str(err)) + " " + formatters.prompt_for_qa_metrics()
+            return formatters.format_error_message(str(err)) + " " + formatters.prompt_for_test_coverage()
 
-        session.state = ConversationState.PROJECT_STATUS
-        return formatters.prompt_for_project_status()
+        session.state = ConversationState.OVERALL_TEST_CASES
+        return formatters.prompt_for_optional_overall_cases()
 
-    def _handle_project_status(self, message: str, session: ConversationSession, today: date) -> str:
-        """Handle project status collection."""
+    def _handle_overall_test_cases(self, message: str, session: ConversationSession, today: date) -> str:
+        """Handle portfolio total test cases."""
         _ = today
         if self._is_skip_request(message):
-            return self._request_skip_confirmation(session, ConversationState.PROJECT_STATUS, "project status")
+            session.state = ConversationState.CONFIRMATION
+            return self._build_confirmation_prompt(session)
         try:
-            session.project_status = self._extractor.extract_project_status(message)
+            session.overall_test_cases = self._extractor.extract_overall_test_cases(message)
         except DomainError as err:
-            return formatters.format_error_message(str(err)) + " " + formatters.prompt_for_project_status()
-
-        session.state = ConversationState.DAILY_UPDATE
-        return formatters.prompt_for_daily_update()
-
-    def _handle_daily_update(self, message: str, session: ConversationSession, today: date) -> str:
-        """Handle daily update collection."""
-        _ = today
-        if self._is_skip_request(message):
-            return self._request_skip_confirmation(session, ConversationState.DAILY_UPDATE, "daily updates")
-        try:
-            session.daily_update = self._extractor.extract_daily_update(message)
-        except DomainError as err:
-            return formatters.format_error_message(str(err)) + " " + formatters.prompt_for_daily_update()
+            return formatters.format_error_message(str(err)) + " " + formatters.prompt_for_overall_test_cases()
 
         session.state = ConversationState.CONFIRMATION
         return self._build_confirmation_prompt(session)
@@ -192,8 +182,10 @@ class ConversationManager:
         """Handle final confirmation and persistence."""
         if self._is_affirmative(message):
             if not self._has_any_section(session):
-                session.state = ConversationState.QA_METRICS
-                return "I need at least one data section to save your submission. " + formatters.prompt_for_qa_metrics()
+                session.state = ConversationState.TEST_COVERAGE
+                return (
+                    "I need at least one data section to save your submission. " + formatters.prompt_for_test_coverage()
+                )
 
             try:
                 self._submitter.execute(self._build_command(session))
@@ -205,9 +197,7 @@ class ConversationManager:
 
         target_state = self._detect_edit_target(message)
         if target_state is None:
-            return (
-                "Which section should I update? You can say team, month, QA metrics, project status, or daily update."
-            )
+            return "Which section should I update? You can say project, month, test coverage, or overall total."
 
         self._reset_section(session, target_state)
         session.state = target_state
@@ -215,15 +205,14 @@ class ConversationManager:
 
     def _build_confirmation_prompt(self, session: ConversationSession) -> str:
         """Construct the confirmation prompt."""
-        if session.team_id is None or session.time_window is None:
-            return formatters.format_error_message("Missing team or month information.")
+        if session.project_id is None or session.time_window is None:
+            return formatters.format_error_message("Missing project or month information.")
 
         summary = formatters.format_submission_summary(
-            team_id=session.team_id,
+            project_id=session.project_id,
             time_window=session.time_window,
-            qa_metrics=session.qa_metrics,
-            project_status=session.project_status,
-            daily_update=session.daily_update,
+            test_coverage=session.test_coverage,
+            overall_test_cases=session.overall_test_cases,
         )
         return formatters.prompt_for_confirmation(summary)
 
@@ -246,13 +235,10 @@ class ConversationManager:
     ) -> str:
         """Move to the next state after a section is handled."""
         _ = today
-        if section == ConversationState.QA_METRICS:
-            session.state = ConversationState.PROJECT_STATUS
-            return formatters.prompt_for_project_status()
-        if section == ConversationState.PROJECT_STATUS:
-            session.state = ConversationState.DAILY_UPDATE
-            return formatters.prompt_for_daily_update()
-        if section == ConversationState.DAILY_UPDATE:
+        if section == ConversationState.TEST_COVERAGE:
+            session.state = ConversationState.OVERALL_TEST_CASES
+            return formatters.prompt_for_optional_overall_cases()
+        if section == ConversationState.OVERALL_TEST_CASES:
             session.state = ConversationState.CONFIRMATION
             return self._build_confirmation_prompt(session)
 
@@ -267,9 +253,8 @@ class ConversationManager:
     ) -> str:
         """Handle message when returning from skip confirmation."""
         handler = {
-            ConversationState.QA_METRICS: self._handle_qa_metrics,
-            ConversationState.PROJECT_STATUS: self._handle_project_status,
-            ConversationState.DAILY_UPDATE: self._handle_daily_update,
+            ConversationState.TEST_COVERAGE: self._handle_test_coverage,
+            ConversationState.OVERALL_TEST_CASES: self._handle_overall_test_cases,
         }.get(session.state)
         if handler is None:
             return formatters.format_error_message("Unable to resume section.")
@@ -277,55 +262,49 @@ class ConversationManager:
 
     def _prompt_for_state(self, state: ConversationState, today: date) -> str:
         """Return the prompt text for a state."""
-        if state == ConversationState.TEAM_ID:
-            return formatters.prompt_for_team_id()
+        if state == ConversationState.PROJECT_ID:
+            return formatters.prompt_for_project_id()
         if state == ConversationState.TIME_WINDOW:
             return formatters.prompt_for_time_window(TimeWindow.default_for(today))
-        if state == ConversationState.QA_METRICS:
-            return formatters.prompt_for_qa_metrics()
-        if state == ConversationState.PROJECT_STATUS:
-            return formatters.prompt_for_project_status()
-        if state == ConversationState.DAILY_UPDATE:
-            return formatters.prompt_for_daily_update()
+        if state == ConversationState.TEST_COVERAGE:
+            return formatters.prompt_for_test_coverage()
+        if state == ConversationState.OVERALL_TEST_CASES:
+            return formatters.prompt_for_overall_test_cases()
         return "Please share the update."
 
     def _detect_edit_target(self, message: str) -> ConversationState | None:
         """Detect which section the user wants to edit."""
         normalized = message.lower()
-        if "team" in normalized:
-            return ConversationState.TEAM_ID
+        if "project" in normalized:
+            return ConversationState.PROJECT_ID
         if "month" in normalized or "time" in normalized:
             return ConversationState.TIME_WINDOW
-        if "qa" in normalized or "test" in normalized or "bug" in normalized:
-            return ConversationState.QA_METRICS
-        if "project" in normalized or "blocker" in normalized or "milestone" in normalized:
-            return ConversationState.PROJECT_STATUS
-        if "daily" in normalized or "today" in normalized or "update" in normalized:
-            return ConversationState.DAILY_UPDATE
+        if "coverage" in normalized or "test" in normalized:
+            return ConversationState.TEST_COVERAGE
+        if "overall" in normalized or "portfolio" in normalized or "total" in normalized:
+            return ConversationState.OVERALL_TEST_CASES
         return None
 
     def _reset_section(self, session: ConversationSession, section: ConversationState) -> None:
         """Reset stored values for a section."""
-        if section == ConversationState.TEAM_ID:
-            session.team_id = None
+        if section == ConversationState.PROJECT_ID:
+            session.project_id = None
         elif section == ConversationState.TIME_WINDOW:
             session.time_window = None
-        elif section == ConversationState.QA_METRICS:
-            session.qa_metrics = None
-        elif section == ConversationState.PROJECT_STATUS:
-            session.project_status = None
-        elif section == ConversationState.DAILY_UPDATE:
-            session.daily_update = None
+        elif section == ConversationState.TEST_COVERAGE:
+            session.test_coverage = None
+        elif section == ConversationState.OVERALL_TEST_CASES:
+            session.overall_test_cases = None
 
     def _has_any_section(self, session: ConversationSession) -> bool:
         """Return whether any data section is present."""
-        return any([session.qa_metrics, session.project_status, session.daily_update])
+        return session.test_coverage is not None or session.overall_test_cases is not None
 
     def _build_command(self, session: ConversationSession) -> SubmissionCommand:
         """Build a submission command from session data."""
         raw_conversation = self._build_raw_conversation(session)
-        if session.team_id is None or session.time_window is None:
-            msg = "Team ID and reporting month are required."
+        if session.project_id is None or session.time_window is None:
+            msg = "Project ID and reporting month are required."
             raise MissingSubmissionDataError(msg)
 
         return self._submitter_command(session, raw_conversation)
@@ -335,16 +314,15 @@ class ConversationManager:
         """Create a SubmissionCommand instance."""
         from qa_chatbot.application.dtos import SubmissionCommand
 
-        if session.team_id is None or session.time_window is None:
-            msg = "Team ID and reporting month are required."
+        if session.project_id is None or session.time_window is None:
+            msg = "Project ID and reporting month are required."
             raise MissingSubmissionDataError(msg)
 
         return SubmissionCommand(
-            team_id=session.team_id,
+            project_id=session.project_id,
             time_window=session.time_window,
-            qa_metrics=session.qa_metrics,
-            project_status=session.project_status,
-            daily_update=session.daily_update,
+            test_coverage=session.test_coverage,
+            overall_test_cases=session.overall_test_cases,
             raw_conversation=raw_conversation,
         )
 
@@ -405,11 +383,10 @@ class ConversationManager:
         """Restart the session after saving."""
         new_session, welcome = self.start_session(today)
         session.state = new_session.state
-        session.team_id = new_session.team_id
+        session.project_id = new_session.project_id
         session.time_window = new_session.time_window
-        session.qa_metrics = new_session.qa_metrics
-        session.project_status = new_session.project_status
-        session.daily_update = new_session.daily_update
+        session.test_coverage = new_session.test_coverage
+        session.overall_test_cases = new_session.overall_test_cases
         session.pending_section = new_session.pending_section
         session.history = new_session.history
         return welcome, session

@@ -5,19 +5,14 @@ SYSTEM_PROMPT = (
     "Return structured JSON that matches the provided schema, without commentary."
 )
 
-TEAM_ID_PROMPT = (
-    "Extract the team identifier or team name from the conversation. Use the most specific team name available."
+PROJECT_ID_PROMPT = (
+    "Extract the project identifier or project name from the conversation. Use the exact project name if provided."
 )
 TIME_WINDOW_PROMPT = "Extract the reporting month from the conversation. Return it in YYYY-MM format (e.g., 2026-01)."
-QA_METRICS_PROMPT = (
-    "Extract QA metrics from the conversation. "
-    "Include test counts, coverage percent, bug counts, and deployment readiness if mentioned."
+TEST_COVERAGE_PROMPT = (
+    "Extract test coverage metrics from the conversation. "
+    "Include manual/automated totals and created/updated counts for last month."
 )
-PROJECT_STATUS_PROMPT = (
-    "Extract project status updates from the conversation. "
-    "Include sprint progress percent, blockers, milestones completed, and risks if mentioned."
-)
-DAILY_UPDATE_PROMPT = (
-    "Extract daily update details from the conversation. "
-    "Include completed tasks, planned tasks, capacity hours, and issues if mentioned."
+OVERALL_TEST_CASES_PROMPT = (
+    "Extract the overall number of test cases across all projects (portfolio total) if provided."
 )

@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from qa_chatbot.application.ports import MetricsPort
 
 if TYPE_CHECKING:
-    from qa_chatbot.domain import TeamId, TimeWindow
+    from qa_chatbot.domain import ProjectId, TimeWindow
 
 
 @dataclass(frozen=True)
@@ -35,14 +35,14 @@ class InMemoryMetricsAdapter(MetricsPort):
         """Initialize logging for metrics."""
         self._logger = logging.getLogger(self.__class__.__name__)
 
-    def record_submission(self, team_id: TeamId, time_window: TimeWindow) -> None:
+    def record_submission(self, team_id: ProjectId, time_window: TimeWindow) -> None:
         """Record a successful submission event."""
         self.submissions += 1
         self.last_submission_at = datetime.now(tz=UTC)
         self._logger.info(
             "Submission recorded",
             extra={
-                "team_id": str(team_id),
+                "project_id": str(team_id),
                 "time_window": str(time_window),
                 "submission_count": self.submissions,
             },

@@ -6,14 +6,14 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from qa_chatbot.domain import TeamId, TimeWindow
+    from qa_chatbot.domain import ProjectId, TimeWindow
 
 
 @dataclass(frozen=True)
 class TeamOverviewCard:
-    """Summary for a team on the overview dashboard."""
+    """Summary for a project on the overview dashboard."""
 
-    team_id: TeamId
+    team_id: ProjectId
     month: TimeWindow
     qa_metrics: dict[str, float | int | bool | None]
     project_status: dict[str, float | list[str] | None]
@@ -30,7 +30,7 @@ class OverviewDashboardData:
 
 @dataclass(frozen=True)
 class TeamMonthlySnapshot:
-    """Per-month snapshot for a team."""
+    """Per-month snapshot for a project."""
 
     month: TimeWindow
     qa_metrics: dict[str, float | int | bool | None]
@@ -40,9 +40,9 @@ class TeamMonthlySnapshot:
 
 @dataclass(frozen=True)
 class TeamDetailDashboardData:
-    """Data needed for a team detail dashboard."""
+    """Data needed for a project detail dashboard."""
 
-    team_id: TeamId
+    team_id: ProjectId
     snapshots: list[TeamMonthlySnapshot]
 
 
@@ -58,7 +58,7 @@ class TrendSeries:
 class TrendsDashboardData:
     """Data needed for the trends dashboard."""
 
-    teams: list[TeamId]
+    teams: list[ProjectId]
     months: list[TimeWindow]
     qa_metric_series: dict[str, list[TrendSeries]]
     project_metric_series: dict[str, list[TrendSeries]]

@@ -21,24 +21,24 @@ href="overview.html"
 </header>
 <section class="grid gap-6">
 <article class="bg-white rounded-xl shadow-sm p-6">
-<h2 class="text-lg font-semibold mb-4">Test Coverage %</h2>
-<canvas id="coverageChart" height="120"></canvas>
+<h2 class="text-lg font-semibold mb-4">Manual Test Cases</h2>
+<canvas id="manualChart" height="120"></canvas>
 </article>
 <article class="bg-white rounded-xl shadow-sm p-6">
-<h2 class="text-lg font-semibold mb-4">Bug Count</h2>
-<canvas id="bugChart" height="120"></canvas>
+<h2 class="text-lg font-semibold mb-4">Automated Test Cases</h2>
+<canvas id="automatedChart" height="120"></canvas>
 </article>
 <article class="bg-white rounded-xl shadow-sm p-6">
-<h2 class="text-lg font-semibold mb-4">Sprint Progress %</h2>
-<canvas id="progressChart" height="120"></canvas>
+<h2 class="text-lg font-semibold mb-4">Automation %</h2>
+<canvas id="automationChart" height="120"></canvas>
 </article>
 </section>
 </main>
 <script>
 const monthLabels = ["2026-02", "2026-01"];
-const coverageSeries = [{"label": "Team A", "values": [90.0, 87.5]}, {"label": "Team B", "values": [null, 81.0]}];
-const bugSeries = [{"label": "Team A", "values": [2, 3]}, {"label": "Team B", "values": [null, 6]}];
-const progressSeries = [{"label": "Team A", "values": [82.0, 76.0]}, {"label": "Team B", "values": [null, 61.0]}];
+const manualSeries = [{"label": "project-a", "values": [140, 120]}, {"label": "project-b", "values": [null, 95]}];
+const automatedSeries = [{"label": "project-a", "values": [100, 80]}, {"label": "project-b", "values": [null, 70]}];
+const automationSeries = [{"label": "project-a", "values": [41.0, 40.0]}, {"label": "project-b", "values": [null, 42.0]}];
 function buildDatasets(series, colors) {
 return series.map((item, index) => ({
 label: item.label,
@@ -49,17 +49,17 @@ tension: 0.3,
 }));
 }
 const palette = ["#2563eb", "#16a34a", "#f97316", "#dc2626", "#7c3aed"];
-new Chart(document.getElementById("coverageChart"), {
+new Chart(document.getElementById("manualChart"), {
 type: "line",
-data: { labels: monthLabels, datasets: buildDatasets(coverageSeries, palette) },
+data: { labels: monthLabels, datasets: buildDatasets(manualSeries, palette) },
 });
-new Chart(document.getElementById("bugChart"), {
+new Chart(document.getElementById("automatedChart"), {
 type: "line",
-data: { labels: monthLabels, datasets: buildDatasets(bugSeries, palette) },
+data: { labels: monthLabels, datasets: buildDatasets(automatedSeries, palette) },
 });
-new Chart(document.getElementById("progressChart"), {
+new Chart(document.getElementById("automationChart"), {
 type: "line",
-data: { labels: monthLabels, datasets: buildDatasets(progressSeries, palette) },
+data: { labels: monthLabels, datasets: buildDatasets(automationSeries, palette) },
 });
 </script>
 </body>

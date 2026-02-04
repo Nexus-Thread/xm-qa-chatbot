@@ -8,22 +8,22 @@ from typing import TYPE_CHECKING
 from qa_chatbot.domain.exceptions import InvalidSubmissionTeamError
 
 if TYPE_CHECKING:
-    from qa_chatbot.domain.value_objects import TeamId, TimeWindow
+    from qa_chatbot.domain.value_objects import ProjectId, TimeWindow
 
     from .submission import Submission
 
 
 @dataclass
 class TeamData:
-    """Aggregate of submissions for a team."""
+    """Aggregate of submissions for a project."""
 
-    team_id: TeamId
+    project_id: ProjectId
     submissions: list[Submission] = field(default_factory=list)
 
     def add_submission(self, submission: Submission) -> None:
         """Add a submission for the team."""
-        if submission.team_id != self.team_id:
-            msg = "Submission team_id does not match TeamData"
+        if submission.project_id != self.project_id:
+            msg = "Submission project_id does not match TeamData"
             raise InvalidSubmissionTeamError(msg)
         self.submissions.append(submission)
 

@@ -16,7 +16,7 @@ from qa_chatbot.application.dtos import (
 
 if TYPE_CHECKING:
     from qa_chatbot.application.ports import StoragePort
-    from qa_chatbot.domain import DailyUpdate, ProjectStatus, QAMetrics, Submission, TeamId, TimeWindow
+    from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWindow
 
 
 @dataclass(frozen=True)
@@ -32,11 +32,11 @@ class GetDashboardDataUseCase:
         teams.sort(key=lambda card: card.team_id.value)
         return OverviewDashboardData(month=month, teams=teams)
 
-    def build_team_detail(self, team_id: TeamId, months: list[TimeWindow]) -> TeamDetailDashboardData:
-        """Build detail data for a team across months."""
+    def build_team_detail(self, team_id: ProjectId, months: list[TimeWindow]) -> TeamDetailDashboardData:
+        """Build detail data for a project across months."""
         snapshots: list[TeamMonthlySnapshot] = []
         for month in months:
-            submissions = self.storage_port.get_submissions_by_team(team_id, month)
+            submissions = self.storage_port.get_submissions_by_project(team_id, month)
             if not submissions:
                 snapshots.append(self._empty_snapshot(month))
                 continue
@@ -44,38 +44,23 @@ class GetDashboardDataUseCase:
             snapshots.append(self._to_snapshot(latest))
         return TeamDetailDashboardData(team_id=team_id, snapshots=snapshots)
 
-    def build_trends(self, teams: list[TeamId], months: list[TimeWindow]) -> TrendsDashboardData:
-        """Build trends data for teams across months."""
+    def build_trends(self, teams: list[ProjectId], months: list[TimeWindow]) -> TrendsDashboardData:
+        """Build trends data for projects across months."""
         qa_metric_series = {
-            "tests_passed": self._trend_series(teams, months, "qa_metrics", "tests_passed"),
-            "tests_failed": self._trend_series(teams, months, "qa_metrics", "tests_failed"),
-            "test_coverage_percent": self._trend_series(
-                teams,
-                months,
-                "qa_metrics",
-                "test_coverage_percent",
-            ),
-            "bug_count": self._trend_series(teams, months, "qa_metrics", "bug_count"),
-            "critical_bugs": self._trend_series(teams, months, "qa_metrics", "critical_bugs"),
-        }
-        project_metric_series = {
-            "sprint_progress_percent": self._trend_series(
-                teams,
-                months,
-                "project_status",
-                "sprint_progress_percent",
-            ),
+            "manual_total": self._trend_series(teams, months, "test_coverage", "manual_total"),
+            "automated_total": self._trend_series(teams, months, "test_coverage", "automated_total"),
+            "percentage_automation": self._trend_series(teams, months, "test_coverage", "percentage_automation"),
         }
         return TrendsDashboardData(
             teams=teams,
             months=months,
             qa_metric_series=qa_metric_series,
-            project_metric_series=project_metric_series,
+            project_metric_series={},
         )
 
     def _trend_series(
         self,
-        teams: list[TeamId],
+        teams: list[ProjectId],
         months: list[TimeWindow],
         section: str,
         field: str,
@@ -84,7 +69,7 @@ class GetDashboardDataUseCase:
         for team in teams:
             values: list[float | int | None] = []
             for month in months:
-                submissions = self.storage_port.get_submissions_by_team(team, month)
+                submissions = self.storage_port.get_submissions_by_project(team, month)
                 if not submissions:
                     values.append(None)
                     continue
@@ -110,74 +95,46 @@ class GetDashboardDataUseCase:
 
     def _to_overview_card(self, submission: Submission) -> TeamOverviewCard:
         return TeamOverviewCard(
-            team_id=submission.team_id,
+            team_id=submission.project_id,
             month=submission.month,
-            qa_metrics=self._metrics_payload(submission.qa_metrics),
-            project_status=self._project_payload(submission.project_status),
-            daily_update=self._daily_payload(submission.daily_update),
+            qa_metrics=self._coverage_payload(submission.test_coverage),
+            project_status={},
+            daily_update={},
         )
 
     def _to_snapshot(self, submission: Submission) -> TeamMonthlySnapshot:
         return TeamMonthlySnapshot(
             month=submission.month,
-            qa_metrics=self._metrics_payload(submission.qa_metrics),
-            project_status=self._project_payload(submission.project_status),
-            daily_update=self._daily_payload(submission.daily_update),
+            qa_metrics=self._coverage_payload(submission.test_coverage),
+            project_status={},
+            daily_update={},
         )
 
     def _empty_snapshot(self, month: TimeWindow) -> TeamMonthlySnapshot:
         return TeamMonthlySnapshot(
             month=month,
-            qa_metrics=self._metrics_payload(None),
-            project_status=self._project_payload(None),
-            daily_update=self._daily_payload(None),
+            qa_metrics=self._coverage_payload(None),
+            project_status={},
+            daily_update={},
         )
 
-    def _metrics_payload(self, metrics: QAMetrics | None) -> dict[str, float | int | bool | None]:
+    def _coverage_payload(self, metrics: TestCoverageMetrics | None) -> dict[str, float | int | bool | None]:
         if metrics is None:
             return {
-                "tests_passed": None,
-                "tests_failed": None,
-                "test_coverage_percent": None,
-                "bug_count": None,
-                "critical_bugs": None,
-                "deployment_ready": None,
+                "manual_total": None,
+                "automated_total": None,
+                "manual_created_last_month": None,
+                "manual_updated_last_month": None,
+                "automated_created_last_month": None,
+                "automated_updated_last_month": None,
+                "percentage_automation": None,
             }
         return {
-            "tests_passed": metrics.tests_passed,
-            "tests_failed": metrics.tests_failed,
-            "test_coverage_percent": metrics.test_coverage_percent,
-            "bug_count": metrics.bug_count,
-            "critical_bugs": metrics.critical_bugs,
-            "deployment_ready": metrics.deployment_ready,
-        }
-
-    def _project_payload(self, status: ProjectStatus | None) -> dict[str, float | list[str] | None]:
-        if status is None:
-            return {
-                "sprint_progress_percent": None,
-                "blockers": [],
-                "milestones_completed": [],
-                "risks": [],
-            }
-        return {
-            "sprint_progress_percent": status.sprint_progress_percent,
-            "blockers": list(status.blockers),
-            "milestones_completed": list(status.milestones_completed),
-            "risks": list(status.risks),
-        }
-
-    def _daily_payload(self, update: DailyUpdate | None) -> dict[str, float | list[str] | None]:
-        if update is None:
-            return {
-                "completed_tasks": [],
-                "planned_tasks": [],
-                "capacity_hours": None,
-                "issues": [],
-            }
-        return {
-            "completed_tasks": list(update.completed_tasks),
-            "planned_tasks": list(update.planned_tasks),
-            "capacity_hours": update.capacity_hours,
-            "issues": list(update.issues),
+            "manual_total": metrics.manual_total,
+            "automated_total": metrics.automated_total,
+            "manual_created_last_month": metrics.manual_created_last_month,
+            "manual_updated_last_month": metrics.manual_updated_last_month,
+            "automated_created_last_month": metrics.automated_created_last_month,
+            "automated_updated_last_month": metrics.automated_updated_last_month,
+            "percentage_automation": metrics.percentage_automation,
         }

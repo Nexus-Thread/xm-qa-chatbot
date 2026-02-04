@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QA Trends Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-900">
+<main class="max-w-6xl mx-auto px-6 py-8">
+<header class="mb-8 flex items-center justify-between">
+<div>
+<h1 class="text-3xl font-semibold">QA Trends</h1>
+<p class="text-slate-600">Cross-team comparisons by month</p>
+</div>
+<a
+class="text-sm font-medium text-blue-600 hover:text-blue-800"
+href="overview.html"
+>← Back to overview</a>
+</header>
+<section class="grid gap-6">
+<article class="bg-white rounded-xl shadow-sm p-6">
+<h2 class="text-lg font-semibold mb-4">Test Coverage %</h2>
+<canvas id="coverageChart" height="120"></canvas>
+</article>
+<article class="bg-white rounded-xl shadow-sm p-6">
+<h2 class="text-lg font-semibold mb-4">Bug Count</h2>
+<canvas id="bugChart" height="120"></canvas>
+</article>
+<article class="bg-white rounded-xl shadow-sm p-6">
+<h2 class="text-lg font-semibold mb-4">Sprint Progress %</h2>
+<canvas id="progressChart" height="120"></canvas>
+</article>
+</section>
+</main>
+<script>
+const monthLabels = ["2026-02", "2026-01"];
+const coverageSeries = [{"label": "Team A", "values": [90.0, 87.5]}, {"label": "Team B", "values": [null, 81.0]}];
+const bugSeries = [{"label": "Team A", "values": [2, 3]}, {"label": "Team B", "values": [null, 6]}];
+const progressSeries = [{"label": "Team A", "values": [82.0, 76.0]}, {"label": "Team B", "values": [null, 61.0]}];
+function buildDatasets(series, colors) {
+return series.map((item, index) => ({
+label: item.label,
+data: item.values,
+borderColor: colors[index % colors.length],
+backgroundColor: colors[index % colors.length] + "33",
+tension: 0.3,
+}));
+}
+const palette = ["#2563eb", "#16a34a", "#f97316", "#dc2626", "#7c3aed"];
+new Chart(document.getElementById("coverageChart"), {
+type: "line",
+data: { labels: monthLabels, datasets: buildDatasets(coverageSeries, palette) },
+});
+new Chart(document.getElementById("bugChart"), {
+type: "line",
+data: { labels: monthLabels, datasets: buildDatasets(bugSeries, palette) },
+});
+new Chart(document.getElementById("progressChart"), {
+type: "line",
+data: { labels: monthLabels, datasets: buildDatasets(progressSeries, palette) },
+});
+</script>
+</body>
+</html>

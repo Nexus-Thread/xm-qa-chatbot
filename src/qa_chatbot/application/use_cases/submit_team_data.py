@@ -29,35 +29,34 @@ class SubmitTeamDataUseCase:
     def execute(self, command: SubmissionCommand) -> Submission:
         """Persist a team submission and return it."""
         self._logger.info(
-            "Submitting team data",
+            "Submitting project data",
             extra={
-                "team_id": str(command.team_id),
+                "project_id": str(command.project_id),
                 "time_window": str(command.time_window),
             },
         )
         submission = Submission.create(
-            team_id=command.team_id,
+            project_id=command.project_id,
             month=command.time_window,
-            qa_metrics=command.qa_metrics,
-            project_status=command.project_status,
-            daily_update=command.daily_update,
+            test_coverage=command.test_coverage,
+            overall_test_cases=command.overall_test_cases,
             raw_conversation=command.raw_conversation,
             created_at=command.created_at,
         )
         self.storage_port.save_submission(submission)
         if self.metrics_port is not None:
-            self.metrics_port.record_submission(submission.team_id, submission.month)
+            self.metrics_port.record_submission(submission.project_id, submission.month)
         if self.dashboard_port is not None:
             recent_months = self.storage_port.get_recent_months(limit=6)
-            teams = self.storage_port.get_all_teams()
+            projects = self.storage_port.get_all_projects()
             self.dashboard_port.generate_overview(submission.month)
-            self.dashboard_port.generate_team_detail(submission.team_id, recent_months)
-            self.dashboard_port.generate_trends(teams, recent_months)
+            self.dashboard_port.generate_team_detail(submission.project_id, recent_months)
+            self.dashboard_port.generate_trends(projects, recent_months)
         self._logger.info(
             "Submission saved",
             extra={
                 "submission_id": submission.id,
-                "team_id": str(submission.team_id),
+                "project_id": str(submission.project_id),
                 "time_window": str(submission.month),
             },
         )

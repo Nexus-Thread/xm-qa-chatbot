@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Team Dashboard</title>
+<title>Project Coverage Trends</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -11,8 +11,8 @@
 <main class="max-w-6xl mx-auto px-6 py-8">
 <header class="mb-8 flex items-center justify-between">
 <div>
-<h1 class="text-3xl font-semibold">Team Team A</h1>
-<p class="text-slate-600">Monthly performance and updates</p>
+<h1 class="text-3xl font-semibold">Project project-a</h1>
+<p class="text-slate-600">Monthly test coverage trends</p>
 </div>
 <a
 class="text-sm font-medium text-blue-600 hover:text-blue-800"
@@ -20,7 +20,7 @@ href="overview.html"
 >← Back to overview</a
 </header>
 <section class="bg-white rounded-xl shadow-sm p-6 mb-8">
-<h2 class="text-lg font-semibold mb-4">QA Metrics Trend</h2>
+<h2 class="text-lg font-semibold mb-4">Coverage Trend</h2>
 <canvas id="qaTrendChart" height="120"></canvas>
 </section>
 <section class="grid gap-6">
@@ -28,37 +28,11 @@ href="overview.html"
 <h3 class="text-lg font-semibold mb-4">2026-02</h3>
 <div class="grid md:grid-cols-3 gap-6">
 <div>
-<h4 class="text-sm font-semibold text-slate-700">QA Metrics</h4>
+<h4 class="text-sm font-semibold text-slate-700">Test Coverage</h4>
 <ul class="text-sm text-slate-600 space-y-1">
-<li>Tests passed: 140</li>
-<li>Tests failed: 2</li>
-<li>Coverage: 90.0%</li>
-<li>Bug count: 2</li>
-<li>Critical bugs: -</li>
-</ul>
-</div>
-<div>
-<h4 class="text-sm font-semibold text-slate-700">Project Status</h4>
-<ul class="text-sm text-slate-600 space-y-1">
-<li>Sprint progress: 82.0%</li>
-<li>
-Blockers: Vendor wait
-</li>
-<li>
-Milestones: Scale test
-</li>
-</ul>
-</div>
-<div>
-<h4 class="text-sm font-semibold text-slate-700">Daily Update</h4>
-<ul class="text-sm text-slate-600 space-y-1">
-<li>
-Completed: Release candidate
-</li>
-<li>
-Planned: Postmortem
-</li>
-<li>Capacity hours: 7.0</li>
+<li>Manual TCs: 140</li>
+<li>Automated TCs: 100</li>
+<li>Automation %: 41.0</li>
 </ul>
 </div>
 </div>
@@ -67,37 +41,11 @@ Planned: Postmortem
 <h3 class="text-lg font-semibold mb-4">2026-01</h3>
 <div class="grid md:grid-cols-3 gap-6">
 <div>
-<h4 class="text-sm font-semibold text-slate-700">QA Metrics</h4>
+<h4 class="text-sm font-semibold text-slate-700">Test Coverage</h4>
 <ul class="text-sm text-slate-600 space-y-1">
-<li>Tests passed: 120</li>
-<li>Tests failed: 5</li>
-<li>Coverage: 87.5%</li>
-<li>Bug count: 3</li>
-<li>Critical bugs: 1</li>
-</ul>
-</div>
-<div>
-<h4 class="text-sm font-semibold text-slate-700">Project Status</h4>
-<ul class="text-sm text-slate-600 space-y-1">
-<li>Sprint progress: 76.0%</li>
-<li>
-Blockers: Env flakiness
-</li>
-<li>
-Milestones: Smoke suite
-</li>
-</ul>
-</div>
-<div>
-<h4 class="text-sm font-semibold text-slate-700">Daily Update</h4>
-<ul class="text-sm text-slate-600 space-y-1">
-<li>
-Completed: Regression, Load test
-</li>
-<li>
-Planned: Coverage audit
-</li>
-<li>Capacity hours: 6.5</li>
+<li>Manual TCs: 120</li>
+<li>Automated TCs: 80</li>
+<li>Automation %: 40.0</li>
 </ul>
 </div>
 </div>
@@ -107,9 +55,9 @@ Planned: Coverage audit
 <script>
 const labels = ["2026-02", "2026-01"];
 const qaMetrics = {
-testsPassed: [140, 120],
-testsFailed: [2, 5],
-coverage: [90.0, 87.5],
+manual: [140, 120],
+automated: [100, 80],
+automationPct: [41.0, 40.0],
 };
 const ctx = document.getElementById("qaTrendChart");
 new Chart(ctx, {
@@ -118,22 +66,22 @@ data: {
 labels: labels,
 datasets: [
 {
-label: "Tests Passed",
-data: qaMetrics.testsPassed,
+label: "Manual TCs",
+data: qaMetrics.manual,
 borderColor: "#2563eb",
 backgroundColor: "rgba(37, 99, 235, 0.2)",
 tension: 0.3,
 },
 {
-label: "Tests Failed",
-data: qaMetrics.testsFailed,
+label: "Automated TCs",
+data: qaMetrics.automated,
 borderColor: "#dc2626",
 backgroundColor: "rgba(220, 38, 38, 0.2)",
 tension: 0.3,
 },
 {
-label: "Coverage %",
-data: qaMetrics.coverage,
+label: "Automation %",
+data: qaMetrics.automationPct,
 borderColor: "#16a34a",
 backgroundColor: "rgba(22, 163, 74, 0.2)",
 tension: 0.3,

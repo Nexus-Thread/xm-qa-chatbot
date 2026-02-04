@@ -10,7 +10,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from qa_chatbot.application.ports import StoragePort
-from qa_chatbot.domain import Submission, TeamId, TimeWindow
+from qa_chatbot.domain import ProjectId, Submission, TimeWindow
 
 from .mappers import model_to_submission, submission_to_model, time_window_from_iso
 from .models import Base, SubmissionModel
@@ -43,19 +43,19 @@ class SQLiteAdapter(StoragePort):
             model = submission_to_model(submission)
             session.merge(model)
 
-    def get_submissions_by_team(self, team_id: TeamId, month: TimeWindow) -> list[Submission]:
-        """Return submissions for a team and month."""
+    def get_submissions_by_project(self, project_id: ProjectId, month: TimeWindow) -> list[Submission]:
+        """Return submissions for a project and month."""
         statement = select(SubmissionModel).where(
-            SubmissionModel.team_id == team_id.value,
+            SubmissionModel.project_id == project_id.value,
             SubmissionModel.month == month.to_iso_month(),
         )
         return self._execute_and_map(statement)
 
-    def get_all_teams(self) -> list[TeamId]:
-        """Return all team identifiers in sorted order."""
-        statement = select(SubmissionModel.team_id).distinct().order_by(SubmissionModel.team_id)
+    def get_all_projects(self) -> list[ProjectId]:
+        """Return all project identifiers in sorted order."""
+        statement = select(SubmissionModel.project_id).distinct().order_by(SubmissionModel.project_id)
         rows: list[str] = self._execute_scalar(statement)
-        return [TeamId(value) for value in rows]
+        return [ProjectId(value) for value in rows]
 
     def get_submissions_by_month(self, month: TimeWindow) -> list[Submission]:
         """Return submissions for a given reporting month."""

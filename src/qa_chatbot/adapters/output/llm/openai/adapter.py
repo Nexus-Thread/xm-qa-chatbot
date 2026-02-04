@@ -15,31 +15,22 @@ from qa_chatbot.application.dtos import ExtractionResult
 from qa_chatbot.application.ports.output import LLMPort
 from qa_chatbot.domain import (
     AmbiguousExtractionError,
-    DailyUpdate,
     LLMExtractionError,
-    ProjectStatus,
-    QAMetrics,
-    TeamId,
+    ProjectId,
+    TestCoverageMetrics,
     TimeWindow,
 )
 
 from .client import build_client
 from .prompts import (
-    DAILY_UPDATE_PROMPT,
-    PROJECT_STATUS_PROMPT,
-    QA_METRICS_PROMPT,
+    OVERALL_TEST_CASES_PROMPT,
+    PROJECT_ID_PROMPT,
     SYSTEM_PROMPT,
-    TEAM_ID_PROMPT,
+    TEST_COVERAGE_PROMPT,
     TIME_WINDOW_PROMPT,
 )
 from .retry_logic import DEFAULT_BACKOFF_SECONDS, DEFAULT_MAX_RETRIES
-from .schemas import (
-    DailyUpdateSchema,
-    ProjectStatusSchema,
-    QAMetricsSchema,
-    TeamIdSchema,
-    TimeWindowSchema,
-)
+from .schemas import OverallTestCasesSchema, ProjectIdSchema, TestCoverageSchema, TimeWindowSchema
 
 SchemaT = TypeVar("SchemaT", bound=BaseModel)
 
@@ -86,12 +77,12 @@ class OpenAIAdapter(LLMPort):
         """Return token usage for the most recent call."""
         return self._last_usage
 
-    def extract_team_id(self, conversation: str) -> TeamId:
-        """Extract a team identifier from a conversation."""
-        payload = self._extract_json(conversation, TEAM_ID_PROMPT)
-        data = self._parse_schema(payload, TeamIdSchema)
-        self._raise_if_blank(data.team_id, "team identifier")
-        return TeamId.from_raw(data.team_id)
+    def extract_project_id(self, conversation: str) -> ProjectId:
+        """Extract a project identifier from a conversation."""
+        payload = self._extract_json(conversation, PROJECT_ID_PROMPT)
+        data = self._parse_schema(payload, ProjectIdSchema)
+        self._raise_if_blank(data.project_id, "project identifier")
+        return ProjectId.from_raw(data.project_id)
 
     def extract_time_window(self, conversation: str, current_date: date) -> TimeWindow:
         """Extract the reporting time window."""
@@ -100,46 +91,32 @@ class OpenAIAdapter(LLMPort):
         self._raise_if_blank(data.month, "time window")
         return self._resolve_time_window(data.month, current_date)
 
-    def extract_qa_metrics(self, conversation: str) -> QAMetrics:
-        """Extract QA metrics from a conversation."""
-        payload = self._extract_json(conversation, QA_METRICS_PROMPT)
-        data = self._parse_schema(payload, QAMetricsSchema)
-        self._raise_if_missing_int(data.tests_passed, "tests_passed")
-        self._raise_if_missing_int(data.tests_failed, "tests_failed")
-        return QAMetrics(
-            tests_passed=data.tests_passed,
-            tests_failed=data.tests_failed,
-            test_coverage_percent=data.test_coverage_percent,
-            bug_count=data.bug_count,
-            critical_bugs=data.critical_bugs,
-            deployment_ready=data.deployment_ready,
+    def extract_test_coverage(self, conversation: str) -> TestCoverageMetrics:
+        """Extract test coverage metrics from a conversation."""
+        payload = self._extract_json(conversation, TEST_COVERAGE_PROMPT)
+        data = self._parse_schema(payload, TestCoverageSchema)
+        self._raise_if_missing_int(data.manual_total, "manual_total")
+        self._raise_if_missing_int(data.automated_total, "automated_total")
+        return TestCoverageMetrics(
+            manual_total=data.manual_total,
+            automated_total=data.automated_total,
+            manual_created_last_month=data.manual_created_last_month,
+            manual_updated_last_month=data.manual_updated_last_month,
+            automated_created_last_month=data.automated_created_last_month,
+            automated_updated_last_month=data.automated_updated_last_month,
+            percentage_automation=0.0,
         )
 
-    def extract_project_status(self, conversation: str) -> ProjectStatus:
-        """Extract project status updates from a conversation."""
-        payload = self._extract_json(conversation, PROJECT_STATUS_PROMPT)
-        data = self._parse_schema(payload, ProjectStatusSchema)
-        if data.sprint_progress_percent is None and not data.blockers and not data.milestones_completed:
-            self._raise_if_ambiguous("project status")
-        return ProjectStatus(
-            sprint_progress_percent=data.sprint_progress_percent,
-            blockers=tuple(data.blockers),
-            milestones_completed=tuple(data.milestones_completed),
-            risks=tuple(data.risks),
-        )
-
-    def extract_daily_update(self, conversation: str) -> DailyUpdate:
-        """Extract a daily update from a conversation."""
-        payload = self._extract_json(conversation, DAILY_UPDATE_PROMPT)
-        data = self._parse_schema(payload, DailyUpdateSchema)
-        if not data.completed_tasks and not data.planned_tasks and data.capacity_hours is None:
-            self._raise_if_ambiguous("daily update")
-        return DailyUpdate(
-            completed_tasks=tuple(data.completed_tasks),
-            planned_tasks=tuple(data.planned_tasks),
-            capacity_hours=data.capacity_hours,
-            issues=tuple(data.issues),
-        )
+    def extract_overall_test_cases(self, conversation: str) -> int | None:
+        """Extract overall portfolio test cases from a conversation."""
+        payload = self._extract_json(conversation, OVERALL_TEST_CASES_PROMPT)
+        if not payload:
+            return None
+        try:
+            data = self._parse_schema(payload, OverallTestCasesSchema)
+        except LLMExtractionError:
+            return None
+        return data.overall_test_cases
 
     def extract_with_history(
         self,
@@ -148,49 +125,42 @@ class OpenAIAdapter(LLMPort):
         current_date: date,
     ) -> ExtractionResult:
         """Extract structured data using conversation history."""
-        team_payload = self._extract_json(conversation, TEAM_ID_PROMPT, history)
+        team_payload = self._extract_json(conversation, PROJECT_ID_PROMPT, history)
         time_payload = self._extract_json(conversation, TIME_WINDOW_PROMPT, history)
-        qa_payload = self._extract_json(conversation, QA_METRICS_PROMPT, history)
-        project_payload = self._extract_json(conversation, PROJECT_STATUS_PROMPT, history)
-        daily_payload = self._extract_json(conversation, DAILY_UPDATE_PROMPT, history)
+        coverage_payload = self._extract_json(conversation, TEST_COVERAGE_PROMPT, history)
+        overall_payload = self._extract_json(conversation, OVERALL_TEST_CASES_PROMPT, history)
 
-        team_data = self._parse_schema(team_payload, TeamIdSchema)
+        team_data = self._parse_schema(team_payload, ProjectIdSchema)
         time_data = self._parse_schema(time_payload, TimeWindowSchema)
-        qa_data = self._parse_schema(qa_payload, QAMetricsSchema)
-        project_data = self._parse_schema(project_payload, ProjectStatusSchema)
-        daily_data = self._parse_schema(daily_payload, DailyUpdateSchema)
+        coverage_data = self._parse_schema(coverage_payload, TestCoverageSchema)
+        overall_data = None
+        if overall_payload:
+            try:
+                overall_data = self._parse_schema(overall_payload, OverallTestCasesSchema)
+            except LLMExtractionError:
+                overall_data = None
 
-        self._raise_if_blank(team_data.team_id, "team identifier")
+        self._raise_if_blank(team_data.project_id, "project identifier")
         self._raise_if_blank(time_data.month, "time window")
-        self._raise_if_missing_int(qa_data.tests_passed, "tests_passed")
-        self._raise_if_missing_int(qa_data.tests_failed, "tests_failed")
+        self._raise_if_missing_int(coverage_data.manual_total, "manual_total")
+        self._raise_if_missing_int(coverage_data.automated_total, "automated_total")
 
-        team_id = TeamId.from_raw(team_data.team_id)
+        project_id = ProjectId.from_raw(team_data.project_id)
         time_window = self._resolve_time_window(time_data.month, current_date)
 
         return ExtractionResult(
-            team_id=team_id,
+            project_id=project_id,
             time_window=time_window,
-            qa_metrics=QAMetrics(
-                tests_passed=qa_data.tests_passed,
-                tests_failed=qa_data.tests_failed,
-                test_coverage_percent=qa_data.test_coverage_percent,
-                bug_count=qa_data.bug_count,
-                critical_bugs=qa_data.critical_bugs,
-                deployment_ready=qa_data.deployment_ready,
+            test_coverage=TestCoverageMetrics(
+                manual_total=coverage_data.manual_total,
+                automated_total=coverage_data.automated_total,
+                manual_created_last_month=coverage_data.manual_created_last_month,
+                manual_updated_last_month=coverage_data.manual_updated_last_month,
+                automated_created_last_month=coverage_data.automated_created_last_month,
+                automated_updated_last_month=coverage_data.automated_updated_last_month,
+                percentage_automation=0.0,
             ),
-            project_status=ProjectStatus(
-                sprint_progress_percent=project_data.sprint_progress_percent,
-                blockers=tuple(project_data.blockers),
-                milestones_completed=tuple(project_data.milestones_completed),
-                risks=tuple(project_data.risks),
-            ),
-            daily_update=DailyUpdate(
-                completed_tasks=tuple(daily_data.completed_tasks),
-                planned_tasks=tuple(daily_data.planned_tasks),
-                capacity_hours=daily_data.capacity_hours,
-                issues=tuple(daily_data.issues),
-            ),
+            overall_test_cases=overall_data.overall_test_cases if overall_data else None,
         )
 
     def _extract_json(

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from qa_chatbot.domain.exceptions import MissingSubmissionDataError
 
 if TYPE_CHECKING:
-    from qa_chatbot.domain.value_objects import DailyUpdate, ProjectStatus, QAMetrics
+    from qa_chatbot.domain.value_objects import TestCoverageMetrics
 
 
 class ValidationService:
@@ -15,11 +15,10 @@ class ValidationService:
 
     @staticmethod
     def ensure_submission_has_data(
-        qa_metrics: QAMetrics | None,
-        project_status: ProjectStatus | None,
-        daily_update: DailyUpdate | None,
+        test_coverage: TestCoverageMetrics | None,
+        overall_test_cases: int | None,
     ) -> None:
         """Ensure at least one data section is present."""
-        if not (qa_metrics or project_status or daily_update):
+        if test_coverage is None and overall_test_cases is None:
             msg = "Submission must include at least one data section"
             raise MissingSubmissionDataError(msg)

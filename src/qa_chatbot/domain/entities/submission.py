@@ -10,7 +10,7 @@ from uuid import UUID, uuid4
 from qa_chatbot.domain.services import ValidationService
 
 if TYPE_CHECKING:
-    from qa_chatbot.domain.value_objects import DailyUpdate, ProjectStatus, QAMetrics, TeamId, TimeWindow
+    from qa_chatbot.domain.value_objects import ProjectId, TestCoverageMetrics, TimeWindow
 
 
 @dataclass(frozen=True)
@@ -18,41 +18,37 @@ class Submission:
     """Represents a single team submission for a time window."""
 
     id: UUID
-    team_id: TeamId
+    project_id: ProjectId
     month: TimeWindow
-    qa_metrics: QAMetrics | None
-    project_status: ProjectStatus | None
-    daily_update: DailyUpdate | None
+    test_coverage: TestCoverageMetrics | None
+    overall_test_cases: int | None
     created_at: datetime
     raw_conversation: str | None = None
 
     def __post_init__(self) -> None:
         """Ensure submissions contain at least one data category."""
         ValidationService.ensure_submission_has_data(
-            qa_metrics=self.qa_metrics,
-            project_status=self.project_status,
-            daily_update=self.daily_update,
+            test_coverage=self.test_coverage,
+            overall_test_cases=self.overall_test_cases,
         )
 
     @classmethod
     def create(  # noqa: PLR0913
         cls,
-        team_id: TeamId,
+        project_id: ProjectId,
         month: TimeWindow,
-        qa_metrics: QAMetrics | None,
-        project_status: ProjectStatus | None,
-        daily_update: DailyUpdate | None,
+        test_coverage: TestCoverageMetrics | None,
+        overall_test_cases: int | None,
         raw_conversation: str | None = None,
         created_at: datetime | None = None,
     ) -> Submission:
         """Create a submission with generated identifiers."""
         return cls(
             id=uuid4(),
-            team_id=team_id,
+            project_id=project_id,
             month=month,
-            qa_metrics=qa_metrics,
-            project_status=project_status,
-            daily_update=daily_update,
+            test_coverage=test_coverage,
+            overall_test_cases=overall_test_cases,
             raw_conversation=raw_conversation,
             created_at=created_at or datetime.now(tz=UTC),
         )

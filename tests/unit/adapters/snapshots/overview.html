@@ -9,61 +9,1454 @@
 <body class="bg-slate-100 text-slate-900">
 <main class="max-w-6xl mx-auto px-6 py-8">
 <header class="mb-8">
-<h1 class="text-3xl font-semibold">QA Dashboard Overview</h1>
+<h1 class="text-3xl font-semibold">Monthly QA Summary</h1>
 <p class="text-slate-600">Reporting month: 2026-02</p>
+<p class="text-xs text-slate-500">
+Generated at 2026-02-04T12:00:00+00:00 · Completeness: PARTIAL
+</p>
+<div class="text-xs text-amber-700 mt-2">
+<p>Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_coverage:angular_core_web, test_coverage:angular_www, test_coverage:artificial_intelligence, test_coverage:bridge, test_coverage:client_authentication, test_coverage:client_communication, test_coverage:client_loyalty_bonus, test_coverage:client_loyalty_loyalty, test_coverage:client_support, test_coverage:client_trading, test_coverage:crm, test_coverage:data_access_layer, test_coverage:digital_marketing, test_coverage:education, test_coverage:fees_management_service, test_coverage:horn, test_coverage:jmanager_server_portal, test_coverage:jthales, test_coverage:jtools, test_coverage:kyc, test_coverage:local_depositors_service, test_coverage:market_intelligence, test_coverage:metaproxy, test_coverage:mobile_trading_point, test_coverage:onboarding_account_mgmt, test_coverage:payments, test_coverage:plugins, test_coverage:promotions_tool, test_coverage:realtime_communications, test_coverage:scc, test_coverage:social_trading_competitions, test_coverage:social_trading_copy, test_coverage:symbols_management_service, test_coverage:tsda, test_coverage:withdrawals</p>
+<ul class="mt-1 list-disc list-inside">
+<li>affiliate: test_coverage</li>
+<li>bridge: test_coverage</li>
+<li>jthales: test_coverage</li>
+<li>metaproxy: test_coverage</li>
+<li>social_trading_copy: test_coverage</li>
+<li>client_support: test_coverage</li>
+<li>payments: test_coverage</li>
+<li>kyc: test_coverage</li>
+<li>mobile_trading_point: test_coverage</li>
+<li>angular_core_web: test_coverage</li>
+<li>jmanager_server_portal: test_coverage</li>
+<li>plugins: test_coverage</li>
+<li>social_trading_competitions: test_coverage</li>
+<li>client_authentication: test_coverage</li>
+<li>withdrawals: test_coverage</li>
+<li>scc: test_coverage</li>
+<li>angular_www: test_coverage</li>
+<li>symbols_management_service: test_coverage</li>
+<li>tsda: test_coverage</li>
+<li>promotions_tool: test_coverage</li>
+<li>client_trading: test_coverage</li>
+<li>crm: test_coverage</li>
+<li>local_depositors_service: test_coverage</li>
+<li>horn: test_coverage</li>
+<li>client_loyalty_loyalty: test_coverage</li>
+<li>onboarding_account_mgmt: test_coverage</li>
+<li>digital_marketing: test_coverage</li>
+<li>fees_management_service: test_coverage</li>
+<li>client_loyalty_bonus: test_coverage</li>
+<li>realtime_communications: test_coverage</li>
+<li>admin_tools_service: test_coverage</li>
+<li>market_intelligence: test_coverage</li>
+<li>artificial_intelligence: test_coverage</li>
+<li>jtools: test_coverage</li>
+<li>client_communication: test_coverage</li>
+<li>data_access_layer: test_coverage</li>
+<li>education: test_coverage</li>
+</ul>
+</div>
 </header>
-<section class="grid md:grid-cols-2 gap-6">
-<article class="bg-white rounded-xl shadow-sm p-6">
-<div class="flex items-center justify-between mb-4">
-<h2 class="text-xl font-semibold">Team A</h2>
-<span class="text-xs uppercase text-slate-500">2026-02</span>
+<section class="mb-10">
+<h2 class="text-xl font-semibold mb-3">Section A — Quality Metrics</h2>
+<div class="overflow-auto bg-white rounded-xl shadow-sm">
+<table class="min-w-full text-sm">
+<thead class="bg-slate-50 text-slate-600">
+<tr>
+<th class="text-left px-4 py-3">Business Stream</th>
+<th class="text-left px-4 py-3">Project</th>
+<th class="text-right px-4 py-3">Supported Releases</th>
+<th class="text-left px-4 py-3">Bugs Found (P1–P2 / P3–P4)</th>
+<th class="text-left px-4 py-3">Prod Incidents (P1–P2 / P3–P4)</th>
+<th class="text-left px-4 py-3">CAPA</th>
+<th class="text-left px-4 py-3">Defect Leakage</th>
+<th class="text-left px-4 py-3">Regression Time</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr class="bg-slate-50 font-semibold">
+<td class="px-4 py-3">All Streams</td>
+<td class="px-4 py-3 font-medium">average</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>N/A</span>
+</td>
+<td class="px-4 py-3">
+(74/444) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Affiliates</td>
+<td class="px-4 py-3 font-medium">Affiliate</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (affiliate) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Backbone Systems / Bridge</td>
+<td class="px-4 py-3 font-medium">Bridge</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (bridge) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Backbone Systems / Platform Systems</td>
+<td class="px-4 py-3 font-medium">JThales</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (jthales) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Backbone Systems / Trading Platform</td>
+<td class="px-4 py-3 font-medium">MetaProxy</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (META) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Client Engagement</td>
+<td class="px-4 py-3 font-medium">Social Trading – Copy Trading</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (social_trading_copy) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Client Journey</td>
+<td class="px-4 py-3 font-medium">Client Support</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (client_support) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Funding</td>
+<td class="px-4 py-3 font-medium">Payments</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (PAY) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Internal Systems</td>
+<td class="px-4 py-3 font-medium">KYC</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (kyc) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Mobile</td>
+<td class="px-4 py-3 font-medium">Mobile – XM Trading Point</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (mobile_trading_point) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">WWW / Client Face Application (CFA)</td>
+<td class="px-4 py-3 font-medium">Angular Core Web</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (angular_core_web) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Backbone Systems / Platform Systems</td>
+<td class="px-4 py-3 font-medium">jManager Server and Portal</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (JMGR) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Backbone Systems / Trading Platform</td>
+<td class="px-4 py-3 font-medium">Plugins</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (PLUG) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Client Engagement</td>
+<td class="px-4 py-3 font-medium">Social Trading – Competitions</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (social_trading_competitions) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Client Journey</td>
+<td class="px-4 py-3 font-medium">Client Authentication</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (client_authentication) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Funding</td>
+<td class="px-4 py-3 font-medium">Withdrawals</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (withdrawals) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Internal Systems</td>
+<td class="px-4 py-3 font-medium">SCC</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (scc) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">WWW / Client Face Application (CFA)</td>
+<td class="px-4 py-3 font-medium">Angular WWW</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (angular_www) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Backbone Systems / Platform Systems</td>
+<td class="px-4 py-3 font-medium">Symbols Management Service</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (SYM) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Backbone Systems / Trading Platform</td>
+<td class="px-4 py-3 font-medium">TSDA</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (TSDA) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Client Engagement</td>
+<td class="px-4 py-3 font-medium">Promotions Tool</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (promotions_tool) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Client Journey</td>
+<td class="px-4 py-3 font-medium">Client Trading</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (CLTR) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Internal Systems</td>
+<td class="px-4 py-3 font-medium">CRM</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (crm) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Backbone Systems / Platform Systems</td>
+<td class="px-4 py-3 font-medium">Local Depositors Service</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (LDS) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Backbone Systems / Trading Platform</td>
+<td class="px-4 py-3 font-medium">HORN</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (HORN) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Client Engagement</td>
+<td class="px-4 py-3 font-medium">Client Loyalty – Loyalty</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (client_loyalty_loyalty) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Client Journey</td>
+<td class="px-4 py-3 font-medium">Onboarding &amp; Account Management</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (onboarding_account_mgmt) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Internal Systems</td>
+<td class="px-4 py-3 font-medium">Digital Marketing</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (digital_marketing) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Backbone Systems / Platform Systems</td>
+<td class="px-4 py-3 font-medium">Fees Management Service</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (FEES) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Client Engagement</td>
+<td class="px-4 py-3 font-medium">Client Loyalty – Bonus</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (client_loyalty_bonus) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Client Journey</td>
+<td class="px-4 py-3 font-medium">Realtime Communications</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (realtime_communications) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Backbone Systems / Platform Systems</td>
+<td class="px-4 py-3 font-medium">Admin Tools Service</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (ADMIN) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Client Engagement</td>
+<td class="px-4 py-3 font-medium">Market Intelligence</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (market_intelligence) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Client Engagement</td>
+<td class="px-4 py-3 font-medium">Artificial Intelligence (AI)</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (artificial_intelligence) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Backbone Systems / Platform Systems</td>
+<td class="px-4 py-3 font-medium">JTools</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (jtools) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Client Engagement</td>
+<td class="px-4 py-3 font-medium">Client Communication</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (client_communication) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Backbone Systems / Platform Systems</td>
+<td class="px-4 py-3 font-medium">Data Access Layer (DAL)</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (DAL) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+<tr class="">
+<td class="px-4 py-3">Client Engagement</td>
+<td class="px-4 py-3 font-medium">Education</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3">
+<div>P1–P2 2</div>
+<div>P3–P4 5</div>
+</td>
+<td class="px-4 py-3">
+<div>P1–P2 1</div>
+<div>P3–P4 3</div>
+</td>
+<td class="px-4 py-3">
+<span>OK</span>
+<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project in (education) AND created &gt;= 2026-02-01 00:00:00+00:00 AND created &lt; 2026-03-01 00:00:00+00:00">View</a>
+</td>
+<td class="px-4 py-3">
+(2/12) * 100 =
+16.67%
+</td>
+<td class="px-4 py-3">
+<div>Manual Web Regression: 2.0h</div>
+<div>API Automation: 2.0h</div>
+</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div class="space-y-4">
-<div>
-<h3 class="text-sm font-semibold text-slate-700">QA Metrics</h3>
-<dl class="grid grid-cols-2 gap-2 text-sm">
-<div>
-<dt class="text-slate-500">Tests Passed</dt>
-<dd>140</dd>
-</div>
-<div>
-<dt class="text-slate-500">Tests Failed</dt>
-<dd>2</dd>
-</div>
-<div>
-<dt class="text-slate-500">Coverage %</dt>
-<dd>90.0</dd>
-</div>
-<div>
-<dt class="text-slate-500">Bug Count</dt>
-<dd>2</dd>
-</div>
-</dl>
-</div>
-<div>
-<h3 class="text-sm font-semibold text-slate-700">Project Status</h3>
-<p class="text-sm text-slate-600">
-Sprint progress: 82.0%
+</section>
+<section>
+<h2 class="text-xl font-semibold mb-3">Section B — Test Coverage</h2>
+<p class="text-sm text-slate-600 mb-4">
+Overall number of test cases across all projects:
+<span class="font-semibold">240</span>
 </p>
-<p class="text-sm text-slate-600">
-Blockers: Vendor wait
-</p>
+<div class="overflow-auto bg-white rounded-xl shadow-sm">
+<table class="min-w-full text-sm">
+<thead class="bg-slate-50 text-slate-600">
+<tr>
+<th class="text-left px-4 py-3">Business Stream</th>
+<th class="text-left px-4 py-3">Project</th>
+<th class="text-right px-4 py-3">Automation %</th>
+<th class="text-right px-4 py-3">Manual TCs</th>
+<th class="text-right px-4 py-3">Manual Created</th>
+<th class="text-right px-4 py-3">Manual Updated</th>
+<th class="text-right px-4 py-3">Automated TCs</th>
+<th class="text-right px-4 py-3">Automated Created</th>
+<th class="text-right px-4 py-3">Automated Updated</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr>
+<td class="px-4 py-3">Affiliates</td>
+<td class="px-4 py-3 font-medium">Affiliate</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Backbone Systems / Bridge</td>
+<td class="px-4 py-3 font-medium">Bridge</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Backbone Systems / Platform Systems</td>
+<td class="px-4 py-3 font-medium">JThales</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Backbone Systems / Trading Platform</td>
+<td class="px-4 py-3 font-medium">MetaProxy</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Client Engagement</td>
+<td class="px-4 py-3 font-medium">Social Trading – Copy Trading</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Client Journey</td>
+<td class="px-4 py-3 font-medium">Client Support</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Funding</td>
+<td class="px-4 py-3 font-medium">Payments</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Internal Systems</td>
+<td class="px-4 py-3 font-medium">KYC</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Mobile</td>
+<td class="px-4 py-3 font-medium">Mobile – XM Trading Point</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">WWW / Client Face Application (CFA)</td>
+<td class="px-4 py-3 font-medium">Angular Core Web</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Backbone Systems / Platform Systems</td>
+<td class="px-4 py-3 font-medium">jManager Server and Portal</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Backbone Systems / Trading Platform</td>
+<td class="px-4 py-3 font-medium">Plugins</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Client Engagement</td>
+<td class="px-4 py-3 font-medium">Social Trading – Competitions</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Client Journey</td>
+<td class="px-4 py-3 font-medium">Client Authentication</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Funding</td>
+<td class="px-4 py-3 font-medium">Withdrawals</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Internal Systems</td>
+<td class="px-4 py-3 font-medium">SCC</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">WWW / Client Face Application (CFA)</td>
+<td class="px-4 py-3 font-medium">Angular WWW</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Backbone Systems / Platform Systems</td>
+<td class="px-4 py-3 font-medium">Symbols Management Service</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Backbone Systems / Trading Platform</td>
+<td class="px-4 py-3 font-medium">TSDA</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Client Engagement</td>
+<td class="px-4 py-3 font-medium">Promotions Tool</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Client Journey</td>
+<td class="px-4 py-3 font-medium">Client Trading</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Internal Systems</td>
+<td class="px-4 py-3 font-medium">CRM</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Backbone Systems / Platform Systems</td>
+<td class="px-4 py-3 font-medium">Local Depositors Service</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Backbone Systems / Trading Platform</td>
+<td class="px-4 py-3 font-medium">HORN</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Client Engagement</td>
+<td class="px-4 py-3 font-medium">Client Loyalty – Loyalty</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Client Journey</td>
+<td class="px-4 py-3 font-medium">Onboarding &amp; Account Management</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Internal Systems</td>
+<td class="px-4 py-3 font-medium">Digital Marketing</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Backbone Systems / Platform Systems</td>
+<td class="px-4 py-3 font-medium">Fees Management Service</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Client Engagement</td>
+<td class="px-4 py-3 font-medium">Client Loyalty – Bonus</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Client Journey</td>
+<td class="px-4 py-3 font-medium">Realtime Communications</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Backbone Systems / Platform Systems</td>
+<td class="px-4 py-3 font-medium">Admin Tools Service</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Client Engagement</td>
+<td class="px-4 py-3 font-medium">Market Intelligence</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Client Engagement</td>
+<td class="px-4 py-3 font-medium">Artificial Intelligence (AI)</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Backbone Systems / Platform Systems</td>
+<td class="px-4 py-3 font-medium">JTools</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Client Engagement</td>
+<td class="px-4 py-3 font-medium">Client Communication</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Backbone Systems / Platform Systems</td>
+<td class="px-4 py-3 font-medium">Data Access Layer (DAL)</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+<tr>
+<td class="px-4 py-3">Client Engagement</td>
+<td class="px-4 py-3 font-medium">Education</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+<td class="px-4 py-3 text-right">-</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div>
-<h3 class="text-sm font-semibold text-slate-700">Daily Update</h3>
-<p class="text-sm text-slate-600">
-Capacity hours: 7.0
-</p>
-<p class="text-sm text-slate-600">
-Issues: Deployment queue
-</p>
-</div>
-<a
-class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800"
-href="team-team a.html"
->View team detail →</a
-</div>
-</article>
 </section>
 </main>
 </body>

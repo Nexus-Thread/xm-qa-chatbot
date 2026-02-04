@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from datetime import date
 
     from qa_chatbot.application.ports.output import LLMPort, MetricsPort
-    from qa_chatbot.domain import DailyUpdate, ProjectStatus, QAMetrics, TeamId, TimeWindow
+    from qa_chatbot.domain import ProjectId, TestCoverageMetrics, TimeWindow
 
 ExtractedT = TypeVar("ExtractedT")
 
@@ -25,40 +25,34 @@ class ExtractStructuredDataUseCase:
     llm_port: LLMPort
     metrics_port: MetricsPort | None = None
 
-    def extract_team_id(self, conversation: str) -> TeamId:
-        """Extract the team identifier from a conversation."""
-        return self._timed_extract("team_id", self.llm_port.extract_team_id, conversation)
+    def extract_project_id(self, conversation: str) -> ProjectId:
+        """Extract the project identifier from a conversation."""
+        return self._timed_extract("project_id", self.llm_port.extract_project_id, conversation)
 
     def extract_time_window(self, conversation: str, current_date: date) -> TimeWindow:
         """Extract the reporting time window."""
         return self._timed_extract("time_window", self.llm_port.extract_time_window, conversation, current_date)
 
-    def extract_qa_metrics(self, conversation: str) -> QAMetrics:
-        """Extract QA metrics from a conversation."""
-        return self._timed_extract("qa_metrics", self.llm_port.extract_qa_metrics, conversation)
+    def extract_test_coverage(self, conversation: str) -> TestCoverageMetrics:
+        """Extract test coverage metrics from a conversation."""
+        return self._timed_extract("test_coverage", self.llm_port.extract_test_coverage, conversation)
 
-    def extract_project_status(self, conversation: str) -> ProjectStatus:
-        """Extract project status updates from a conversation."""
-        return self._timed_extract("project_status", self.llm_port.extract_project_status, conversation)
-
-    def extract_daily_update(self, conversation: str) -> DailyUpdate:
-        """Extract daily update details from a conversation."""
-        return self._timed_extract("daily_update", self.llm_port.extract_daily_update, conversation)
+    def extract_overall_test_cases(self, conversation: str) -> int | None:
+        """Extract overall portfolio test cases from a conversation."""
+        return self._timed_extract("overall_test_cases", self.llm_port.extract_overall_test_cases, conversation)
 
     def execute(self, conversation: str, current_date: date) -> ExtractionResult:
         """Extract structured data from a conversation."""
-        team_id = self.extract_team_id(conversation)
+        project_id = self.extract_project_id(conversation)
         time_window = self.extract_time_window(conversation, current_date)
-        qa_metrics = self.extract_qa_metrics(conversation)
-        project_status = self.extract_project_status(conversation)
-        daily_update = self.extract_daily_update(conversation)
+        test_coverage = self.extract_test_coverage(conversation)
+        overall_test_cases = self.extract_overall_test_cases(conversation)
 
         return ExtractionResult(
-            team_id=team_id,
+            project_id=project_id,
             time_window=time_window,
-            qa_metrics=qa_metrics,
-            project_status=project_status,
-            daily_update=daily_update,
+            test_coverage=test_coverage,
+            overall_test_cases=overall_test_cases,
         )
 
     def execute_sections(
@@ -66,23 +60,20 @@ class ExtractStructuredDataUseCase:
         conversation: str,
         current_date: date,
         *,
-        include_qa_metrics: bool,
-        include_project_status: bool,
-        include_daily_update: bool,
+        include_test_coverage: bool,
+        include_overall_test_cases: bool,
     ) -> ExtractionResult:
         """Extract only the requested data sections from a conversation."""
-        team_id = self.extract_team_id(conversation)
+        project_id = self.extract_project_id(conversation)
         time_window = self.extract_time_window(conversation, current_date)
-        qa_metrics = self.extract_qa_metrics(conversation) if include_qa_metrics else None
-        project_status = self.extract_project_status(conversation) if include_project_status else None
-        daily_update = self.extract_daily_update(conversation) if include_daily_update else None
+        test_coverage = self.extract_test_coverage(conversation) if include_test_coverage else None
+        overall_test_cases = self.extract_overall_test_cases(conversation) if include_overall_test_cases else None
 
         return ExtractionResult(
-            team_id=team_id,
+            project_id=project_id,
             time_window=time_window,
-            qa_metrics=qa_metrics,
-            project_status=project_status,
-            daily_update=daily_update,
+            test_coverage=test_coverage,
+            overall_test_cases=overall_test_cases,
         )
 
     def execute_with_history(

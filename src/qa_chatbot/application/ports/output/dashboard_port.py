@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Protocol
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from qa_chatbot.domain import TeamId, TimeWindow
+    from qa_chatbot.domain import ProjectId, TimeWindow
 
 
 class DashboardPort(Protocol):
@@ -16,8 +16,8 @@ class DashboardPort(Protocol):
     def generate_overview(self, month: TimeWindow) -> Path:
         """Generate the overview dashboard for a month."""
 
-    def generate_team_detail(self, team_id: TeamId, months: list[TimeWindow]) -> Path:
-        """Generate the team detail dashboard."""
+    def generate_team_detail(self, team_id: ProjectId, months: list[TimeWindow]) -> Path:
+        """Generate the project detail dashboard for a month."""
 
-    def generate_trends(self, teams: list[TeamId], months: list[TimeWindow]) -> Path:
+    def generate_trends(self, teams: list[ProjectId], months: list[TimeWindow]) -> Path:
         """Generate the trends dashboard."""

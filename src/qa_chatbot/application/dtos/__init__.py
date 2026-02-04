@@ -9,15 +9,35 @@ from .dashboard_data import (
     TrendSeries,
 )
 from .extraction_result import ExtractionResult
+from .report_data import (
+    BucketCountDTO,
+    CapaDTO,
+    CompletenessStatus,
+    DefectLeakageDTO,
+    MonthlyReport,
+    QualityMetricsRow,
+    RegressionTimeEntryDTO,
+    ReportMetadata,
+    TestCoverageRow,
+)
 from .submission_command import SubmissionCommand
 
 __all__ = [
+    "BucketCountDTO",
+    "CapaDTO",
+    "CompletenessStatus",
+    "DefectLeakageDTO",
     "ExtractionResult",
+    "MonthlyReport",
     "OverviewDashboardData",
+    "QualityMetricsRow",
+    "RegressionTimeEntryDTO",
+    "ReportMetadata",
     "SubmissionCommand",
     "TeamDetailDashboardData",
     "TeamMonthlySnapshot",
     "TeamOverviewCard",
+    "TestCoverageRow",
     "TrendSeries",
     "TrendsDashboardData",
 ]

@@ -8,15 +8,15 @@ from datetime import date
 import pytest
 
 from qa_chatbot.adapters.output.llm.openai import OpenAIAdapter, OpenAISettings
-from qa_chatbot.domain import TeamId, TimeWindow
+from qa_chatbot.domain import ProjectId, TimeWindow
 
 
 @pytest.mark.skipif(
     os.getenv("OLLAMA_BASE_URL") is None,
     reason="OLLAMA_BASE_URL not configured",
 )
-def test_openai_adapter_with_ollama_extracts_team_id() -> None:
-    """Extract a team identifier using Ollama."""
+def test_openai_adapter_with_ollama_extracts_project_id() -> None:
+    """Extract a project identifier using Ollama."""
     settings = OpenAISettings(
         base_url=os.environ["OLLAMA_BASE_URL"],
         api_key=os.getenv("OLLAMA_API_KEY", "ollama"),
@@ -24,9 +24,9 @@ def test_openai_adapter_with_ollama_extracts_team_id() -> None:
     )
     adapter = OpenAIAdapter(settings=settings)
 
-    team_id = adapter.extract_team_id("We are the QA Automation team.")
+    project_id = adapter.extract_project_id("We are the QA Automation project.")
 
-    assert isinstance(team_id, TeamId)
+    assert isinstance(project_id, ProjectId)
 
 
 @pytest.mark.skipif(

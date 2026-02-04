@@ -1,42 +1,62 @@
 """Domain layer for XM QA chatbot."""
 
-from .entities import Submission, TeamData
+from .entities import BusinessStream, Project, ReportingPeriod, Submission, TeamData
 from .exceptions import (
     AmbiguousExtractionError,
     DashboardRenderError,
     DomainError,
     InvalidConfigurationError,
-    InvalidDailyUpdateError,
-    InvalidProjectStatusError,
-    InvalidQAMetricsError,
+    InvalidProjectIdError,
     InvalidSubmissionTeamError,
-    InvalidTeamIdError,
     InvalidTimeWindowError,
     LLMExtractionError,
     MissingSubmissionDataError,
 )
+from .registries import StreamRegistry, build_default_registry
 from .services import ValidationService
-from .value_objects import DailyUpdate, ProjectStatus, QAMetrics, TeamId, TimeWindow
+from .value_objects import (
+    BucketCount,
+    CapaStatus,
+    DefectLeakage,
+    PortfolioAggregates,
+    PriorityBucket,
+    PriorityMapping,
+    ProjectId,
+    QualityMetrics,
+    RegressionTimeBlock,
+    RegressionTimeEntry,
+    TestCoverageMetrics,
+    TimeWindow,
+)
 
 __all__ = [
     "AmbiguousExtractionError",
-    "DailyUpdate",
+    "BucketCount",
+    "BusinessStream",
+    "CapaStatus",
     "DashboardRenderError",
+    "DefectLeakage",
     "DomainError",
     "InvalidConfigurationError",
-    "InvalidDailyUpdateError",
-    "InvalidProjectStatusError",
-    "InvalidQAMetricsError",
+    "InvalidProjectIdError",
     "InvalidSubmissionTeamError",
-    "InvalidTeamIdError",
     "InvalidTimeWindowError",
     "LLMExtractionError",
     "MissingSubmissionDataError",
-    "ProjectStatus",
-    "QAMetrics",
+    "PortfolioAggregates",
+    "PriorityBucket",
+    "PriorityMapping",
+    "Project",
+    "ProjectId",
+    "QualityMetrics",
+    "RegressionTimeBlock",
+    "RegressionTimeEntry",
+    "ReportingPeriod",
+    "StreamRegistry",
     "Submission",
     "TeamData",
-    "TeamId",
+    "TestCoverageMetrics",
     "TimeWindow",
     "ValidationService",
+    "build_default_registry",
 ]

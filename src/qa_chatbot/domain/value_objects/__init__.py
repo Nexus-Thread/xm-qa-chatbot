@@ -1,15 +1,30 @@
-"""Value objects for the domain layer."""
+"""Domain value objects."""
 
-from .daily_update import DailyUpdate
-from .project_status import ProjectStatus
-from .qa_metrics import QAMetrics
-from .team_id import TeamId
+from .metrics import (
+    BucketCount,
+    CapaStatus,
+    DefectLeakage,
+    QualityMetrics,
+    RegressionTimeBlock,
+    RegressionTimeEntry,
+    TestCoverageMetrics,
+)
+from .portfolio_aggregates import PortfolioAggregates
+from .priority_bucket import PriorityBucket, PriorityMapping
+from .project_id import ProjectId
 from .time_window import TimeWindow
 
 __all__ = [
-    "DailyUpdate",
-    "ProjectStatus",
-    "QAMetrics",
-    "TeamId",
+    "BucketCount",
+    "CapaStatus",
+    "DefectLeakage",
+    "PortfolioAggregates",
+    "PriorityBucket",
+    "PriorityMapping",
+    "ProjectId",
+    "QualityMetrics",
+    "RegressionTimeBlock",
+    "RegressionTimeEntry",
+    "TestCoverageMetrics",
     "TimeWindow",
 ]

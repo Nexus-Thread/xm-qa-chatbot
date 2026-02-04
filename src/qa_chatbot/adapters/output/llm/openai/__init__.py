@@ -1,20 +1,13 @@
 """OpenAI-based LLM adapter."""
 
 from .adapter import OpenAIAdapter, OpenAISettings
-from .schemas import (
-    DailyUpdateSchema,
-    ProjectStatusSchema,
-    QAMetricsSchema,
-    TeamIdSchema,
-    TimeWindowSchema,
-)
+from .schemas import OverallTestCasesSchema, ProjectIdSchema, TestCoverageSchema, TimeWindowSchema
 
 __all__ = [
-    "DailyUpdateSchema",
     "OpenAIAdapter",
     "OpenAISettings",
-    "ProjectStatusSchema",
-    "QAMetricsSchema",
-    "TeamIdSchema",
+    "OverallTestCasesSchema",
+    "ProjectIdSchema",
+    "TestCoverageSchema",
     "TimeWindowSchema",
 ]

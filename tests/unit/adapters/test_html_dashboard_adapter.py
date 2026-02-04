@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import pytest
 
 from qa_chatbot.adapters.output.dashboard.html import HtmlDashboardAdapter
-from qa_chatbot.domain import DailyUpdate, ProjectStatus, QAMetrics, Submission, TeamId, TimeWindow
+from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWindow
+
+pytestmark = pytest.mark.allow_private
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -55,82 +58,52 @@ def _normalize_html(content: str) -> str:
 
 
 def _seed_submissions(sqlite_adapter: SQLiteAdapter) -> None:
-    team_a = TeamId("Team A")
-    team_b = TeamId("Team B")
+    team_a = ProjectId("project-a")
+    team_b = ProjectId("project-b")
     jan = TimeWindow.from_year_month(2026, 1)
     feb = TimeWindow.from_year_month(2026, 2)
 
     submission_a_jan = Submission.create(
-        team_id=team_a,
+        project_id=team_a,
         month=jan,
-        qa_metrics=QAMetrics(
-            tests_passed=120,
-            tests_failed=5,
-            test_coverage_percent=87.5,
-            bug_count=3,
-            critical_bugs=1,
-            deployment_ready=True,
+        test_coverage=TestCoverageMetrics(
+            manual_total=120,
+            automated_total=80,
+            manual_created_last_month=10,
+            manual_updated_last_month=5,
+            automated_created_last_month=8,
+            automated_updated_last_month=3,
+            percentage_automation=40.0,
         ),
-        project_status=ProjectStatus(
-            sprint_progress_percent=76.0,
-            blockers=("Env flakiness",),
-            milestones_completed=("Smoke suite",),
-            risks=("API instability",),
-        ),
-        daily_update=DailyUpdate(
-            completed_tasks=("Regression", "Load test"),
-            planned_tasks=("Coverage audit",),
-            capacity_hours=6.5,
-            issues=("Staging latency",),
-        ),
+        overall_test_cases=200,
     )
     submission_b_jan = Submission.create(
-        team_id=team_b,
+        project_id=team_b,
         month=jan,
-        qa_metrics=QAMetrics(
-            tests_passed=95,
-            tests_failed=12,
-            test_coverage_percent=81.0,
-            bug_count=6,
-            critical_bugs=0,
-            deployment_ready=False,
+        test_coverage=TestCoverageMetrics(
+            manual_total=95,
+            automated_total=70,
+            manual_created_last_month=6,
+            manual_updated_last_month=4,
+            automated_created_last_month=5,
+            automated_updated_last_month=2,
+            percentage_automation=42.0,
         ),
-        project_status=ProjectStatus(
-            sprint_progress_percent=61.0,
-            blockers=(),
-            milestones_completed=("Upgrade",),
-            risks=("Data drift",),
-        ),
-        daily_update=DailyUpdate(
-            completed_tasks=("Test plan",),
-            planned_tasks=("Security scan",),
-            capacity_hours=5.0,
-            issues=(),
-        ),
+        overall_test_cases=190,
     )
     submission_a_feb = Submission.create(
-        team_id=team_a,
+        project_id=team_a,
         month=feb,
-        qa_metrics=QAMetrics(
-            tests_passed=140,
-            tests_failed=2,
-            test_coverage_percent=90.0,
-            bug_count=2,
-            critical_bugs=0,
-            deployment_ready=True,
+        test_coverage=TestCoverageMetrics(
+            manual_total=140,
+            automated_total=100,
+            manual_created_last_month=12,
+            manual_updated_last_month=6,
+            automated_created_last_month=9,
+            automated_updated_last_month=4,
+            percentage_automation=41.0,
         ),
-        project_status=ProjectStatus(
-            sprint_progress_percent=82.0,
-            blockers=("Vendor wait",),
-            milestones_completed=("Scale test",),
-            risks=(),
-        ),
-        daily_update=DailyUpdate(
-            completed_tasks=("Release candidate",),
-            planned_tasks=("Postmortem",),
-            capacity_hours=7.0,
-            issues=("Deployment queue",),
-        ),
+        overall_test_cases=240,
     )
 
     sqlite_adapter.save_submission(submission_a_jan)
@@ -142,7 +115,24 @@ def _seed_submissions(sqlite_adapter: SQLiteAdapter) -> None:
 def dashboard_adapter(sqlite_adapter: SQLiteAdapter, tmp_path: Path) -> HtmlDashboardAdapter:
     """Provide the HTML dashboard adapter with seeded data."""
     _seed_submissions(sqlite_adapter)
-    return HtmlDashboardAdapter(storage_port=sqlite_adapter, output_dir=tmp_path / "dashboards")
+    adapter = HtmlDashboardAdapter(storage_port=sqlite_adapter, output_dir=tmp_path / "dashboards")
+    return _with_fixed_report_timestamp(adapter)
+
+
+def _with_fixed_report_timestamp(adapter: HtmlDashboardAdapter) -> HtmlDashboardAdapter:
+    report_use_case = adapter._report_use_case  # noqa: SLF001
+    adapter._report_use_case = report_use_case.__class__(  # noqa: SLF001
+        storage_port=report_use_case.storage_port,
+        jira_port=report_use_case.jira_port,
+        release_port=report_use_case.release_port,
+        registry=report_use_case.registry,
+        timezone=report_use_case.timezone,
+        edge_case_policy=report_use_case.edge_case_policy,
+        regression_suites=report_use_case.regression_suites,
+        completeness_mode=report_use_case.completeness_mode,
+        now_provider=lambda: datetime(2026, 2, 4, 12, 0, 0, tzinfo=UTC),
+    )
+    return adapter
 
 
 def test_generate_overview_snapshot(
@@ -158,24 +148,24 @@ def test_generate_overview_snapshot(
 
 def test_generate_team_detail_snapshot(
     dashboard_adapter: HtmlDashboardAdapter,
-    team_id_a: TeamId,
+    project_id_a: ProjectId,
     request: pytest.FixtureRequest,
 ) -> None:
     """Render and snapshot the team detail dashboard."""
     months = [TimeWindow.from_year_month(2026, 2), TimeWindow.from_year_month(2026, 1)]
-    output_path = dashboard_adapter.generate_team_detail(team_id_a, months)
+    output_path = dashboard_adapter.generate_team_detail(project_id_a, months)
     html = _normalize_html(output_path.read_text(encoding="utf-8"))
     _assert_snapshot(request, "team_detail", html)
 
 
 def test_generate_trends_snapshot(
     dashboard_adapter: HtmlDashboardAdapter,
-    team_id_a: TeamId,
-    team_id_b: TeamId,
+    project_id_a: ProjectId,
+    project_id_b: ProjectId,
     request: pytest.FixtureRequest,
 ) -> None:
     """Render and snapshot the trends dashboard."""
     months = [TimeWindow.from_year_month(2026, 2), TimeWindow.from_year_month(2026, 1)]
-    output_path = dashboard_adapter.generate_trends([team_id_a, team_id_b], months)
+    output_path = dashboard_adapter.generate_trends([project_id_a, project_id_b], months)
     html = _normalize_html(output_path.read_text(encoding="utf-8"))
     _assert_snapshot(request, "trends", html)

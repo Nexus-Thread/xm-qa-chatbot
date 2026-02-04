@@ -301,3 +301,63 @@ Chatbot submissions are treated as the default input mechanism for test coverage
 	•	computed % automation with consistent formula
 	4.	The report includes “All Streams, average” aggregate row with totals and averages.
 	5.	The report includes completeness status metadata.
+
+Streams and projects
+
+Affiliates
+	•	Affiliate
+
+Backbone Systems / Bridge
+	•	Bridge
+
+Backbone Systems / Platform Systems
+	•	JThales
+	•	jManager Server and Portal
+	•	Symbols Management Service
+	•	Local Depositors Service
+	•	Fees Management Service
+	•	Admin Tools Service
+	•	Funding Service (Not Live)
+	•	JTools
+	•	Data Access Layer (DAL)
+
+Backbone Systems / Trading Platform
+	•	MetaProxy
+	•	Plugins
+	•	TSDA
+	•	HORN
+
+Client Engagement
+	•	Social Trading – Copy Trading
+	•	Social Trading – Competitions
+	•	Promotions Tool
+	•	Client Loyalty – Loyalty
+	•	Client Loyalty – Bonus
+	•	Market Intelligence
+	•	Artificial Intelligence (AI)
+	•	Client Communication
+	•	Education
+
+Client Journey
+	•	Client Support
+	•	Client Authentication
+	•	Client Trading
+	•	Onboarding & Account Management
+	•	Realtime Communications
+
+Funding
+	•	Payments
+	•	Withdrawals
+
+Internal Systems
+	•	KYC
+	•	SCC
+	•	CRM
+	•	Digital Marketing
+
+Mobile
+	•	Mobile – XM Trading Point
+
+WWW / Client Face Application (CFA)
+	•	Angular Core Web
+	•	Angular WWW

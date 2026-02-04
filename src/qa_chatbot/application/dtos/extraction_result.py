@@ -6,15 +6,14 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from qa_chatbot.domain import DailyUpdate, ProjectStatus, QAMetrics, TeamId, TimeWindow
+    from qa_chatbot.domain import ProjectId, TestCoverageMetrics, TimeWindow
 
 
 @dataclass(frozen=True)
 class ExtractionResult:
     """Container for structured data extracted from a conversation."""
 
-    team_id: TeamId
+    project_id: ProjectId
     time_window: TimeWindow
-    qa_metrics: QAMetrics | None
-    project_status: ProjectStatus | None
-    daily_update: DailyUpdate | None
+    test_coverage: TestCoverageMetrics | None
+    overall_test_cases: int | None
