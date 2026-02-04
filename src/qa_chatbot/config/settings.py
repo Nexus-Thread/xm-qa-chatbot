@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Self
+from typing import Any, Self
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -30,7 +30,7 @@ class AppSettings(BaseSettings):
     rate_limit_requests: int = Field(8, validation_alias="RATE_LIMIT_REQUESTS", ge=1, le=100)
     rate_limit_window_seconds: int = Field(60, validation_alias="RATE_LIMIT_WINDOW_SECONDS", ge=1, le=3600)
 
-    def __init__(self, **data: object) -> None:
+    def __init__(self, **data: Any) -> None:
         """Initialize settings with optional overrides."""
         super().__init__(**data)
 
