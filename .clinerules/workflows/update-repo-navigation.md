@@ -15,7 +15,7 @@ Use this workflow to generate a project-specific navigation map when the reposit
    ```bash
    # Find the main package name
    ls src/
-   
+
    # Show directory tree (adjust depth as needed)
    tree src/ -L 3 -d
    ```
@@ -24,10 +24,10 @@ Use this workflow to generate a project-specific navigation map when the reposit
    ```bash
    # List domain modules
    find src/*/domain/ -name "*.py" -type f | sort
-   
+
    # List application modules
    find src/*/application/ -name "*.py" -type f | sort
-   
+
    # List adapters
    find src/*/adapters/ -name "*.py" -type f | sort
    ```
@@ -91,7 +91,7 @@ Create a file like `docs/PROJECT-NAVIGATION.md`:
   - `entities/order.py` - Order entity
   - `services/pricing.py` - Pricing domain service
   - `exceptions.py` - Domain-specific exceptions
-  
+
 - `src/myproject/application/` - Use cases and ports
   - `use_cases/create_order.py` - Order creation workflow
   - `ports/user_repository.py` - User persistence port

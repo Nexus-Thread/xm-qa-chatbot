@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, TypeVar
@@ -78,6 +79,7 @@ class OpenAIAdapter(LLMPort):
         self._settings = settings
         self._client = client or build_client(base_url=settings.base_url, api_key=settings.api_key)
         self._last_usage: TokenUsage | None = None
+        self._logger = logging.getLogger(self.__class__.__name__)
 
     @property
     def last_usage(self) -> TokenUsage | None:
@@ -200,6 +202,7 @@ class OpenAIAdapter(LLMPort):
         """Call the OpenAI API and extract JSON content."""
         for attempt in range(self._settings.max_retries):
             try:
+                started_at = time.perf_counter()
                 messages = [
                     {"role": "system", "content": SYSTEM_PROMPT},
                     *self._normalize_history(history),
@@ -211,13 +214,32 @@ class OpenAIAdapter(LLMPort):
                     response_format={"type": "json_object"},
                     temperature=0,
                 )
+                elapsed_ms = (time.perf_counter() - started_at) * 1000
                 self._last_usage = self._extract_usage(response)
+                self._logger.info(
+                    "LLM extraction completed",
+                    extra={
+                        "model": self._settings.model,
+                        "prompt_name": prompt.split("\n", maxsplit=1)[0],
+                        "elapsed_ms": round(elapsed_ms, 2),
+                        "prompt_tokens": self._last_usage.prompt_tokens if self._last_usage else None,
+                        "completion_tokens": self._last_usage.completion_tokens if self._last_usage else None,
+                        "total_tokens": self._last_usage.total_tokens if self._last_usage else None,
+                    },
+                )
                 message = response.choices[0].message
                 if message.content is None:
                     msg = "LLM response did not include content"
                     raise LLMExtractionError(msg)
                 return self._parse_json(message.content)
             except APIError as err:
+                self._logger.warning(
+                    "LLM extraction failed",
+                    extra={
+                        "model": self._settings.model,
+                        "attempt": attempt + 1,
+                    },
+                )
                 if attempt >= self._settings.max_retries - 1:
                     msg = "LLM request failed after retries"
                     raise LLMExtractionError(msg) from err

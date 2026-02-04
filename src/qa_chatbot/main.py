@@ -9,12 +9,18 @@ from qa_chatbot.adapters.input.gradio.conversation_manager import ConversationMa
 from qa_chatbot.adapters.output import HtmlDashboardAdapter, OpenAIAdapter, SQLiteAdapter
 from qa_chatbot.adapters.output.llm.openai import OpenAISettings
 from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitTeamDataUseCase
-from qa_chatbot.config import AppSettings
+from qa_chatbot.config import AppSettings, LoggingSettings, configure_logging
 
 
 def main() -> None:
     """Run the chatbot application."""
     settings = AppSettings.load()
+    configure_logging(
+        LoggingSettings(
+            level=settings.log_level,
+            format=settings.log_format,
+        )
+    )
     storage = SQLiteAdapter(database_url=settings.database_url, echo=settings.database_echo)
     storage.initialize_schema()
 

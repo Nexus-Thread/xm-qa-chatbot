@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import logging
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from qa_chatbot.domain import Submission
@@ -18,9 +19,21 @@ class SubmitTeamDataUseCase:
 
     storage_port: StoragePort
     dashboard_port: DashboardPort | None = None
+    _logger: logging.Logger = field(init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        """Initialize logging for the use case."""
+        object.__setattr__(self, "_logger", logging.getLogger(self.__class__.__name__))
 
     def execute(self, command: SubmissionCommand) -> Submission:
         """Persist a team submission and return it."""
+        self._logger.info(
+            "Submitting team data",
+            extra={
+                "team_id": str(command.team_id),
+                "time_window": str(command.time_window),
+            },
+        )
         submission = Submission.create(
             team_id=command.team_id,
             month=command.time_window,
@@ -37,4 +50,12 @@ class SubmitTeamDataUseCase:
             self.dashboard_port.generate_overview(submission.month)
             self.dashboard_port.generate_team_detail(submission.team_id, recent_months)
             self.dashboard_port.generate_trends(teams, recent_months)
+        self._logger.info(
+            "Submission saved",
+            extra={
+                "submission_id": submission.id,
+                "team_id": str(submission.team_id),
+                "time_window": str(submission.month),
+            },
+        )
         return submission

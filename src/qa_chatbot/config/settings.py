@@ -24,6 +24,8 @@ class AppSettings(BaseSettings):
     dashboard_output_dir: Path = Field(Path("./dashboard_html"), validation_alias="DASHBOARD_OUTPUT_DIR")
     server_port: int = Field(7860, validation_alias="GRADIO_SERVER_PORT", ge=1, le=65535)
     share: bool = Field(default=False, validation_alias="GRADIO_SHARE")
+    log_level: str = Field("INFO", validation_alias="LOG_LEVEL")
+    log_format: str = Field("json", validation_alias="LOG_FORMAT")
 
     def model_post_init(self, __context: object, /) -> None:
         """Validate non-empty values after parsing."""
@@ -31,6 +33,8 @@ class AppSettings(BaseSettings):
         self._validate_non_empty("OPENAI_API_KEY", self.openai_api_key)
         self._validate_non_empty("OPENAI_MODEL", self.openai_model)
         self._validate_non_empty("DATABASE_URL", self.database_url)
+        self._validate_choice("LOG_LEVEL", self.log_level, {"DEBUG", "INFO", "WARNING", "ERROR"})
+        self._validate_choice("LOG_FORMAT", self.log_format, {"json", "text"})
 
     @classmethod
     def load(cls) -> Self:
@@ -46,4 +50,13 @@ class AppSettings(BaseSettings):
         """Ensure required configuration values are not blank."""
         if not value.strip():
             message = f"{label} must be set"
+            raise InvalidConfigurationError(message)
+
+    @staticmethod
+    def _validate_choice(label: str, value: str, allowed: set[str]) -> None:
+        """Ensure a configuration value is within allowed choices."""
+        normalized = value.strip().upper() if label == "LOG_LEVEL" else value.strip().lower()
+        normalized_allowed = {option.upper() if label == "LOG_LEVEL" else option.lower() for option in allowed}
+        if normalized not in normalized_allowed:
+            message = f"{label} must be one of {', '.join(sorted(allowed))}"
             raise InvalidConfigurationError(message)

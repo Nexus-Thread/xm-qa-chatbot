@@ -29,3 +29,5 @@ The application validates configuration at startup and will raise an error if va
 | `DASHBOARD_OUTPUT_DIR` | `./dashboard_html` | Output folder for generated dashboards. |
 | `GRADIO_SERVER_PORT` | `7860` | Gradio server port. |
 | `GRADIO_SHARE` | `false` | Generate a public Gradio share link. |
+| `LOG_LEVEL` | `INFO` | Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`). |
+| `LOG_FORMAT` | `json` | Log format (`json` or `text`). |
