@@ -37,22 +37,17 @@ class ExtractStructuredDataUseCase:
         """Extract test coverage metrics from a conversation."""
         return self._timed_extract("test_coverage", self.llm_port.extract_test_coverage, conversation)
 
-    def extract_overall_test_cases(self, conversation: str) -> int | None:
-        """Extract overall portfolio test cases from a conversation."""
-        return self._timed_extract("overall_test_cases", self.llm_port.extract_overall_test_cases, conversation)
-
     def execute(self, conversation: str, current_date: date) -> ExtractionResult:
         """Extract structured data from a conversation."""
         project_id = self.extract_project_id(conversation)
         time_window = self.extract_time_window(conversation, current_date)
         test_coverage = self.extract_test_coverage(conversation)
-        overall_test_cases = self.extract_overall_test_cases(conversation)
 
         return ExtractionResult(
             project_id=project_id,
             time_window=time_window,
             test_coverage=test_coverage,
-            overall_test_cases=overall_test_cases,
+            overall_test_cases=None,
         )
 
     def execute_sections(
@@ -61,19 +56,17 @@ class ExtractStructuredDataUseCase:
         current_date: date,
         *,
         include_test_coverage: bool,
-        include_overall_test_cases: bool,
     ) -> ExtractionResult:
         """Extract only the requested data sections from a conversation."""
         project_id = self.extract_project_id(conversation)
         time_window = self.extract_time_window(conversation, current_date)
         test_coverage = self.extract_test_coverage(conversation) if include_test_coverage else None
-        overall_test_cases = self.extract_overall_test_cases(conversation) if include_overall_test_cases else None
 
         return ExtractionResult(
             project_id=project_id,
             time_window=time_window,
             test_coverage=test_coverage,
-            overall_test_cases=overall_test_cases,
+            overall_test_cases=None,
         )
 
     def execute_with_history(

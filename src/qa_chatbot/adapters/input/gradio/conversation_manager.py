@@ -23,7 +23,6 @@ class ConversationState(StrEnum):
     PROJECT_ID = "project_id"
     TIME_WINDOW = "time_window"
     TEST_COVERAGE = "test_coverage"
-    OVERALL_TEST_CASES = "overall_test_cases"
     SKIP_CONFIRMATION = "skip_confirmation"
     CONFIRMATION = "confirmation"
     SAVED = "saved"
@@ -37,7 +36,6 @@ class ConversationSession:
     project_id: ProjectId | None = None
     time_window: TimeWindow | None = None
     test_coverage: TestCoverageMetrics | None = None
-    overall_test_cases: int | None = None
     pending_section: ConversationState | None = None
     history: list[dict[str, str]] = field(default_factory=list)
 
@@ -86,7 +84,6 @@ class ConversationManager:
             ConversationState.PROJECT_ID: self._handle_project_id,
             ConversationState.TIME_WINDOW: self._handle_time_window,
             ConversationState.TEST_COVERAGE: self._handle_test_coverage,
-            ConversationState.OVERALL_TEST_CASES: self._handle_overall_test_cases,
             ConversationState.SKIP_CONFIRMATION: self._handle_skip_confirmation,
             ConversationState.CONFIRMATION: self._handle_confirmation,
         }
@@ -146,25 +143,12 @@ class ConversationManager:
         except DomainError as err:
             return formatters.format_error_message(str(err)) + " " + formatters.prompt_for_test_coverage()
 
-        session.state = ConversationState.OVERALL_TEST_CASES
-        return formatters.prompt_for_optional_overall_cases()
-
-    def _handle_overall_test_cases(self, message: str, session: ConversationSession, today: date) -> str:
-        """Handle portfolio total test cases."""
-        _ = today
-        if self._is_skip_request(message):
-            session.state = ConversationState.CONFIRMATION
-            return self._build_confirmation_prompt(session)
-        try:
-            session.overall_test_cases = self._extractor.extract_overall_test_cases(message)
-        except DomainError as err:
-            return formatters.format_error_message(str(err)) + " " + formatters.prompt_for_overall_test_cases()
-
         session.state = ConversationState.CONFIRMATION
         return self._build_confirmation_prompt(session)
 
     def _handle_skip_confirmation(self, message: str, session: ConversationSession, today: date) -> str:
         """Handle confirmation for skipping a section."""
+        _ = today
         pending = session.pending_section
         if pending is None:
             session.state = ConversationState.CONFIRMATION
@@ -197,7 +181,7 @@ class ConversationManager:
 
         target_state = self._detect_edit_target(message)
         if target_state is None:
-            return "Which section should I update? You can say project, month, test coverage, or overall total."
+            return "Which section should I update? You can say project, month, or test coverage."
 
         self._reset_section(session, target_state)
         session.state = target_state
@@ -212,7 +196,7 @@ class ConversationManager:
             project_id=session.project_id,
             time_window=session.time_window,
             test_coverage=session.test_coverage,
-            overall_test_cases=session.overall_test_cases,
+            overall_test_cases=None,
         )
         return formatters.prompt_for_confirmation(summary)
 
@@ -236,9 +220,6 @@ class ConversationManager:
         """Move to the next state after a section is handled."""
         _ = today
         if section == ConversationState.TEST_COVERAGE:
-            session.state = ConversationState.OVERALL_TEST_CASES
-            return formatters.prompt_for_optional_overall_cases()
-        if section == ConversationState.OVERALL_TEST_CASES:
             session.state = ConversationState.CONFIRMATION
             return self._build_confirmation_prompt(session)
 
@@ -254,7 +235,6 @@ class ConversationManager:
         """Handle message when returning from skip confirmation."""
         handler = {
             ConversationState.TEST_COVERAGE: self._handle_test_coverage,
-            ConversationState.OVERALL_TEST_CASES: self._handle_overall_test_cases,
         }.get(session.state)
         if handler is None:
             return formatters.format_error_message("Unable to resume section.")
@@ -268,8 +248,6 @@ class ConversationManager:
             return formatters.prompt_for_time_window(TimeWindow.default_for(today))
         if state == ConversationState.TEST_COVERAGE:
             return formatters.prompt_for_test_coverage()
-        if state == ConversationState.OVERALL_TEST_CASES:
-            return formatters.prompt_for_overall_test_cases()
         return "Please share the update."
 
     def _detect_edit_target(self, message: str) -> ConversationState | None:
@@ -281,8 +259,6 @@ class ConversationManager:
             return ConversationState.TIME_WINDOW
         if "coverage" in normalized or "test" in normalized:
             return ConversationState.TEST_COVERAGE
-        if "overall" in normalized or "portfolio" in normalized or "total" in normalized:
-            return ConversationState.OVERALL_TEST_CASES
         return None
 
     def _reset_section(self, session: ConversationSession, section: ConversationState) -> None:
@@ -293,12 +269,10 @@ class ConversationManager:
             session.time_window = None
         elif section == ConversationState.TEST_COVERAGE:
             session.test_coverage = None
-        elif section == ConversationState.OVERALL_TEST_CASES:
-            session.overall_test_cases = None
 
     def _has_any_section(self, session: ConversationSession) -> bool:
         """Return whether any data section is present."""
-        return session.test_coverage is not None or session.overall_test_cases is not None
+        return session.test_coverage is not None
 
     def _build_command(self, session: ConversationSession) -> SubmissionCommand:
         """Build a submission command from session data."""
@@ -322,7 +296,7 @@ class ConversationManager:
             project_id=session.project_id,
             time_window=session.time_window,
             test_coverage=session.test_coverage,
-            overall_test_cases=session.overall_test_cases,
+            overall_test_cases=None,
             raw_conversation=raw_conversation,
         )
 
@@ -386,7 +360,6 @@ class ConversationManager:
         session.project_id = new_session.project_id
         session.time_window = new_session.time_window
         session.test_coverage = new_session.test_coverage
-        session.overall_test_cases = new_session.overall_test_cases
         session.pending_section = new_session.pending_section
         session.history = new_session.history
         return welcome, session

@@ -23,9 +23,6 @@ class LLMPort(Protocol):
     def extract_test_coverage(self, conversation: str) -> TestCoverageMetrics:
         """Extract test coverage metrics from a conversation."""
 
-    def extract_overall_test_cases(self, conversation: str) -> int | None:
-        """Extract overall portfolio test cases from a conversation."""
-
     def extract_with_history(
         self,
         conversation: str,

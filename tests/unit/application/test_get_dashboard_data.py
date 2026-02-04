@@ -61,7 +61,7 @@ def _submission(
             automated_updated_last_month=1,
             percentage_automation=33.33,
         ),
-        overall_test_cases=30,
+        overall_test_cases=None,
         created_at=created_at,
     )
 

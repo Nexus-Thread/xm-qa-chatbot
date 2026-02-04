@@ -41,11 +41,6 @@ class FakeLLM:
             percentage_automation=33.33,
         )
 
-    def extract_overall_test_cases(self, conversation: str) -> int | None:
-        """Return a fixed overall test case count."""
-        _ = conversation
-        return 20
-
     def extract_with_history(
         self,
         conversation: str,
@@ -59,7 +54,15 @@ class FakeLLM:
         return ExtractionResult(
             project_id=ProjectId("qa-project"),
             time_window=TimeWindow.from_year_month(2026, 1),
-            test_coverage=None,
+            test_coverage=TestCoverageMetrics(
+                manual_total=10,
+                automated_total=5,
+                manual_created_last_month=1,
+                manual_updated_last_month=1,
+                automated_created_last_month=1,
+                automated_updated_last_month=1,
+                percentage_automation=33.33,
+            ),
             overall_test_cases=None,
         )
 
@@ -116,10 +119,7 @@ def test_conversation_happy_path(conversation_manager: ConversationManager) -> N
     assert "test coverage" in response
 
     response, session = conversation_manager.handle_message("coverage", session, date(2026, 1, 15))
-    assert "portfolio" in response
-
-    response, session = conversation_manager.handle_message("skip", session, date(2026, 1, 15))
-    assert "Here is what I captured" in response
+    assert "captured" in response.lower()
 
     response, session = conversation_manager.handle_message("yes", session, date(2026, 1, 15))
     assert "saved" in response.lower()
@@ -138,6 +138,6 @@ def test_conversation_skip_section(conversation_manager: ConversationManager) ->
     assert "skip test coverage" in response
 
     response, session = conversation_manager.handle_message("yes", session, date(2026, 1, 15))
-    assert "portfolio" in response
+    assert "captured" in response.lower()
 
     assert isinstance(session, ConversationSession)

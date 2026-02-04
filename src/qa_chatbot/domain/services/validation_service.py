@@ -14,11 +14,8 @@ class ValidationService:
     """Performs cross-entity validation checks."""
 
     @staticmethod
-    def ensure_submission_has_data(
-        test_coverage: TestCoverageMetrics | None,
-        overall_test_cases: int | None,
-    ) -> None:
+    def ensure_submission_has_data(test_coverage: TestCoverageMetrics | None) -> None:
         """Ensure at least one data section is present."""
-        if test_coverage is None and overall_test_cases is None:
+        if test_coverage is None:
             msg = "Submission must include at least one data section"
             raise MissingSubmissionDataError(msg)

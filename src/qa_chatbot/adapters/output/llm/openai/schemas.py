@@ -26,9 +26,3 @@ class TestCoverageSchema(BaseModel):
     manual_updated_last_month: int
     automated_created_last_month: int
     automated_updated_last_month: int
-
-
-class OverallTestCasesSchema(BaseModel):
-    """Schema for overall portfolio test cases extraction."""
-
-    overall_test_cases: int

@@ -29,7 +29,6 @@ class Submission:
         """Ensure submissions contain at least one data category."""
         ValidationService.ensure_submission_has_data(
             test_coverage=self.test_coverage,
-            overall_test_cases=self.overall_test_cases,
         )
 
     @classmethod

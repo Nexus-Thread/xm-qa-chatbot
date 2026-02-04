@@ -22,15 +22,9 @@ from qa_chatbot.domain import (
 )
 
 from .client import build_client
-from .prompts import (
-    OVERALL_TEST_CASES_PROMPT,
-    PROJECT_ID_PROMPT,
-    SYSTEM_PROMPT,
-    TEST_COVERAGE_PROMPT,
-    TIME_WINDOW_PROMPT,
-)
+from .prompts import PROJECT_ID_PROMPT, SYSTEM_PROMPT, TEST_COVERAGE_PROMPT, TIME_WINDOW_PROMPT
 from .retry_logic import DEFAULT_BACKOFF_SECONDS, DEFAULT_MAX_RETRIES
-from .schemas import OverallTestCasesSchema, ProjectIdSchema, TestCoverageSchema, TimeWindowSchema
+from .schemas import ProjectIdSchema, TestCoverageSchema, TimeWindowSchema
 
 SchemaT = TypeVar("SchemaT", bound=BaseModel)
 
@@ -107,17 +101,6 @@ class OpenAIAdapter(LLMPort):
             percentage_automation=0.0,
         )
 
-    def extract_overall_test_cases(self, conversation: str) -> int | None:
-        """Extract overall portfolio test cases from a conversation."""
-        payload = self._extract_json(conversation, OVERALL_TEST_CASES_PROMPT)
-        if not payload:
-            return None
-        try:
-            data = self._parse_schema(payload, OverallTestCasesSchema)
-        except LLMExtractionError:
-            return None
-        return data.overall_test_cases
-
     def extract_with_history(
         self,
         conversation: str,
@@ -128,18 +111,10 @@ class OpenAIAdapter(LLMPort):
         team_payload = self._extract_json(conversation, PROJECT_ID_PROMPT, history)
         time_payload = self._extract_json(conversation, TIME_WINDOW_PROMPT, history)
         coverage_payload = self._extract_json(conversation, TEST_COVERAGE_PROMPT, history)
-        overall_payload = self._extract_json(conversation, OVERALL_TEST_CASES_PROMPT, history)
 
         team_data = self._parse_schema(team_payload, ProjectIdSchema)
         time_data = self._parse_schema(time_payload, TimeWindowSchema)
         coverage_data = self._parse_schema(coverage_payload, TestCoverageSchema)
-        overall_data = None
-        if overall_payload:
-            try:
-                overall_data = self._parse_schema(overall_payload, OverallTestCasesSchema)
-            except LLMExtractionError:
-                overall_data = None
-
         self._raise_if_blank(team_data.project_id, "project identifier")
         self._raise_if_blank(time_data.month, "time window")
         self._raise_if_missing_int(coverage_data.manual_total, "manual_total")
@@ -160,7 +135,7 @@ class OpenAIAdapter(LLMPort):
                 automated_updated_last_month=coverage_data.automated_updated_last_month,
                 percentage_automation=0.0,
             ),
-            overall_test_cases=overall_data.overall_test_cases if overall_data else None,
+            overall_test_cases=None,
         )
 
     def _extract_json(

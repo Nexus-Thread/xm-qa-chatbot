@@ -36,16 +36,6 @@ def prompt_for_test_coverage() -> str:
     return "Share test coverage totals: manual and automated totals, plus created/updated counts for last month."
 
 
-def prompt_for_overall_test_cases() -> str:
-    """Return the prompt for overall portfolio test cases."""
-    return "What is the overall number of test cases across all projects (portfolio total)?"
-
-
-def prompt_for_optional_overall_cases() -> str:
-    """Return the prompt for optional portfolio total."""
-    return "If you have the overall portfolio test case total, share it now or reply 'skip'."
-
-
 def prompt_for_confirmation(summary: str) -> str:
     """Return the confirmation prompt."""
     return f"Here is what I captured:\n\n{summary}\n\nReply with 'yes' to save or tell me what to change."
@@ -56,8 +46,6 @@ def format_extraction_summary(result: ExtractionResult) -> str:
     lines = [f"Project: {result.project_id.value}", f"Month: {result.time_window.to_iso_month()}"]
     if result.test_coverage:
         lines.append(_format_test_coverage(result.test_coverage))
-    if result.overall_test_cases is not None:
-        lines.append(f"Overall test cases: {result.overall_test_cases}")
     return "\n".join(lines)
 
 

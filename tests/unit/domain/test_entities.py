@@ -36,7 +36,7 @@ def test_submission_create_sets_defaults(
         project_id=project_id_a,
         month=time_window_jan,
         test_coverage=test_coverage_done,
-        overall_test_cases=50,
+        overall_test_cases=None,
         created_at=datetime(2026, 1, 31, 12, 0, 0, tzinfo=UTC),
     )
 
@@ -56,7 +56,7 @@ def test_team_data_rejects_wrong_team_submission(
         project_id=project_id_b,
         month=time_window_jan,
         test_coverage=test_coverage_done,
-        overall_test_cases=20,
+        overall_test_cases=None,
     )
 
     with pytest.raises(InvalidSubmissionTeamError):
@@ -75,13 +75,13 @@ def test_team_data_filters_submissions_for_month(
         project_id=project_id_a,
         month=time_window_jan,
         test_coverage=test_coverage_done,
-        overall_test_cases=20,
+        overall_test_cases=None,
     )
     february_submission = Submission.create(
         project_id=project_id_a,
         month=time_window_feb,
         test_coverage=test_coverage_done,
-        overall_test_cases=25,
+        overall_test_cases=None,
     )
 
     team_data.add_submission(january_submission)

@@ -63,7 +63,7 @@ def submission_project_a_jan(
         project_id=project_id_a,
         month=time_window_jan,
         test_coverage=test_coverage_done,
-        overall_test_cases=25,
+        overall_test_cases=None,
     )
 
 

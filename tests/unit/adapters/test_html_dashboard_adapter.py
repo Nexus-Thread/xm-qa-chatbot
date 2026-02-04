@@ -75,7 +75,7 @@ def _seed_submissions(sqlite_adapter: SQLiteAdapter) -> None:
             automated_updated_last_month=3,
             percentage_automation=40.0,
         ),
-        overall_test_cases=200,
+        overall_test_cases=None,
     )
     submission_b_jan = Submission.create(
         project_id=team_b,
@@ -89,7 +89,7 @@ def _seed_submissions(sqlite_adapter: SQLiteAdapter) -> None:
             automated_updated_last_month=2,
             percentage_automation=42.0,
         ),
-        overall_test_cases=190,
+        overall_test_cases=None,
     )
     submission_a_feb = Submission.create(
         project_id=team_a,
@@ -103,7 +103,7 @@ def _seed_submissions(sqlite_adapter: SQLiteAdapter) -> None:
             automated_updated_last_month=4,
             percentage_automation=41.0,
         ),
-        overall_test_cases=240,
+        overall_test_cases=None,
     )
 
     sqlite_adapter.save_submission(submission_a_jan)
