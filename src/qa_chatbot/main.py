@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from pathlib import Path
 
 from qa_chatbot.adapters.input import GradioAdapter, GradioSettings
 from qa_chatbot.adapters.input.gradio.conversation_manager import ConversationManager
-from qa_chatbot.adapters.output import OpenAIAdapter, SQLiteAdapter
+from qa_chatbot.adapters.output import HtmlDashboardAdapter, OpenAIAdapter, SQLiteAdapter
 from qa_chatbot.adapters.output.llm.openai import OpenAISettings
 from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitTeamDataUseCase
 
@@ -21,6 +22,7 @@ class AppSettings:
     openai_model: str
     database_url: str
     database_echo: bool
+    dashboard_output_dir: str
     server_port: int
     share: bool
 
@@ -31,6 +33,9 @@ def main() -> None:
     storage = SQLiteAdapter(database_url=settings.database_url, echo=settings.database_echo)
     storage.initialize_schema()
 
+    dashboard_output_dir = Path(settings.dashboard_output_dir)
+    dashboard_adapter = HtmlDashboardAdapter(storage_port=storage, output_dir=dashboard_output_dir)
+
     llm_adapter = OpenAIAdapter(
         settings=OpenAISettings(
             base_url=settings.openai_base_url,
@@ -39,7 +44,7 @@ def main() -> None:
         )
     )
     extractor = ExtractStructuredDataUseCase(llm_port=llm_adapter)
-    submitter = SubmitTeamDataUseCase(storage_port=storage)
+    submitter = SubmitTeamDataUseCase(storage_port=storage, dashboard_port=dashboard_adapter)
     manager = ConversationManager(extractor=extractor, submitter=submitter)
 
     gradio_settings = GradioSettings(server_port=settings.server_port, share=settings.share)
@@ -54,6 +59,7 @@ def load_settings() -> AppSettings:
         openai_model=os.environ.get("OPENAI_MODEL", "llama2"),
         database_url=os.environ.get("DATABASE_URL", "sqlite:///./qa_chatbot.db"),
         database_echo=_read_bool("DATABASE_ECHO", default=False),
+        dashboard_output_dir=os.environ.get("DASHBOARD_OUTPUT_DIR", "./dashboard_html"),
         server_port=int(os.environ.get("GRADIO_SERVER_PORT", "7860")),
         share=_read_bool("GRADIO_SHARE", default=False),
     )

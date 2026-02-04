@@ -26,3 +26,6 @@ class StoragePort(Protocol):
 
     def get_submissions_by_month(self, month: TimeWindow) -> list[Submission]:
         """Return submissions for a reporting month."""
+
+    def get_recent_months(self, limit: int) -> list[TimeWindow]:
+        """Return the most recent reporting months."""

@@ -87,6 +87,11 @@ class FakeStorage:
         _ = month
         return []
 
+    def get_recent_months(self, limit: int) -> list[TimeWindow]:
+        """Return empty results for testing."""
+        _ = limit
+        return []
+
 
 @pytest.fixture
 def conversation_manager() -> ConversationManager:

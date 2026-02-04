@@ -8,6 +8,7 @@ import pytest
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+    from pathlib import Path
 
 from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter
 from qa_chatbot.domain import DailyUpdate, Submission, TeamId, TimeWindow
@@ -60,7 +61,7 @@ def submission_team_a_jan(
 
 
 @pytest.fixture
-def sqlite_adapter(tmp_path: pytest.TempPathFactory) -> Iterator[SQLiteAdapter]:
+def sqlite_adapter(tmp_path: Path) -> Iterator[SQLiteAdapter]:
     """Provide a SQLite adapter backed by a temporary database."""
     database_path = tmp_path / "qa_chatbot.db"
     adapter = SQLiteAdapter(database_url=f"sqlite:///{database_path}")

@@ -21,5 +21,6 @@
 | `OPENAI_MODEL` | `llama2` | Model name to use. |
 | `DATABASE_URL` | `sqlite:///./qa_chatbot.db` | SQLite connection string. |
 | `DATABASE_ECHO` | `false` | SQLAlchemy logging toggle. |
+| `DASHBOARD_OUTPUT_DIR` | `./dashboard_html` | Output folder for generated dashboards. |
 | `GRADIO_SERVER_PORT` | `7860` | Gradio server port. |
 | `GRADIO_SHARE` | `false` | Generate a public Gradio share link. |

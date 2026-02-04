@@ -59,6 +59,17 @@ class SQLiteAdapter(StoragePort):
         statement = select(SubmissionModel).where(SubmissionModel.month == month.to_iso_month())
         return self._execute_and_map(statement)
 
+    def get_recent_months(self, limit: int) -> list[TimeWindow]:
+        """Return most recent reporting months in descending order."""
+        statement = select(SubmissionModel.month).distinct().order_by(SubmissionModel.month.desc()).limit(limit)
+        with self._session_scope() as session:
+            rows = session.execute(statement).scalars().all()
+        months = []
+        for month in rows:
+            year, month_value = month.split("-")
+            months.append(TimeWindow.from_year_month(int(year), int(month_value)))
+        return months
+
     @property
     def engine(self) -> Engine:
         """Expose engine for advanced use cases."""

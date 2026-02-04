@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Team Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body class="bg-slate-100 text-slate-900">
+    <main class="max-w-6xl mx-auto px-6 py-8">
+      <header class="mb-8 flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-semibold">Team {{ data.team_id.value }}</h1>
+          <p class="text-slate-600">Monthly performance and updates</p>
+        </div>
+        <a
+          class="text-sm font-medium text-blue-600 hover:text-blue-800"
+          href="overview.html"
+          >← Back to overview</a
+      </header>
+
+      <section class="bg-white rounded-xl shadow-sm p-6 mb-8">
+        <h2 class="text-lg font-semibold mb-4">QA Metrics Trend</h2>
+        <canvas id="qaTrendChart" height="120"></canvas>
+      </section>
+
+      <section class="grid gap-6">
+        {% for snapshot in data.snapshots %}
+        <article class="bg-white rounded-xl shadow-sm p-6">
+          <h3 class="text-lg font-semibold mb-4">{{ snapshot.month.to_iso_month() }}</h3>
+          <div class="grid md:grid-cols-3 gap-6">
+            <div>
+              <h4 class="text-sm font-semibold text-slate-700">QA Metrics</h4>
+              <ul class="text-sm text-slate-600 space-y-1">
+                <li>Tests passed: {{ snapshot.qa_metrics.tests_passed or "-" }}</li>
+                <li>Tests failed: {{ snapshot.qa_metrics.tests_failed or "-" }}</li>
+                <li>Coverage: {{ snapshot.qa_metrics.test_coverage_percent or "-" }}%</li>
+                <li>Bug count: {{ snapshot.qa_metrics.bug_count or "-" }}</li>
+                <li>Critical bugs: {{ snapshot.qa_metrics.critical_bugs or "-" }}</li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="text-sm font-semibold text-slate-700">Project Status</h4>
+              <ul class="text-sm text-slate-600 space-y-1">
+                <li>Sprint progress: {{ snapshot.project_status.sprint_progress_percent or "-" }}%</li>
+                <li>
+                  Blockers: {{ snapshot.project_status.blockers | join(", ") if snapshot.project_status.blockers else "None" }}
+                </li>
+                <li>
+                  Milestones: {{ snapshot.project_status.milestones_completed | join(", ") if snapshot.project_status.milestones_completed else "None" }}
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="text-sm font-semibold text-slate-700">Daily Update</h4>
+              <ul class="text-sm text-slate-600 space-y-1">
+                <li>
+                  Completed: {{ snapshot.daily_update.completed_tasks | join(", ") if snapshot.daily_update.completed_tasks else "None" }}
+                </li>
+                <li>
+                  Planned: {{ snapshot.daily_update.planned_tasks | join(", ") if snapshot.daily_update.planned_tasks else "None" }}
+                </li>
+                <li>Capacity hours: {{ snapshot.daily_update.capacity_hours or "-" }}</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+      </section>
+    </main>
+
+    <script>
+      const labels = {{ data.snapshots | map(attribute="month.to_iso_month") | list | tojson }};
+      const qaMetrics = {
+        testsPassed: {{ data.snapshots | map(attribute="qa_metrics.tests_passed") | list | tojson }},
+        testsFailed: {{ data.snapshots | map(attribute="qa_metrics.tests_failed") | list | tojson }},
+        coverage: {{ data.snapshots | map(attribute="qa_metrics.test_coverage_percent") | list | tojson }},
+      };
+
+      const ctx = document.getElementById("qaTrendChart");
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "Tests Passed",
+              data: qaMetrics.testsPassed,
+              borderColor: "#2563eb",
+              backgroundColor: "rgba(37, 99, 235, 0.2)",
+              tension: 0.3,
+            },
+            {
+              label: "Tests Failed",
+              data: qaMetrics.testsFailed,
+              borderColor: "#dc2626",
+              backgroundColor: "rgba(220, 38, 38, 0.2)",
+              tension: 0.3,
+            },
+            {
+              label: "Coverage %",
+              data: qaMetrics.coverage,
+              borderColor: "#16a34a",
+              backgroundColor: "rgba(22, 163, 74, 0.2)",
+              tension: 0.3,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: "bottom",
+            },
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
