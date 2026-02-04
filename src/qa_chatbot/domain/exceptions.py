@@ -48,3 +48,7 @@ class AmbiguousExtractionError(LLMExtractionError):
 
 class InvalidConfigurationError(DomainError):
     """Raised when application configuration is invalid."""
+
+
+class DashboardRenderError(DomainError):
+    """Raised when dashboard HTML rendering fails smoke checks."""

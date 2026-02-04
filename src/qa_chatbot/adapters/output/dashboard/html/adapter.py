@@ -10,6 +10,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from qa_chatbot.application.ports import DashboardPort, StoragePort
 from qa_chatbot.application.use_cases import GetDashboardDataUseCase
+from qa_chatbot.domain.exceptions import DashboardRenderError
 
 if TYPE_CHECKING:
     from qa_chatbot.application.dtos import TrendsDashboardData, TrendSeries
@@ -73,6 +74,7 @@ class HtmlDashboardAdapter(DashboardPort):
     ) -> Path:
         template = self._environment.get_template(template_name)
         rendered = template.render(**context)
+        self._smoke_check(rendered, template_name)
         output_path = self._output_dir / output_name
         return self._write_atomic(output_path, rendered)
 
@@ -113,3 +115,12 @@ class HtmlDashboardAdapter(DashboardPort):
             "tests_failed": [snapshot.qa_metrics["tests_failed"] for snapshot in snapshots],
             "coverage": [snapshot.qa_metrics["test_coverage_percent"] for snapshot in snapshots],
         }
+
+    @staticmethod
+    def _smoke_check(rendered: str, template_name: str) -> None:
+        """Ensure rendered HTML includes basic expected markers."""
+        markers = ["<!DOCTYPE html>", "</html>"]
+        missing = [marker for marker in markers if marker not in rendered]
+        if missing:
+            message = f"Dashboard template {template_name} failed smoke check"
+            raise DashboardRenderError(message)
