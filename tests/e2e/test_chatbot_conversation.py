@@ -110,7 +110,7 @@ def conversation_manager() -> ConversationManager:
 def test_conversation_happy_path(conversation_manager: ConversationManager) -> None:
     """Walk through the full conversation flow and save."""
     session, welcome = conversation_manager.start_session(date(2026, 1, 15))
-    assert "Which project" in welcome
+    assert "stream/project" in welcome
 
     response, session = conversation_manager.handle_message("QA Project", session, date(2026, 1, 15))
     assert "reporting month" in response

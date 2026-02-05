@@ -33,7 +33,7 @@ class ConversationSession:
     """Conversation session state."""
 
     state: ConversationState = ConversationState.PROJECT_ID
-    project_id: ProjectId | None = None
+    stream_project: ProjectId | None = None
     time_window: TimeWindow | None = None
     test_coverage: TestCoverageMetrics | None = None
     pending_section: ConversationState | None = None
@@ -101,17 +101,17 @@ class ConversationManager:
         """Handle project identification."""
         try:
             project_id = self._extractor.extract_project_id(message)
-            session.project_id = project_id
+            session.stream_project = project_id
         except DomainError:
             registry = build_default_registry()
             project = registry.find_project(message)
             if project is None:
                 try:
-                    session.project_id = ProjectId.from_raw(message)
+                    session.stream_project = ProjectId.from_raw(message)
                 except DomainError as err:
-                    return formatters.format_error_message(str(err)) + " " + formatters.prompt_for_project_id()
+                    return formatters.format_error_message(str(err)) + " " + formatters.prompt_for_project()
             else:
-                session.project_id = ProjectId.from_raw(project.id)
+                session.stream_project = ProjectId.from_raw(project.id)
 
         session.state = ConversationState.TIME_WINDOW
         default_window = TimeWindow.default_for(today)
@@ -189,11 +189,11 @@ class ConversationManager:
 
     def _build_confirmation_prompt(self, session: ConversationSession) -> str:
         """Construct the confirmation prompt."""
-        if session.project_id is None or session.time_window is None:
-            return formatters.format_error_message("Missing project or month information.")
+        if session.stream_project is None or session.time_window is None:
+            return formatters.format_error_message("Missing stream/project or month information.")
 
         summary = formatters.format_submission_summary(
-            project_id=session.project_id,
+            project_id=session.stream_project,
             time_window=session.time_window,
             test_coverage=session.test_coverage,
             overall_test_cases=None,
@@ -243,7 +243,7 @@ class ConversationManager:
     def _prompt_for_state(self, state: ConversationState, today: date) -> str:
         """Return the prompt text for a state."""
         if state == ConversationState.PROJECT_ID:
-            return formatters.prompt_for_project_id()
+            return formatters.prompt_for_project()
         if state == ConversationState.TIME_WINDOW:
             return formatters.prompt_for_time_window(TimeWindow.default_for(today))
         if state == ConversationState.TEST_COVERAGE:
@@ -264,7 +264,7 @@ class ConversationManager:
     def _reset_section(self, session: ConversationSession, section: ConversationState) -> None:
         """Reset stored values for a section."""
         if section == ConversationState.PROJECT_ID:
-            session.project_id = None
+            session.stream_project = None
         elif section == ConversationState.TIME_WINDOW:
             session.time_window = None
         elif section == ConversationState.TEST_COVERAGE:
@@ -277,8 +277,8 @@ class ConversationManager:
     def _build_command(self, session: ConversationSession) -> SubmissionCommand:
         """Build a submission command from session data."""
         raw_conversation = self._build_raw_conversation(session)
-        if session.project_id is None or session.time_window is None:
-            msg = "Project ID and reporting month are required."
+        if session.stream_project is None or session.time_window is None:
+            msg = "Stream/project and reporting month are required."
             raise MissingSubmissionDataError(msg)
 
         return self._submitter_command(session, raw_conversation)
@@ -288,12 +288,12 @@ class ConversationManager:
         """Create a SubmissionCommand instance."""
         from qa_chatbot.application.dtos import SubmissionCommand
 
-        if session.project_id is None or session.time_window is None:
-            msg = "Project ID and reporting month are required."
+        if session.stream_project is None or session.time_window is None:
+            msg = "Stream/project and reporting month are required."
             raise MissingSubmissionDataError(msg)
 
         return SubmissionCommand(
-            project_id=session.project_id,
+            project_id=session.stream_project,
             time_window=session.time_window,
             test_coverage=session.test_coverage,
             overall_test_cases=None,
@@ -357,7 +357,7 @@ class ConversationManager:
         """Restart the session after saving."""
         new_session, welcome = self.start_session(today)
         session.state = new_session.state
-        session.project_id = new_session.project_id
+        session.stream_project = new_session.stream_project
         session.time_window = new_session.time_window
         session.test_coverage = new_session.test_coverage
         session.pending_section = new_session.pending_section

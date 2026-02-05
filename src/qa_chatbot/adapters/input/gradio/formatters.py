@@ -15,25 +15,28 @@ def welcome_message(today: date) -> str:
     """Return the opening welcome message."""
     default_window = TimeWindow.default_for(today)
     return (
-        "Hi! I can help collect test coverage data for the monthly QA summary. "
+        "Hi! I can help collect your monthly QA update, including project notes and metrics. "
         f"This will default to {default_window.to_iso_month()} unless you specify another month. "
-        "Which project are you reporting for?"
+        "Which stream/project are you reporting for?"
     )
 
 
-def prompt_for_project_id() -> str:
+def prompt_for_project() -> str:
     """Return the prompt for project identification."""
-    return "Which project are you reporting for?"
+    return "Which stream/project are you reporting for?"
 
 
 def prompt_for_time_window(default_window: TimeWindow) -> str:
     """Return the prompt for reporting month selection."""
-    return f"Which reporting month should I use? (Default: {default_window.to_iso_month()})"
+    return f"Which reporting month should be used? (Default: {default_window.to_iso_month()})"
 
 
 def prompt_for_test_coverage() -> str:
     """Return the prompt for test coverage collection."""
-    return "Share test coverage totals: manual and automated totals, plus created/updated counts for last month."
+    return (
+        "Share any test coverage details you have (manual/automated totals or created/updated counts). "
+        "It's OK to provide only part of the data."
+    )
 
 
 def prompt_for_confirmation(summary: str) -> str:

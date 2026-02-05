@@ -2,23 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import UTC, date, datetime
-
 import gradio as gr
 
 from .conversation_manager import ConversationManager, ConversationSession  # noqa: TC001
-
-
-@dataclass(frozen=True)
-class GradioSettings:
-    """Settings for configuring the Gradio server."""
-
-    server_port: int = 7860
-    share: bool = False
-    input_max_chars: int = 2000
-    rate_limit_requests: int = 8
-    rate_limit_window_seconds: int = 60
+from .rate_limiter import RateLimiter
+from .settings import GradioSettings
+from .utils import sanitize_input, today
 
 
 class GradioAdapter:
@@ -28,7 +17,7 @@ class GradioAdapter:
         """Initialize the Gradio adapter."""
         self._manager = manager
         self._settings = settings or GradioSettings()
-        self._rate_limiter = _RateLimiter(
+        self._rate_limiter = RateLimiter(
             max_requests=self._settings.rate_limit_requests,
             window_seconds=self._settings.rate_limit_window_seconds,
         )
@@ -53,7 +42,7 @@ class GradioAdapter:
             reset_button = gr.Button("Start Over")
 
             def initialize() -> tuple[ConversationSession, list[dict[str, str]]]:
-                session, welcome = self._manager.start_session(_today())
+                session, welcome = self._manager.start_session(today())
                 return session, [{"role": "assistant", "content": welcome}]
 
             def respond(
@@ -61,15 +50,15 @@ class GradioAdapter:
                 history: list[dict[str, str]],
                 session: ConversationSession | None,
             ) -> tuple[str, list[dict[str, str]], ConversationSession]:
-                today = _today()
+                current_date = today()
                 if session is None:
-                    session, welcome = self._manager.start_session(today)
+                    session, welcome = self._manager.start_session(current_date)
                     history = [*history, {"role": "assistant", "content": welcome}]
-                sanitized = _sanitize_input(message, self._settings.input_max_chars)
+                sanitized = sanitize_input(message, self._settings.input_max_chars)
                 if not self._rate_limiter.allow(session):
                     response = "You're sending messages too quickly. Please wait a moment before trying again."
                 else:
-                    response, session = self._manager.handle_message(sanitized, session, today)
+                    response, session = self._manager.handle_message(sanitized, session, current_date)
                 history = [
                     *history,
                     {"role": "user", "content": message},
@@ -78,7 +67,7 @@ class GradioAdapter:
                 return "", history, session
 
             def reset() -> tuple[ConversationSession, list[dict[str, str]]]:
-                session, welcome = self._manager.start_session(_today())
+                session, welcome = self._manager.start_session(today())
                 return session, [{"role": "assistant", "content": welcome}]
 
             app.load(initialize, outputs=[session_state, chat_history])
@@ -90,37 +79,3 @@ class GradioAdapter:
             reset_button.click(reset, outputs=[session_state, chat_history])
 
         return app
-
-
-def _today() -> date:
-    """Return today's date in UTC."""
-    return datetime.now(tz=UTC).date()
-
-
-def _sanitize_input(message: str, max_chars: int) -> str:
-    """Normalize and truncate user input."""
-    normalized = message.strip()
-    if len(normalized) <= max_chars:
-        return normalized
-    return normalized[:max_chars].rstrip()
-
-
-@dataclass
-class _RateLimiter:
-    """Simple sliding-window rate limiter per session."""
-
-    max_requests: int
-    window_seconds: int
-    _requests: dict[int, list[float]] = field(default_factory=dict)
-
-    def allow(self, session: ConversationSession) -> bool:
-        """Return whether the request is allowed for this session."""
-        now = datetime.now(tz=UTC).timestamp()
-        key = id(session)
-        entries = [entry for entry in self._requests.get(key, []) if now - entry < self.window_seconds]
-        if len(entries) >= self.max_requests:
-            self._requests[key] = entries
-            return False
-        entries.append(now)
-        self._requests[key] = entries
-        return True
