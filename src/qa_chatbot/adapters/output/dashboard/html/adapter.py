@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from qa_chatbot.adapters.output.jira_mock import MockJiraAdapter
-from qa_chatbot.adapters.output.releases_mock import MockReleaseAdapter
 from qa_chatbot.application.ports import DashboardPort, StoragePort
 from qa_chatbot.application.services.reporting_calculations import EdgeCasePolicy
 from qa_chatbot.application.use_cases import GenerateMonthlyReportUseCase, GetDashboardDataUseCase
@@ -55,7 +54,7 @@ class HtmlDashboardAdapter(DashboardPort):
         self._report_use_case = GenerateMonthlyReportUseCase(
             storage_port=self.storage_port,
             jira_port=MockJiraAdapter(config=report_config),
-            release_port=MockReleaseAdapter(config=report_config),
+            release_port=None,
             registry=registry,
             regression_suites=regression_suites,
             timezone=self.report_timezone,

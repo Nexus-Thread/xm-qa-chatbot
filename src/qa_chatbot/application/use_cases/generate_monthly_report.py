@@ -47,7 +47,7 @@ class GenerateMonthlyReportUseCase:
 
     storage_port: StoragePort
     jira_port: JiraMetricsPort
-    release_port: ReleaseSupportPort
+    release_port: ReleaseSupportPort | None
     registry: StreamRegistry
     timezone: str
     edge_case_policy: EdgeCasePolicy
@@ -93,10 +93,12 @@ class GenerateMonthlyReportUseCase:
         missing_by_project: dict[str, list[str]],
     ) -> QualityMetricsRow:
         stream_name = self.registry.stream_name(project.business_stream_id)
-        supported_releases = self._safe_fetch(
+        supported_releases = self._safe_fetch_optional(
             missing,
             f"supported_releases:{project.id}",
-            lambda: self.release_port.fetch_supported_releases(ProjectId(project.id), period),
+            lambda: (
+                self.release_port.fetch_supported_releases(ProjectId(project.id), period) if self.release_port else None
+            ),
             project.id,
             missing_by_project,
         )
@@ -305,6 +307,21 @@ class GenerateMonthlyReportUseCase:
         project_id: str,
         missing_by_project: dict[str, list[str]],
     ) -> object:
+        try:
+            return func()
+        except Exception:
+            missing.append(label)
+            missing_by_project.setdefault(project_id, []).append(label.split(":", maxsplit=1)[0])
+            return None
+
+    @staticmethod
+    def _safe_fetch_optional(
+        missing: list[str],
+        label: str,
+        func: Callable[[], object | None],
+        project_id: str,
+        missing_by_project: dict[str, list[str]],
+    ) -> object | None:
         try:
             return func()
         except Exception:
