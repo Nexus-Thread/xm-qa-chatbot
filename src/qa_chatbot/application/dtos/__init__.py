@@ -1,5 +1,6 @@
 """Application DTOs."""
 
+from .app_settings import AppSettings
 from .dashboard_data import (
     OverviewDashboardData,
     TeamDetailDashboardData,
@@ -23,6 +24,7 @@ from .report_data import (
 from .submission_command import SubmissionCommand
 
 __all__ = [
+    "AppSettings",
     "BucketCountDTO",
     "CapaDTO",
     "CompletenessStatus",

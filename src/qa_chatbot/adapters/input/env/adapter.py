@@ -1,18 +1,46 @@
-"""Application configuration loaded from environment variables."""
+"""Environment configuration adapter."""
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Self
+from typing import Any
 
 from pydantic import Field
+from pydantic_core import ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from qa_chatbot.application.dtos import AppSettings
 from qa_chatbot.domain.exceptions import InvalidConfigurationError
 
 
-class AppSettings(BaseSettings):
-    """Validated settings for the chatbot application."""
+class EnvSettingsAdapter:
+    """Load application settings from environment variables."""
+
+    def load(self) -> AppSettings:
+        """Load and validate environment settings."""
+        try:
+            settings = _EnvSettings()
+        except ValidationError as exc:
+            message = f"Invalid configuration: {exc}"
+            raise InvalidConfigurationError(message) from exc
+        return AppSettings(
+            openai_base_url=settings.openai_base_url,
+            openai_api_key=settings.openai_api_key,
+            openai_model=settings.openai_model,
+            database_url=settings.database_url,
+            database_echo=settings.database_echo,
+            dashboard_output_dir=settings.dashboard_output_dir,
+            server_port=settings.server_port,
+            share=settings.share,
+            log_level=settings.log_level,
+            input_max_chars=settings.input_max_chars,
+            rate_limit_requests=settings.rate_limit_requests,
+            rate_limit_window_seconds=settings.rate_limit_window_seconds,
+        )
+
+
+class _EnvSettings(BaseSettings):
+    """Validated settings parsed from environment variables."""
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
@@ -40,15 +68,6 @@ class AppSettings(BaseSettings):
         self._validate_non_empty("OPENAI_MODEL", self.openai_model)
         self._validate_non_empty("DATABASE_URL", self.database_url)
         self._validate_choice("LOG_LEVEL", self.log_level, {"DEBUG", "INFO", "WARNING", "ERROR"})
-
-    @classmethod
-    def load(cls) -> Self:
-        """Load settings and surface configuration errors cleanly."""
-        try:
-            return cls()
-        except Exception as exc:  # pragma: no cover - handled as startup validation
-            message = f"Invalid configuration: {exc}"
-            raise InvalidConfigurationError(message) from exc
 
     @staticmethod
     def _validate_non_empty(label: str, value: str) -> None:

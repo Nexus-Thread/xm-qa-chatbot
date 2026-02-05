@@ -27,7 +27,7 @@ def test_main_wires_components(monkeypatch: pytest.MonkeyPatch) -> None:
         rate_limit_requests=8,
         rate_limit_window_seconds=60,
     )
-    monkeypatch.setattr(main_module.AppSettings, "load", lambda: settings)
+    monkeypatch.setattr(main_module, "EnvSettingsAdapter", lambda: MagicMock(load=lambda: settings))
 
     fake_storage = MagicMock()
     monkeypatch.setattr(main_module, "SQLiteAdapter", lambda **_: fake_storage)

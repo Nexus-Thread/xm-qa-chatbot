@@ -29,7 +29,8 @@ Then open `http://127.0.0.1:8000/overview.html` in your browser.
 ## Configuration
 
 Copy `.env.example` to `.env` and adjust values as needed. Environment variables override `.env` values.
-The application validates configuration at startup and will raise an error if values are missing or invalid.
+The application loads settings at startup via the environment input adapter and validates configuration,
+raising an error if values are missing or invalid.
 
 ## OpenAI migration notes
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from qa_chatbot.adapters.input import GradioAdapter, GradioSettings
+from qa_chatbot.adapters.input import EnvSettingsAdapter, GradioAdapter, GradioSettings
 from qa_chatbot.adapters.input.gradio.conversation_manager import ConversationManager
 from qa_chatbot.adapters.output import (
     HtmlDashboardAdapter,
@@ -14,12 +14,12 @@ from qa_chatbot.adapters.output import (
 )
 from qa_chatbot.adapters.output.llm.openai import OpenAISettings
 from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitTeamDataUseCase
-from qa_chatbot.config import AppSettings, LoggingSettings, configure_logging
+from qa_chatbot.config import LoggingSettings, configure_logging
 
 
 def main() -> None:
     """Run the chatbot application."""
-    settings = AppSettings.load()
+    settings = EnvSettingsAdapter().load()
     configure_logging(
         LoggingSettings(
             level=settings.log_level,
