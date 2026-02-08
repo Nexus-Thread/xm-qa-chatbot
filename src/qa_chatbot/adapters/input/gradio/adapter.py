@@ -25,7 +25,7 @@ class GradioAdapter:
     def launch(self) -> None:
         """Launch the Gradio server."""
         app = self._build_ui()
-        app.launch(server_port=self._settings.server_port, share=self._settings.share)
+        app.launch(server_port=self._settings.server_port, share=self._settings.share, show_error=True)
 
     def _build_ui(self) -> gr.Blocks:
         """Build the Gradio UI blocks."""

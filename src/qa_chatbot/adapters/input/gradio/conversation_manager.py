@@ -165,12 +165,6 @@ class ConversationManager:
     def _handle_confirmation(self, message: str, session: ConversationSession, today: date) -> str:
         """Handle final confirmation and persistence."""
         if self._is_affirmative(message):
-            if not self._has_any_section(session):
-                session.state = ConversationState.TEST_COVERAGE
-                return (
-                    "I need at least one data section to save your submission. " + formatters.prompt_for_test_coverage()
-                )
-
             try:
                 self._submitter.execute(self._build_command(session))
             except DomainError as err:
@@ -269,10 +263,6 @@ class ConversationManager:
             session.time_window = None
         elif section == ConversationState.TEST_COVERAGE:
             session.test_coverage = None
-
-    def _has_any_section(self, session: ConversationSession) -> bool:
-        """Return whether any data section is present."""
-        return session.test_coverage is not None
 
     def _build_command(self, session: ConversationSession) -> SubmissionCommand:
         """Build a submission command from session data."""

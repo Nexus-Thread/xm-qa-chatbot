@@ -6,7 +6,6 @@ import pytest
 
 from qa_chatbot.domain import (
     InvalidSubmissionTeamError,
-    MissingSubmissionDataError,
     ProjectId,
     Submission,
     TeamData,
@@ -15,15 +14,16 @@ from qa_chatbot.domain import (
 )
 
 
-def test_submission_requires_data(project_id_a: ProjectId, time_window_jan: TimeWindow) -> None:
-    """Raise when no submission data is provided."""
-    with pytest.raises(MissingSubmissionDataError):
-        Submission.create(
-            project_id=project_id_a,
-            month=time_window_jan,
-            test_coverage=None,
-            overall_test_cases=None,
-        )
+def test_submission_allows_partial_data(project_id_a: ProjectId, time_window_jan: TimeWindow) -> None:
+    """Allow partial submissions without coverage data."""
+    submission = Submission.create(
+        project_id=project_id_a,
+        month=time_window_jan,
+        test_coverage=None,
+        overall_test_cases=None,
+    )
+
+    assert submission.test_coverage is None
 
 
 def test_submission_create_sets_defaults(
