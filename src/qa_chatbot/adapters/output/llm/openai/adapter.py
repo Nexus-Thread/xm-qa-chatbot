@@ -22,7 +22,7 @@ from qa_chatbot.domain import (
 )
 
 from .client import build_client
-from .prompts import PROJECT_ID_PROMPT, SYSTEM_PROMPT, TEST_COVERAGE_PROMPT, TIME_WINDOW_PROMPT
+from .prompts import SYSTEM_PROMPT, TEST_COVERAGE_PROMPT, TIME_WINDOW_PROMPT, build_project_id_prompt
 from .retry_logic import DEFAULT_BACKOFF_SECONDS, DEFAULT_MAX_RETRIES
 from .schemas import ProjectIdSchema, TestCoverageSchema, TimeWindowSchema
 
@@ -30,6 +30,8 @@ SchemaT = TypeVar("SchemaT", bound=BaseModel)
 
 if TYPE_CHECKING:
     from datetime import date
+
+    from qa_chatbot.domain.registries import StreamRegistry
 
 
 @dataclass(frozen=True)
@@ -71,12 +73,18 @@ class OpenAIAdapter(LLMPort):
         """Return token usage for the most recent call."""
         return self._last_usage
 
-    def extract_project_id(self, conversation: str) -> ProjectId:
+    def extract_project_id(self, conversation: str, registry: StreamRegistry) -> tuple[ProjectId, str]:
         """Extract a project identifier from a conversation."""
-        payload = self._extract_json(conversation, PROJECT_ID_PROMPT)
+        prompt = build_project_id_prompt(registry)
+        payload = self._extract_json(conversation, prompt)
         data = self._parse_schema(payload, ProjectIdSchema)
         self._raise_if_blank(data.project_id, "project identifier")
-        return ProjectId.from_raw(data.project_id)
+
+        confidence = data.confidence.lower().strip()
+        if confidence not in {"high", "medium", "low"}:
+            confidence = "low"
+
+        return ProjectId.from_raw(data.project_id), confidence
 
     def extract_time_window(self, conversation: str, current_date: date) -> TimeWindow:
         """Extract the reporting time window."""
@@ -106,9 +114,16 @@ class OpenAIAdapter(LLMPort):
         conversation: str,
         history: list[dict[str, str]] | None,
         current_date: date,
+        registry: StreamRegistry | None = None,
     ) -> ExtractionResult:
         """Extract structured data using conversation history."""
-        team_payload = self._extract_json(conversation, PROJECT_ID_PROMPT, history)
+        from qa_chatbot.domain.registries import build_default_registry
+
+        if registry is None:
+            registry = build_default_registry()
+
+        project_prompt = build_project_id_prompt(registry)
+        team_payload = self._extract_json(conversation, project_prompt, history)
         time_payload = self._extract_json(conversation, TIME_WINDOW_PROMPT, history)
         coverage_payload = self._extract_json(conversation, TEST_COVERAGE_PROMPT, history)
 
@@ -203,12 +218,16 @@ class OpenAIAdapter(LLMPort):
             msg = "LLM response contained invalid JSON"
             raise LLMExtractionError(msg) from err
 
-    @staticmethod
-    def _parse_schema(payload: dict[str, Any], schema: type[SchemaT]) -> SchemaT:
+    def _parse_schema(self, payload: dict[str, Any], schema: type[SchemaT]) -> SchemaT:
         """Validate payload against a Pydantic schema."""
         try:
             return schema.model_validate(payload)
         except ValidationError as err:
+            self._logger.exception(
+                "Schema validation failed for %s. Payload: %s",
+                schema.__name__,
+                payload,
+            )
             msg = "LLM response did not match expected schema"
             raise LLMExtractionError(msg) from err
 

@@ -1,15 +1,42 @@
 """Prompt templates for OpenAI extraction."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from qa_chatbot.domain.registries import StreamRegistry
+
 SYSTEM_PROMPT = (
     "You are a careful data extraction assistant for qQuality assurance teams. "
     "Return structured JSON that matches the provided schema, without commentary."
 )
 
-PROJECT_ID_PROMPT = "Extract the project name from the conversation. Use the exact project name if provided."
+
+def build_project_id_prompt(registry: StreamRegistry) -> str:
+    """Build project identification prompt with valid project list."""
+    projects = registry.active_projects()
+    project_list = "\n".join([f"- {p.id}: {p.name}" for p in sorted(projects, key=lambda x: x.id)])
+
+    return f"""Extract the project name from the conversation and match it to one of these valid projects:
+
+{project_list}
+
+Match the user's input to the most appropriate project. Handle typos, partial names, and abbreviations.
+
+Return JSON with:
+- project_id: the matched project ID (e.g., "bridge", "jthales")
+- confidence: "high" (exact/clear match), "medium" (likely match with minor uncertainty), or "low" (very uncertain or no clear match)
+
+If the user's input doesn't clearly match any project, return the closest match with "low" confidence."""
+
 
 TIME_WINDOW_PROMPT = "Extract the reporting month from the conversation. Return it in YYYY-MM format (e.g., 2026-01)."
 
 TEST_COVERAGE_PROMPT = (
     "Extract test coverage metrics from the conversation. "
-    "Include manual/automated totals and created/updated counts for last month."
+    "Return JSON with these exact fields: "
+    "manual_total, automated_total, manual_created_last_month, manual_updated_last_month, "
+    "automated_created_last_month, automated_updated_last_month. "
+    "All fields are required integers."
 )

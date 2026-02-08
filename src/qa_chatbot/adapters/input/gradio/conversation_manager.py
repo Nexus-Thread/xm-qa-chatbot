@@ -21,6 +21,7 @@ class ConversationState(StrEnum):
     """Supported conversation states."""
 
     PROJECT_ID = "project_id"
+    PROJECT_CONFIRMATION = "project_confirmation"
     TIME_WINDOW = "time_window"
     TEST_COVERAGE = "test_coverage"
     SKIP_CONFIRMATION = "skip_confirmation"
@@ -37,6 +38,7 @@ class ConversationSession:
     time_window: TimeWindow | None = None
     test_coverage: TestCoverageMetrics | None = None
     pending_section: ConversationState | None = None
+    pending_project: ProjectId | None = None
     history: list[dict[str, str]] = field(default_factory=list)
 
 
@@ -82,6 +84,7 @@ class ConversationManager:
 
         handlers = {
             ConversationState.PROJECT_ID: self._handle_project_id,
+            ConversationState.PROJECT_CONFIRMATION: self._handle_project_confirmation,
             ConversationState.TIME_WINDOW: self._handle_time_window,
             ConversationState.TEST_COVERAGE: self._handle_test_coverage,
             ConversationState.SKIP_CONFIRMATION: self._handle_skip_confirmation,
@@ -99,23 +102,53 @@ class ConversationManager:
 
     def _handle_project_id(self, message: str, session: ConversationSession, today: date) -> str:
         """Handle project identification."""
+        registry = build_default_registry()
+
         try:
-            project_id = self._extractor.extract_project_id(message)
-            session.stream_project = project_id
+            project_id, confidence = self._extractor.extract_project_id(message, registry)
+
+            if confidence == "high":
+                session.stream_project = project_id
+                session.state = ConversationState.TIME_WINDOW
+                default_window = TimeWindow.default_for(today)
+                return formatters.prompt_for_time_window(default_window)
+
+            session.pending_project = project_id
+            session.state = ConversationState.PROJECT_CONFIRMATION
+            project = registry.find_project(project_id.value)
+            project_name = project.name if project else project_id.value
+            return formatters.format_project_confirmation(project_name)
+
         except DomainError:
-            registry = build_default_registry()
             project = registry.find_project(message)
             if project is None:
                 try:
-                    session.stream_project = ProjectId.from_raw(message)
+                    ProjectId.from_raw(message)
+                    return (
+                        formatters.format_error_message("I couldn't match that to a known project.")
+                        + " "
+                        + formatters.prompt_for_project()
+                    )
                 except DomainError as err:
                     return formatters.format_error_message(str(err)) + " " + formatters.prompt_for_project()
-            else:
-                session.stream_project = ProjectId.from_raw(project.id)
 
-        session.state = ConversationState.TIME_WINDOW
-        default_window = TimeWindow.default_for(today)
-        return formatters.prompt_for_time_window(default_window)
+            session.stream_project = ProjectId.from_raw(project.id)
+            session.state = ConversationState.TIME_WINDOW
+            default_window = TimeWindow.default_for(today)
+            return formatters.prompt_for_time_window(default_window)
+
+    def _handle_project_confirmation(self, message: str, session: ConversationSession, today: date) -> str:
+        """Handle confirmation of uncertain project matching."""
+        if self._is_affirmative(message) and session.pending_project is not None:
+            session.stream_project = session.pending_project
+            session.pending_project = None
+            session.state = ConversationState.TIME_WINDOW
+            default_window = TimeWindow.default_for(today)
+            return formatters.prompt_for_time_window(default_window)
+
+        session.pending_project = None
+        session.state = ConversationState.PROJECT_ID
+        return "No problem. " + formatters.prompt_for_project()
 
     def _handle_time_window(self, message: str, session: ConversationSession, today: date) -> str:
         """Handle time window selection."""

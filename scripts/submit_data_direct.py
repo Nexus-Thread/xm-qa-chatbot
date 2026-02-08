@@ -24,9 +24,9 @@ def submit_test_coverage_data() -> None:
     print("  Manual Total: 1000")
     print("  Manual Created: 100")
     print("  Manual Updated: 120")
-    print("  Automated Total: 0")
-    print("  Automated Created: 0")
-    print("  Automated Updated: 0")
+    print("  Automated Total: 500")
+    print("  Automated Created: 50")
+    print("  Automated Updated: 30")
     print("=" * 60 + "\n")
 
     # Initialize adapters (same as in main.py)
@@ -51,12 +51,12 @@ def submit_test_coverage_data() -> None:
 
     test_coverage = TestCoverageMetrics(
         manual_total=1000,
-        automated_total=0,
+        automated_total=500,
         manual_created_last_month=100,
         manual_updated_last_month=120,
-        automated_created_last_month=0,
-        automated_updated_last_month=0,
-        percentage_automation=0.0,
+        automated_created_last_month=50,
+        automated_updated_last_month=30,
+        percentage_automation=33.33,
     )
 
     command = SubmissionCommand(

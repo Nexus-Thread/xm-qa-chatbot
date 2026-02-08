@@ -78,6 +78,11 @@ def format_skip_confirmation(section_label: str) -> str:
     return f"Okay, we can skip {section_label}. Reply with 'yes' to confirm, or send details if you want to include it."
 
 
+def format_project_confirmation(project_name: str) -> str:
+    """Format a confirmation prompt for uncertain project matching."""
+    return f"I matched your input to **{project_name}**. Is this correct? (yes/no)"
+
+
 def format_saved_message() -> str:
     """Return the success message after saving."""
     return "Thanks! Your update has been saved."

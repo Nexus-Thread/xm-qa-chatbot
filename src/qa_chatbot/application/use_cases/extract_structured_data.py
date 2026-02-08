@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
     from qa_chatbot.application.ports.output import LLMPort, MetricsPort
     from qa_chatbot.domain import ProjectId, TestCoverageMetrics, TimeWindow
+    from qa_chatbot.domain.registries import StreamRegistry
 
 ExtractedT = TypeVar("ExtractedT")
 
@@ -25,9 +26,9 @@ class ExtractStructuredDataUseCase:
     llm_port: LLMPort
     metrics_port: MetricsPort | None = None
 
-    def extract_project_id(self, conversation: str) -> ProjectId:
-        """Extract the project identifier from a conversation."""
-        return self._timed_extract("project_id", self.llm_port.extract_project_id, conversation)
+    def extract_project_id(self, conversation: str, registry: StreamRegistry) -> tuple[ProjectId, str]:
+        """Extract the project identifier from a conversation with confidence level."""
+        return self._timed_extract("project_id", self.llm_port.extract_project_id, conversation, registry)
 
     def extract_time_window(self, conversation: str, current_date: date) -> TimeWindow:
         """Extract the reporting time window."""
@@ -37,9 +38,9 @@ class ExtractStructuredDataUseCase:
         """Extract test coverage metrics from a conversation."""
         return self._timed_extract("test_coverage", self.llm_port.extract_test_coverage, conversation)
 
-    def execute(self, conversation: str, current_date: date) -> ExtractionResult:
+    def execute(self, conversation: str, current_date: date, registry: StreamRegistry) -> ExtractionResult:
         """Extract structured data from a conversation."""
-        project_id = self.extract_project_id(conversation)
+        project_id, _ = self.extract_project_id(conversation, registry)
         time_window = self.extract_time_window(conversation, current_date)
         test_coverage = self.extract_test_coverage(conversation)
 
@@ -54,11 +55,12 @@ class ExtractStructuredDataUseCase:
         self,
         conversation: str,
         current_date: date,
+        registry: StreamRegistry,
         *,
         include_test_coverage: bool,
     ) -> ExtractionResult:
         """Extract only the requested data sections from a conversation."""
-        project_id = self.extract_project_id(conversation)
+        project_id, _ = self.extract_project_id(conversation, registry)
         time_window = self.extract_time_window(conversation, current_date)
         test_coverage = self.extract_test_coverage(conversation) if include_test_coverage else None
 

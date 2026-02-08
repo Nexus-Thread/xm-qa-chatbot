@@ -22,6 +22,9 @@ def submit_test_coverage_data() -> None:
     print("  Manual Total: 1000")
     print("  Manual Created: 100")
     print("  Manual Updated: 120")
+    print("  Automated Total: 500")
+    print("  Automated Created: 50")
+    print("  Automated Updated: 30")
     print("=" * 60 + "\n")
 
     # Step 1: Initialize session
@@ -55,9 +58,9 @@ def submit_test_coverage_data() -> None:
         "Manual total: 1000\n"
         "Manual created last month: 100\n"
         "Manual updated last month: 120\n"
-        "Automated total: 0\n"
-        "Automated created last month: 0\n"
-        "Automated updated last month: 0"
+        "Automated total: 500\n"
+        "Automated created last month: 50\n"
+        "Automated updated last month: 30"
     )
     cleared_input, history = client.predict(coverage_message, history, api_name="/respond")
 

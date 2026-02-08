@@ -38,10 +38,16 @@ class SQLiteAdapter(StoragePort):
         Base.metadata.create_all(self._engine)
 
     def save_submission(self, submission: Submission) -> None:
-        """Persist a submission in SQLite."""
+        """Persist a submission in SQLite, replacing any existing submission for the same project/month."""
         with self._session_scope() as session:
+            # Delete existing submission for this project/month if present
+            session.query(SubmissionModel).filter_by(
+                project_id=submission.project_id.value,
+                month=submission.month.to_iso_month(),
+            ).delete()
+            # Insert new submission
             model = submission_to_model(submission)
-            session.merge(model)
+            session.add(model)
 
     def get_submissions_by_project(self, project_id: ProjectId, month: TimeWindow) -> list[Submission]:
         """Return submissions for a project and month."""

@@ -33,10 +33,7 @@ def run_server(directory: Path, host: str, port: int) -> None:
         raise FileNotFoundError(message)
     handler = partial(SimpleHTTPRequestHandler, directory=str(directory.resolve()))
     server = ThreadingHTTPServer((host, port), handler)
-    LOGGER.info(
-        "Serving dashboard HTML",
-        extra={"directory": str(directory), "url": f"http://{host}:{port}"},
-    )
+    LOGGER.info(f"Serving dashboard HTML, directory: {directory}, url: http://{host}:{port}")  # noqa: G004
     server.serve_forever()
 
 

@@ -9,6 +9,7 @@ class ProjectIdSchema(BaseModel):
     """Schema for project identifier extraction."""
 
     project_id: str = Field(..., description="Project identifier or name")
+    confidence: str = Field(..., description="Confidence level: high, medium, or low")
 
 
 class TimeWindowSchema(BaseModel):
