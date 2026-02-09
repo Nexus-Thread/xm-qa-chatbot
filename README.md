@@ -18,6 +18,22 @@ Project navigation map: [docs/project-navigation.md](docs/project-navigation.md)
 
 Each submission refreshes static dashboard pages under `DASHBOARD_OUTPUT_DIR` (default: `./dashboard_html`).
 
+### Generate dashboards from existing data
+
+To regenerate all dashboard HTML files from existing database submissions:
+
+```bash
+python scripts/generate_dashboard.py
+```
+
+Options:
+- `--database-url`: Database connection URL (default: `sqlite:///./qa_chatbot.db`)
+- `--output-dir`: Output directory for HTML files (default: `./dashboard_html`)
+- `--months`: Number of recent months to include (default: 6)
+- `--log-level`: Logging level (default: INFO)
+
+### Serve dashboards
+
 Serve the generated dashboard HTML locally:
 
 ```bash
