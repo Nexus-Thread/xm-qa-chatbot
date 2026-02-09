@@ -11,8 +11,6 @@ import pytest
 from qa_chatbot.adapters.output.dashboard.html import HtmlDashboardAdapter
 from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWindow
 
-pytestmark = pytest.mark.allow_private
-
 if TYPE_CHECKING:
     from pathlib import Path
 

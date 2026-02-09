@@ -105,6 +105,8 @@ class QualityMetrics:
 class TestCoverageMetrics:
     """Test coverage metrics for a project and period."""
 
+    __test__ = False
+
     manual_total: int
     automated_total: int
     manual_created_last_month: int
