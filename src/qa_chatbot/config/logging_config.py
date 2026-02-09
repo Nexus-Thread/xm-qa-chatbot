@@ -11,7 +11,7 @@ from dataclasses import dataclass
 class LoggingSettings:
     """Logging configuration settings."""
 
-    level: str = "DEBUG"
+    level: str = "INFO"
 
 
 def configure_logging(settings: LoggingSettings) -> None:
