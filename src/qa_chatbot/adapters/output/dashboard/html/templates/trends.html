@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>QA Trends Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
   </head>
   <body class="bg-slate-100 text-slate-900">
-    <main class="max-w-6xl mx-auto px-6 py-8">
+    <main class="max-w-7xl mx-auto px-6 py-8 flex flex-col">
       <header class="mb-8 flex items-center justify-between">
         <div>
           <h1 class="text-3xl font-semibold">QA Trends</h1>
@@ -20,53 +20,191 @@
           >← Back to overview</a>
       </header>
 
-      <section class="grid gap-6">
+      <!-- Control Panel -->
+      <section class="w-full bg-white rounded-xl shadow-sm p-4 mb-6">
+        <div class="flex items-center gap-4">
+          <span class="text-sm font-medium text-slate-700">Legend Controls:</span>
+          <button
+            id="selectAllBtn"
+            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+            onclick="selectAllTraces()"
+          >
+            Select All
+          </button>
+          <button
+            id="deselectAllBtn"
+            class="px-4 py-2 text-sm font-medium text-white bg-slate-600 hover:bg-slate-700 rounded-lg transition-colors"
+            onclick="deselectAllTraces()"
+          >
+            Deselect All
+          </button>
+          <span class="text-xs text-slate-500 ml-auto">
+            💡 Click legend items to toggle individual teams | Double-click chart to reset zoom
+          </span>
+        </div>
+      </section>
+
+      <section class="w-full grid gap-6">
         <article class="bg-white rounded-xl shadow-sm p-6">
           <h2 class="text-lg font-semibold mb-4">Manual Test Cases</h2>
-          <canvas id="manualChart" height="120"></canvas>
+          <div id="manualChart" style="width: 100%; height: 500px;"></div>
         </article>
         <article class="bg-white rounded-xl shadow-sm p-6">
           <h2 class="text-lg font-semibold mb-4">Automated Test Cases</h2>
-          <canvas id="automatedChart" height="120"></canvas>
+          <div id="automatedChart" style="width: 100%; height: 500px;"></div>
         </article>
         <article class="bg-white rounded-xl shadow-sm p-6">
           <h2 class="text-lg font-semibold mb-4">Automation %</h2>
-          <canvas id="automationChart" height="120"></canvas>
+          <div id="automationChart" style="width: 100%; height: 500px;"></div>
         </article>
       </section>
     </main>
 
     <script>
+      // Data from backend
       const monthLabels = {{ chart_payload.months | tojson }};
       const manualSeries = {{ chart_payload.qa_metric_series.manual_total | tojson }};
       const automatedSeries = {{ chart_payload.qa_metric_series.automated_total | tojson }};
       const automationSeries = {{ chart_payload.qa_metric_series.percentage_automation | tojson }};
 
-      function buildDatasets(series, colors) {
+      // Color palette for up to 40+ teams (cycling through colors)
+      const colorPalette = [
+        '#2563eb', '#dc2626', '#16a34a', '#f97316', '#7c3aed',
+        '#0891b2', '#ea580c', '#84cc16', '#ec4899', '#6366f1',
+        '#14b8a6', '#f59e0b', '#8b5cf6', '#10b981', '#ef4444',
+        '#06b6d4', '#d946ef', '#22c55e', '#f43f5e', '#3b82f6',
+        '#a855f7', '#eab308', '#4ade80', '#fb923c', '#818cf8',
+        '#2dd4bf', '#fbbf24', '#34d399', '#fb7185', '#60a5fa',
+        '#c084fc', '#fcd34d', '#6ee7b7', '#fca5a5', '#93c5fd',
+        '#e9d5ff', '#fde68a', '#a7f3d0', '#fecaca', '#bfdbfe'
+      ];
+
+      const chartIds = ['manualChart', 'automatedChart', 'automationChart'];
+
+      // Shared layout configuration — horizontal legend below the chart
+      const getLayout = (title, yAxisTitle) => ({
+        title: {
+          text: title,
+          font: { size: 16, color: '#334155' }
+        },
+        showlegend: true,
+        legend: {
+          orientation: 'h',
+          yanchor: 'top',
+          y: -0.25,
+          xanchor: 'center',
+          x: 0.5,
+          font: { size: 10 }
+        },
+        hovermode: 'x unified',
+        xaxis: {
+          title: 'Month',
+          tickangle: -45
+        },
+        yaxis: {
+          title: yAxisTitle
+        },
+        margin: { l: 60, r: 30, t: 50, b: 60 }
+      });
+
+      // Shared config
+      const config = {
+        responsive: true,
+        displayModeBar: true,
+        displaylogo: false,
+        modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+        toImageButtonOptions: {
+          format: 'png',
+          filename: 'qa_trends_chart',
+          height: 800,
+          width: 1400,
+          scale: 2
+        }
+      };
+
+      // Build traces for Plotly
+      function buildTraces(series) {
         return series.map((item, index) => ({
-          label: item.label,
-          data: item.values,
-          borderColor: colors[index % colors.length],
-          backgroundColor: colors[index % colors.length] + "33",
-          tension: 0.3,
+          name: item.label,
+          x: monthLabels,
+          y: item.values,
+          type: 'scatter',
+          mode: 'lines+markers',
+          line: {
+            color: colorPalette[index % colorPalette.length],
+            width: 2
+          },
+          marker: {
+            size: 6,
+            color: colorPalette[index % colorPalette.length]
+          },
+          connectgaps: false
         }));
       }
 
-      const palette = ["#2563eb", "#16a34a", "#f97316", "#dc2626", "#7c3aed"];
+      // Create charts
+      const manualTraces = buildTraces(manualSeries);
+      const automatedTraces = buildTraces(automatedSeries);
+      const automationTraces = buildTraces(automationSeries);
 
-      new Chart(document.getElementById("manualChart"), {
-        type: "line",
-        data: { labels: monthLabels, datasets: buildDatasets(manualSeries, palette) },
+      Plotly.newPlot(
+        'manualChart',
+        manualTraces,
+        getLayout('', 'Manual Test Cases'),
+        config
+      );
+
+      Plotly.newPlot(
+        'automatedChart',
+        automatedTraces,
+        getLayout('', 'Automated Test Cases'),
+        config
+      );
+
+      Plotly.newPlot(
+        'automationChart',
+        automationTraces,
+        getLayout('', 'Automation Percentage (%)'),
+        config
+      );
+
+      // Sync legend clicks across all three charts
+      chartIds.forEach(sourceId => {
+        document.getElementById(sourceId).on('plotly_legendclick', function(eventData) {
+          const traceIndex = eventData.curveNumber;
+          const currentVisibility = eventData.data[traceIndex].visible;
+          const newVisibility = (currentVisibility === 'legendonly') ? true : 'legendonly';
+
+          chartIds.forEach(targetId => {
+            if (targetId !== sourceId) {
+              Plotly.restyle(targetId, { visible: newVisibility }, [traceIndex]);
+            }
+          });
+        });
       });
 
-      new Chart(document.getElementById("automatedChart"), {
-        type: "line",
-        data: { labels: monthLabels, datasets: buildDatasets(automatedSeries, palette) },
-      });
+      // Control functions
+      function selectAllTraces() {
+        chartIds.forEach(chartId => {
+          const chart = document.getElementById(chartId);
+          const update = { visible: true };
+          const traceIndices = Array.from({ length: chart.data.length }, (_, i) => i);
+          Plotly.restyle(chartId, update, traceIndices);
+        });
+      }
 
-      new Chart(document.getElementById("automationChart"), {
-        type: "line",
-        data: { labels: monthLabels, datasets: buildDatasets(automationSeries, palette) },
+      function deselectAllTraces() {
+        chartIds.forEach(chartId => {
+          const chart = document.getElementById(chartId);
+          const update = { visible: 'legendonly' };
+          const traceIndices = Array.from({ length: chart.data.length }, (_, i) => i);
+          Plotly.restyle(chartId, update, traceIndices);
+        });
+      }
+
+      // Make charts responsive to window resize
+      window.addEventListener('resize', () => {
+        chartIds.forEach(id => Plotly.Plots.resize(id));
       });
     </script>
   </body>

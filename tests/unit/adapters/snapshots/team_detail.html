@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Project Coverage Trends</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-900">
-<main class="max-w-6xl mx-auto px-6 py-8">
+<main class="max-w-7xl mx-auto px-6 py-8 flex flex-col">
 <header class="mb-8 flex items-center justify-between">
 <div>
 <h1 class="text-3xl font-semibold">Project project-a</h1>
@@ -17,13 +17,43 @@
 <a
 class="text-sm font-medium text-blue-600 hover:text-blue-800"
 href="overview.html"
->← Back to overview</a
+>← Back to overview</a>
 </header>
-<section class="bg-white rounded-xl shadow-sm p-6 mb-8">
-<h2 class="text-lg font-semibold mb-4">Coverage Trend</h2>
-<canvas id="qaTrendChart" height="120"></canvas>
+<!-- Control Panel -->
+<section class="bg-white rounded-xl shadow-sm p-4 mb-6">
+<div class="flex items-center gap-4">
+<span class="text-sm font-medium text-slate-700">Metrics View:</span>
+<button
+id="showAllBtn"
+class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+onclick="showAllMetrics()"
+>
+Show All
+</button>
+<button
+id="showTestCasesBtn"
+class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 hover:bg-slate-300 rounded-lg transition-colors"
+onclick="showTestCasesOnly()"
+>
+Test Cases Only
+</button>
+<button
+id="showPercentageBtn"
+class="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 hover:bg-slate-300 rounded-lg transition-colors"
+onclick="showPercentageOnly()"
+>
+Automation % Only
+</button>
+<span class="text-xs text-slate-500 ml-auto">
+💡 Click legend items to toggle metrics | Zoom and pan available
+</span>
+</div>
 </section>
-<section class="grid gap-6">
+<section class="w-full bg-white rounded-xl shadow-sm p-6 mb-8">
+<h2 class="text-lg font-semibold mb-4">Coverage Trend</h2>
+<div id="qaTrendChart" style="width: 100%; height: 500px;"></div>
+</section>
+<section class="w-full grid gap-6">
 <article class="bg-white rounded-xl shadow-sm p-6">
 <h3 class="text-lg font-semibold mb-4">2026-02</h3>
 <div class="grid md:grid-cols-3 gap-6">
@@ -53,49 +83,152 @@ href="overview.html"
 </section>
 </main>
 <script>
+// Data from backend
 const labels = ["2026-02", "2026-01"];
 const qaMetrics = {
 manual: [140, 120],
 automated: [100, 80],
 automationPct: [41.0, 40.0],
 };
-const ctx = document.getElementById("qaTrendChart");
-new Chart(ctx, {
-type: "line",
-data: {
-labels: labels,
-datasets: [
+// Define traces
+const traces = [
 {
-label: "Manual TCs",
-data: qaMetrics.manual,
-borderColor: "#2563eb",
-backgroundColor: "rgba(37, 99, 235, 0.2)",
-tension: 0.3,
+name: 'Manual TCs',
+x: labels,
+y: qaMetrics.manual,
+type: 'scatter',
+mode: 'lines+markers',
+line: {
+color: '#2563eb',
+width: 3
+},
+marker: {
+size: 8,
+color: '#2563eb'
+},
+yaxis: 'y',
+connectgaps: false
 },
 {
-label: "Automated TCs",
-data: qaMetrics.automated,
-borderColor: "#dc2626",
-backgroundColor: "rgba(220, 38, 38, 0.2)",
-tension: 0.3,
+name: 'Automated TCs',
+x: labels,
+y: qaMetrics.automated,
+type: 'scatter',
+mode: 'lines+markers',
+line: {
+color: '#dc2626',
+width: 3
+},
+marker: {
+size: 8,
+color: '#dc2626'
+},
+yaxis: 'y',
+connectgaps: false
 },
 {
-label: "Automation %",
-data: qaMetrics.automationPct,
-borderColor: "#16a34a",
-backgroundColor: "rgba(22, 163, 74, 0.2)",
-tension: 0.3,
+name: 'Automation %',
+x: labels,
+y: qaMetrics.automationPct,
+type: 'scatter',
+mode: 'lines+markers',
+line: {
+color: '#16a34a',
+width: 3
 },
-],
+marker: {
+size: 8,
+color: '#16a34a'
 },
-options: {
-responsive: true,
-plugins: {
+yaxis: 'y2',
+connectgaps: false
+}
+];
+// Layout with dual y-axis
+const layout = {
+showlegend: true,
 legend: {
-position: "bottom",
+orientation: 'h',
+yanchor: 'bottom',
+y: 1.02,
+xanchor: 'center',
+x: 0.5
 },
+hovermode: 'x unified',
+xaxis: {
+title: 'Month',
+tickangle: -45
 },
+yaxis: {
+title: 'Test Cases',
+titlefont: { color: '#475569' },
+tickfont: { color: '#475569' }
 },
+yaxis2: {
+title: 'Automation Percentage (%)',
+titlefont: { color: '#16a34a' },
+tickfont: { color: '#16a34a' },
+overlaying: 'y',
+side: 'right',
+range: [0, 100]
+},
+margin: { l: 60, r: 80, t: 80, b: 80 }
+};
+// Config
+const config = {
+responsive: true,
+displayModeBar: true,
+displaylogo: false,
+modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+toImageButtonOptions: {
+format: 'png',
+filename: 'team_coverage_trend',
+height: 800,
+width: 1400,
+scale: 2
+}
+};
+// Create chart
+Plotly.newPlot('qaTrendChart', traces, layout, config);
+// Control functions
+function showAllMetrics() {
+Plotly.restyle('qaTrendChart', { visible: true }, [0, 1, 2]);
+updateButtonStates('all');
+}
+function showTestCasesOnly() {
+Plotly.restyle('qaTrendChart', { visible: true }, [0, 1]);
+Plotly.restyle('qaTrendChart', { visible: false }, [2]);
+updateButtonStates('testcases');
+}
+function showPercentageOnly() {
+Plotly.restyle('qaTrendChart', { visible: false }, [0, 1]);
+Plotly.restyle('qaTrendChart', { visible: true }, [2]);
+updateButtonStates('percentage');
+}
+function updateButtonStates(activeView) {
+const allBtn = document.getElementById('showAllBtn');
+const testCasesBtn = document.getElementById('showTestCasesBtn');
+const percentageBtn = document.getElementById('showPercentageBtn');
+// Reset all buttons
+[allBtn, testCasesBtn, percentageBtn].forEach(btn => {
+btn.classList.remove('bg-blue-600', 'text-white');
+btn.classList.add('bg-slate-200', 'text-slate-700');
+});
+// Highlight active button
+if (activeView === 'all') {
+allBtn.classList.remove('bg-slate-200', 'text-slate-700');
+allBtn.classList.add('bg-blue-600', 'text-white');
+} else if (activeView === 'testcases') {
+testCasesBtn.classList.remove('bg-slate-200', 'text-slate-700');
+testCasesBtn.classList.add('bg-blue-600', 'text-white');
+} else if (activeView === 'percentage') {
+percentageBtn.classList.remove('bg-slate-200', 'text-slate-700');
+percentageBtn.classList.add('bg-blue-600', 'text-white');
+}
+}
+// Make chart responsive to window resize
+window.addEventListener('resize', () => {
+Plotly.Plots.resize('qaTrendChart');
 });
 </script>
 </body>
