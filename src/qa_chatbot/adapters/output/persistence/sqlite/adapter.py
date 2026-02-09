@@ -74,6 +74,11 @@ class SQLiteAdapter(StoragePort):
         rows: list[str] = self._execute_scalar(statement)
         return [time_window_from_iso(month) for month in rows]
 
+    def clear_all_submissions(self) -> None:
+        """Delete all submissions from the database."""
+        with self._session_scope() as session:
+            session.query(SubmissionModel).delete()
+
     @property
     def engine(self) -> Engine:
         """Expose engine for advanced use cases."""
