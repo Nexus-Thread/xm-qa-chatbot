@@ -7,6 +7,9 @@ from datetime import UTC, datetime
 from qa_chatbot.application.use_cases import GetDashboardDataUseCase
 from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWindow
 
+# Test data constants
+EXPECTED_MANUAL_TOTAL = 8
+
 
 class FakeStoragePort:
     """In-memory storage port for dashboard tests."""
@@ -94,7 +97,7 @@ def test_build_team_detail_prefers_latest_submission() -> None:
 
     detail = use_case.build_team_detail(team, [month])
 
-    assert detail.snapshots[0].qa_metrics["manual_total"] == 8
+    assert detail.snapshots[0].qa_metrics["manual_total"] == EXPECTED_MANUAL_TOTAL
 
 
 def test_build_trends_returns_series_for_each_team() -> None:

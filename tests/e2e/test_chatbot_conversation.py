@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -12,15 +13,19 @@ from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitTeamDataU
 from qa_chatbot.application.dtos import ExtractionResult
 from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWindow
 
+if TYPE_CHECKING:
+    from qa_chatbot.domain.registries import StreamRegistry
+
 
 @dataclass
 class FakeLLM:
     """Deterministic LLM adapter for testing."""
 
-    def extract_project_id(self, conversation: str) -> ProjectId:
+    def extract_project_id(self, conversation: str, registry: StreamRegistry) -> tuple[ProjectId, str]:
         """Return a fixed project ID."""
         _ = conversation
-        return ProjectId("qa-project")
+        _ = registry
+        return ProjectId("qa-project"), "high"
 
     def extract_time_window(self, conversation: str, current_date: date) -> TimeWindow:
         """Return a fixed time window."""

@@ -45,25 +45,16 @@ line-length = 120
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
-    "E501",    # line too long (handled by formatter)
-    "D203",    # incorrect-blank-line-before-class (incompatible with D211)
-    "D213",    # multi-line-summary-second-line (incompatible with D212)
-    "COM812",  # trailing-comma-missing (conflicts with formatter)
-    "ISC001",  # single-line-implicit-string-concatenation (conflicts with formatter)
-    "ANN401",  # allow Any in external interfaces
-    "FBT001",  # allow boolean positional args in public APIs
-    "FBT002",  # allow boolean defaults in public APIs
-    "PLC0415", # allow runtime imports for optional dependencies
-    "PLR2004", # allow magic numbers in comparisons
-    "RUF012",  # allow mutable class attributes without ClassVar
-    "S110",    # allow bare except with pass in non-critical logging
-    "BLE001",  # allow broad exception in non-critical logging
-    "TRY401",  # allow logging.exception with exception object
+    "E501",   # line too long (handled by formatter)
+    "D203",   # incorrect-blank-line-before-class (incompatible with D211)
+    "D213",   # multi-line-summary-second-line (incompatible with D212)
+    "COM812", # trailing-comma-missing (conflicts with formatter)
+    "ISC001", # single-line-implicit-string-concatenation (conflicts with formatter)
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"**/test_*.py" = ["S101"]
-"tests/**/__init__.py" = ["D104"]
+"**/test_*.py" = ["S101"]         # assert
+"tests/**/__init__.py" = ["D104"] # undocumented-public-package
 
 [tool.ruff.lint.isort]
 known-first-party = ["qa_chatbot"]
@@ -84,4 +75,4 @@ strict_equality = true
 show_error_codes = true
 ignore_missing_imports = true
 explicit_package_bases = true
-mypy_path = ["src"]
+mypy_path = ["src", "tests"]

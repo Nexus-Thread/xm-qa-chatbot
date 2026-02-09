@@ -309,7 +309,8 @@ class GenerateMonthlyReportUseCase:
     ) -> object:
         try:
             return func()
-        except Exception:
+        except Exception:  # noqa: BLE001
+            # Intentionally broad: mark data as missing rather than failing entire report
             missing.append(label)
             missing_by_project.setdefault(project_id, []).append(label.split(":", maxsplit=1)[0])
             return None
@@ -324,7 +325,8 @@ class GenerateMonthlyReportUseCase:
     ) -> object | None:
         try:
             return func()
-        except Exception:
+        except Exception:  # noqa: BLE001
+            # Intentionally broad: mark data as missing rather than failing entire report
             missing.append(label)
             missing_by_project.setdefault(project_id, []).append(label.split(":", maxsplit=1)[0])
             return None

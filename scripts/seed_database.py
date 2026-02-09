@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import random
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 import yaml
@@ -30,20 +30,20 @@ def load_active_projects() -> list[dict]:
 
 def generate_baseline_data() -> dict[str, int]:
     """Generate random baseline test coverage data."""
-    manual_total = random.randint(100, 2000)
-    automated_total = random.randint(50, 1500)
+    manual_total = random.randint(100, 2000)  # noqa: S311
+    automated_total = random.randint(50, 1500)  # noqa: S311
 
     # Created/Updated: 5-15% of totals with some variation
-    manual_activity_rate = random.uniform(0.05, 0.15)
-    automated_activity_rate = random.uniform(0.05, 0.15)
+    manual_activity_rate = random.uniform(0.05, 0.15)  # noqa: S311
+    automated_activity_rate = random.uniform(0.05, 0.15)  # noqa: S311
 
     return {
         "manual_total": manual_total,
         "automated_total": automated_total,
-        "manual_created": int(manual_total * manual_activity_rate * random.uniform(0.4, 0.7)),
-        "manual_updated": int(manual_total * manual_activity_rate * random.uniform(0.3, 0.6)),
-        "automated_created": int(automated_total * automated_activity_rate * random.uniform(0.4, 0.7)),
-        "automated_updated": int(automated_total * automated_activity_rate * random.uniform(0.3, 0.6)),
+        "manual_created": int(manual_total * manual_activity_rate * random.uniform(0.4, 0.7)),  # noqa: S311
+        "manual_updated": int(manual_total * manual_activity_rate * random.uniform(0.3, 0.6)),  # noqa: S311
+        "automated_created": int(automated_total * automated_activity_rate * random.uniform(0.4, 0.7)),  # noqa: S311
+        "automated_updated": int(automated_total * automated_activity_rate * random.uniform(0.3, 0.6)),  # noqa: S311
     }
 
 
@@ -51,14 +51,11 @@ def apply_trend(
     previous: dict[str, int],
     trend_direction: str,
 ) -> dict[str, int]:
-    """Apply trend to previous month's data."""
-    if trend_direction == "increasing":
-        trend_factor = random.uniform(1.03, 1.15)  # 3-15% growth
-    else:  # decreasing
-        trend_factor = random.uniform(0.90, 0.97)  # 3-10% decline
+    """Apply trend to previous month's data (3-15% growth or 3-10% decline)."""
+    trend_factor = random.uniform(1.03, 1.15) if trend_direction == "increasing" else random.uniform(0.9, 0.97)  # noqa: S311
 
     # Add random noise
-    noise = random.uniform(0.98, 1.02)
+    noise = random.uniform(0.98, 1.02)  # noqa: S311
     final_factor = trend_factor * noise
 
     # Apply to all fields
@@ -154,7 +151,7 @@ def seed_database() -> None:
         project_id = ProjectId.from_raw(project_id_str)
 
         # Choose random trend direction
-        trend_direction = random.choice(["increasing", "decreasing"])
+        trend_direction = random.choice(["increasing", "decreasing"])  # noqa: S311
         trend_emoji = "📈" if trend_direction == "increasing" else "📉"
 
         print(f"\n{trend_emoji} {project_name} ({project_id_str}) - {trend_direction}")
@@ -167,7 +164,7 @@ def seed_database() -> None:
         all_month_data = [data_month1, data_month2, data_month3]
 
         # Submit data for each month
-        for time_window, data in zip(time_windows, all_month_data):
+        for time_window, data in zip(time_windows, all_month_data, strict=True):
             test_coverage = create_test_coverage_metrics(data)
 
             command = SubmissionCommand(
@@ -176,7 +173,7 @@ def seed_database() -> None:
                 test_coverage=test_coverage,
                 overall_test_cases=None,
                 raw_conversation="Seeded data via seed_database.py script",
-                created_at=datetime.now(),
+                created_at=datetime.now(UTC),
             )
 
             submitter.execute(command)

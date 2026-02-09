@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 class SQLiteAdapter(StoragePort):
     """SQLite implementation of the storage port."""
 
-    def __init__(self, database_url: str, echo: bool = False) -> None:
+    def __init__(self, database_url: str, *, echo: bool = False) -> None:
         """Initialize the adapter with a database connection."""
         self._engine = create_engine(database_url, echo=echo, future=True)
         self._session_factory = sessionmaker(bind=self._engine, expire_on_commit=False)

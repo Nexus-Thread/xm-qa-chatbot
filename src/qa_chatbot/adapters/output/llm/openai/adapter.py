@@ -60,7 +60,7 @@ class OpenAIAdapter(LLMPort):
     def __init__(
         self,
         settings: OpenAISettings,
-        client: Any | None = None,
+        client: Any | None = None,  # noqa: ANN401
     ) -> None:
         """Initialize the adapter configuration."""
         self._settings = settings
@@ -117,7 +117,7 @@ class OpenAIAdapter(LLMPort):
         registry: StreamRegistry | None = None,
     ) -> ExtractionResult:
         """Extract structured data using conversation history."""
-        from qa_chatbot.domain.registries import build_default_registry
+        from qa_chatbot.domain.registries import build_default_registry  # noqa: PLC0415
 
         if registry is None:
             registry = build_default_registry()
@@ -279,7 +279,7 @@ class OpenAIAdapter(LLMPort):
         ]
 
     @staticmethod
-    def _extract_usage(response: Any) -> TokenUsage | None:
+    def _extract_usage(response: Any) -> TokenUsage | None:  # noqa: ANN401
         """Extract token usage from the OpenAI response if available."""
         usage = getattr(response, "usage", None)
         if usage is None:

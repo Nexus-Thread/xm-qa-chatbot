@@ -7,14 +7,17 @@ from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from qa_chatbot.adapters.input.gradio import formatters
+from qa_chatbot.application.dtos import SubmissionCommand
 from qa_chatbot.domain import DomainError, MissingSubmissionDataError, ProjectId, TimeWindow, build_default_registry
 
 if TYPE_CHECKING:
     from datetime import date
 
     from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitTeamDataUseCase
-    from qa_chatbot.application.dtos import SubmissionCommand
     from qa_chatbot.domain.value_objects import TestCoverageMetrics
+
+# Time window parsing constants
+YEAR_MONTH_PARTS = 2
 
 
 class ConversationState(StrEnum):
@@ -309,8 +312,6 @@ class ConversationManager:
     @staticmethod
     def _submitter_command(session: ConversationSession, raw_conversation: str | None) -> SubmissionCommand:
         """Create a SubmissionCommand instance."""
-        from qa_chatbot.application.dtos import SubmissionCommand
-
         if session.stream_project is None or session.time_window is None:
             msg = "Stream/project and reporting month are required."
             raise MissingSubmissionDataError(msg)
@@ -367,7 +368,7 @@ class ConversationManager:
 
         if "-" in normalized:
             parts = normalized.split("-")
-            if len(parts) == 2:
+            if len(parts) == YEAR_MONTH_PARTS:
                 try:
                     year = int(parts[0])
                     month = int(parts[1])

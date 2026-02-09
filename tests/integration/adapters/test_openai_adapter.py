@@ -9,6 +9,7 @@ import pytest
 
 from qa_chatbot.adapters.output.llm.openai import OpenAIAdapter, OpenAISettings
 from qa_chatbot.domain import ProjectId, TimeWindow
+from qa_chatbot.domain.registries import build_default_registry
 
 
 @pytest.mark.skipif(
@@ -23,10 +24,12 @@ def test_openai_adapter_with_ollama_extracts_project_id() -> None:
         model=os.getenv("OLLAMA_MODEL", "llama2"),
     )
     adapter = OpenAIAdapter(settings=settings)
+    registry = build_default_registry()
 
-    project_id = adapter.extract_project_id("We are the QA Automation project.")
+    project_id, confidence = adapter.extract_project_id("We are the QA Automation project.", registry)
 
     assert isinstance(project_id, ProjectId)
+    assert confidence in {"high", "medium", "low"}
 
 
 @pytest.mark.skipif(

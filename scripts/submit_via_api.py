@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from gradio_client import Client
 
-# ruff: noqa: T201, RUF059
+# ruff: noqa: T201, RUF059, PLR0915
 
 
 def submit_test_coverage_data() -> None:
@@ -89,7 +89,7 @@ def submit_test_coverage_data() -> None:
 if __name__ == "__main__":
     try:
         submit_test_coverage_data()
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"\n❌ ERROR: {e}")
         print("\nMake sure the Gradio app is running at http://localhost:7860")
         print("Start it with: python -m qa_chatbot.main")

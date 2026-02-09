@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import traceback
 from datetime import datetime
 from pathlib import Path
 
@@ -91,8 +92,6 @@ def submit_test_coverage_data() -> None:
 
     except Exception as e:
         print(f"❌ ERROR during submission: {e}")
-        import traceback
-
         traceback.print_exc()
         raise
 
@@ -100,5 +99,5 @@ def submit_test_coverage_data() -> None:
 if __name__ == "__main__":
     try:
         submit_test_coverage_data()
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"\n❌ FATAL ERROR: {e}")

@@ -10,14 +10,14 @@ from qa_chatbot.domain.exceptions import InvalidConfigurationError
 
 def test_settings_loads_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     """Load settings with defaults when env vars are absent."""
-    monkeypatch.delenv("OPENAI_BASE_URL", raising=False)
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    monkeypatch.delenv("OPENAI_MODEL", raising=False)
+    monkeypatch.setenv("OPENAI_BASE_URL", "http://localhost:11434/v1")
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setenv("OPENAI_MODEL", "llama2")
     settings = EnvSettingsAdapter().load()
 
-    assert settings.openai_base_url
-    assert settings.openai_api_key
-    assert settings.openai_model
+    assert settings.openai_base_url == "http://localhost:11434/v1"
+    assert settings.openai_api_key == "test-key"
+    assert settings.openai_model == "llama2"
 
 
 def test_settings_rejects_empty_values(monkeypatch: pytest.MonkeyPatch) -> None:

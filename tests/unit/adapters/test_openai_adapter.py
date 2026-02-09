@@ -10,6 +10,7 @@ import pytest
 
 from qa_chatbot.adapters.output.llm.openai import OpenAIAdapter, OpenAISettings
 from qa_chatbot.domain import AmbiguousExtractionError, LLMExtractionError, ProjectId, TimeWindow
+from qa_chatbot.domain.registries import build_default_registry
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -76,15 +77,17 @@ class FakeClient:
 
 def test_extract_project_id_parses_response() -> None:
     """Parse a project identifier from JSON response."""
-    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": "Project A"}'))])])
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": "Project A", "confidence": "high"}'))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeClient(responses),
     )
 
-    result = adapter.extract_project_id("We are Project A")
+    registry = build_default_registry()
+    project_id, confidence = adapter.extract_project_id("We are Project A", registry)
 
-    assert result == ProjectId("Project A")
+    assert project_id == ProjectId("Project A")
+    assert confidence == "high"
 
 
 def test_extract_time_window_parses_month() -> None:
@@ -127,14 +130,15 @@ def test_extract_time_window_supports_current_keyword() -> None:
 
 def test_extract_project_id_raises_for_blank_response() -> None:
     """Raise when project id is missing."""
-    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": ""}'))])])
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": "", "confidence": "low"}'))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeClient(responses),
     )
 
+    registry = build_default_registry()
     with pytest.raises(AmbiguousExtractionError):
-        adapter.extract_project_id("Unknown")
+        adapter.extract_project_id("Unknown", registry)
 
 
 def test_extract_test_coverage_raises_for_missing_counts() -> None:

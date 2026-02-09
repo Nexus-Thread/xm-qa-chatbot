@@ -29,7 +29,7 @@ class EnvSettings(BaseSettings):
     rate_limit_requests: int = Field(8, validation_alias="RATE_LIMIT_REQUESTS", ge=1, le=100)
     rate_limit_window_seconds: int = Field(60, validation_alias="RATE_LIMIT_WINDOW_SECONDS", ge=1, le=3600)
 
-    def __init__(self, **data: Any) -> None:
+    def __init__(self, **data: Any) -> None:  # noqa: ANN401
         """Initialize settings with optional overrides."""
         super().__init__(**data)
 

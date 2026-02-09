@@ -10,6 +10,12 @@ from qa_chatbot.domain.exceptions import InvalidTimeWindowError
 if TYPE_CHECKING:
     from datetime import date
 
+# Time window validation constants
+MIN_YEAR = 2000
+MAX_YEAR = 2100
+MIN_MONTH = 1
+MAX_MONTH = 12
+
 
 @dataclass(frozen=True)
 class TimeWindow:
@@ -20,11 +26,11 @@ class TimeWindow:
 
     def __post_init__(self) -> None:
         """Validate time window bounds."""
-        if self.year < 2000 or self.year > 2100:
-            message = "Year must be between 2000 and 2100"
+        if self.year < MIN_YEAR or self.year > MAX_YEAR:
+            message = f"Year must be between {MIN_YEAR} and {MAX_YEAR}"
             raise InvalidTimeWindowError(message)
-        if self.month < 1 or self.month > 12:
-            message = "Month must be between 1 and 12"
+        if self.month < MIN_MONTH or self.month > MAX_MONTH:
+            message = f"Month must be between {MIN_MONTH} and {MAX_MONTH}"
             raise InvalidTimeWindowError(message)
 
     @classmethod

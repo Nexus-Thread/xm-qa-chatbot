@@ -11,6 +11,10 @@ from qa_chatbot.domain.value_objects.portfolio_aggregates import PortfolioAggreg
 if TYPE_CHECKING:
     from qa_chatbot.config.reporting_config import EdgeCasePolicyConfig
 
+# Time conversion constants
+SECONDS_PER_MINUTE = 60
+MINUTES_PER_HOUR = 60
+
 
 @dataclass(frozen=True)
 class EdgeCasePolicy:
@@ -68,11 +72,11 @@ def format_regression_time(block: RegressionTimeBlock) -> tuple[tuple[str, str],
 
 def _format_duration(minutes: float) -> str:
     if minutes < 1:
-        seconds = round(minutes * 60)
+        seconds = round(minutes * SECONDS_PER_MINUTE)
         return f"{seconds}s"
-    if minutes < 60:
+    if minutes < MINUTES_PER_HOUR:
         return f"{round(minutes)}m"
-    hours = minutes / 60
+    hours = minutes / MINUTES_PER_HOUR
     return f"{round(hours, 1)}h"
 
 

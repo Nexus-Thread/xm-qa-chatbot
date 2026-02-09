@@ -8,6 +8,11 @@ if TYPE_CHECKING:
     from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter
     from qa_chatbot.domain import ProjectId, Submission, TimeWindow
 
+# Test data constants
+INITIAL_MANUAL_TOTAL = 10
+UPDATED_MANUAL_TOTAL = 2000
+UPDATED_AUTOMATED_TOTAL = 500
+
 
 def test_sqlite_adapter_persists_and_queries(
     sqlite_adapter: SQLiteAdapter,
@@ -35,7 +40,7 @@ def test_sqlite_adapter_resubmission_replaces_data(
     time_window_jan: TimeWindow,
 ) -> None:
     """Resubmitting data for same project/month replaces the previous submission."""
-    from qa_chatbot.domain import Submission, TestCoverageMetrics
+    from qa_chatbot.domain import Submission, TestCoverageMetrics  # noqa: PLC0415
 
     # Submit initial data
     sqlite_adapter.save_submission(submission_project_a_jan)
@@ -45,7 +50,7 @@ def test_sqlite_adapter_resubmission_replaces_data(
     assert len(submissions) == 1
     initial_coverage = submissions[0].test_coverage
     assert initial_coverage is not None
-    assert initial_coverage.manual_total == 10
+    assert initial_coverage.manual_total == INITIAL_MANUAL_TOTAL
 
     # Resubmit with different data for same project/month
     updated_coverage = TestCoverageMetrics(
@@ -72,6 +77,6 @@ def test_sqlite_adapter_resubmission_replaces_data(
 
     updated = submissions_after[0]
     assert updated.test_coverage is not None
-    assert updated.test_coverage.manual_total == 2000, "Manual total should be updated"
-    assert updated.test_coverage.automated_total == 500, "Automated total should be updated"
+    assert updated.test_coverage.manual_total == UPDATED_MANUAL_TOTAL, "Manual total should be updated"
+    assert updated.test_coverage.automated_total == UPDATED_AUTOMATED_TOTAL, "Automated total should be updated"
     assert updated.raw_conversation == "Updated data"

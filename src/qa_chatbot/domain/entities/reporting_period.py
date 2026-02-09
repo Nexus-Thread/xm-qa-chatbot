@@ -8,6 +8,11 @@ from zoneinfo import ZoneInfo
 
 from qa_chatbot.domain.exceptions import InvalidTimeWindowError
 
+# Month validation constants
+MIN_MONTH = 1
+MAX_MONTH = 12
+DECEMBER = 12
+
 
 @dataclass(frozen=True)
 class ReportingPeriod:
@@ -21,8 +26,8 @@ class ReportingPeriod:
 
     def __post_init__(self) -> None:
         """Validate period bounds."""
-        if self.month < 1 or self.month > 12:
-            message = "Month must be between 1 and 12"
+        if self.month < MIN_MONTH or self.month > MAX_MONTH:
+            message = f"Month must be between {MIN_MONTH} and {MAX_MONTH}"
             raise InvalidTimeWindowError(message)
         if self.end_datetime <= self.start_datetime:
             message = "Reporting period end must be after start"
@@ -31,12 +36,12 @@ class ReportingPeriod:
     @classmethod
     def for_month(cls, year: int, month: int, timezone: str) -> ReportingPeriod:
         """Construct a reporting period for a month."""
-        if month < 1 or month > 12:
-            message = "Month must be between 1 and 12"
+        if month < MIN_MONTH or month > MAX_MONTH:
+            message = f"Month must be between {MIN_MONTH} and {MAX_MONTH}"
             raise InvalidTimeWindowError(message)
         zone = ZoneInfo(timezone)
         start = datetime(year, month, 1, tzinfo=zone)
-        end = datetime(year + 1, 1, 1, tzinfo=zone) if month == 12 else datetime(year, month + 1, 1, tzinfo=zone)
+        end = datetime(year + 1, 1, 1, tzinfo=zone) if month == DECEMBER else datetime(year, month + 1, 1, tzinfo=zone)
         return cls(
             year=year,
             month=month,
