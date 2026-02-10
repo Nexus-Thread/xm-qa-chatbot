@@ -111,15 +111,16 @@ class HtmlDashboardAdapter(DashboardPort):
         return path
 
     def _build_chart_payload(self, data: TrendsDashboardData) -> dict[str, object]:
-        """Build JSON-serializable payloads for chart rendering."""
+        """Build JSON-serializable payloads for chart rendering (chronological order)."""
+        chronological_months = list(reversed(data.months))
         return {
-            "months": [month.to_iso_month() for month in data.months],
+            "months": [month.to_iso_month() for month in chronological_months],
             "qa_metric_series": {
-                metric: [self._series_payload(series) for series in series_list]
+                metric: [self._series_payload_reversed(series) for series in series_list]
                 for metric, series_list in data.qa_metric_series.items()
             },
             "project_metric_series": {
-                metric: [self._series_payload(series) for series in series_list]
+                metric: [self._series_payload_reversed(series) for series in series_list]
                 for metric, series_list in data.project_metric_series.items()
             },
         }
@@ -132,14 +133,19 @@ class HtmlDashboardAdapter(DashboardPort):
         return {"label": label, "values": list(values)}
 
     @staticmethod
+    def _series_payload_reversed(series: TrendSeries) -> dict[str, object]:
+        """Convert a trend series into JSON-safe data in chronological order."""
+        return {"label": series.label, "values": list(reversed(series.values))}
+
+    @staticmethod
     def _build_team_detail_chart_payload(data: TeamDetailDashboardData) -> dict[str, object]:
-        """Build JSON payloads for the team detail charts."""
-        snapshots = data.snapshots
+        """Build JSON payloads for the team detail charts (chronological order)."""
+        chronological = list(reversed(data.snapshots))
         return {
-            "labels": [snapshot.month.to_iso_month() for snapshot in snapshots],
-            "manual_total": [snapshot.qa_metrics["manual_total"] for snapshot in snapshots],
-            "automated_total": [snapshot.qa_metrics["automated_total"] for snapshot in snapshots],
-            "percentage_automation": [snapshot.qa_metrics["percentage_automation"] for snapshot in snapshots],
+            "labels": [snapshot.month.to_iso_month() for snapshot in chronological],
+            "manual_total": [snapshot.qa_metrics["manual_total"] for snapshot in chronological],
+            "automated_total": [snapshot.qa_metrics["automated_total"] for snapshot in chronological],
+            "percentage_automation": [snapshot.qa_metrics["percentage_automation"] for snapshot in chronological],
         }
 
     @staticmethod
