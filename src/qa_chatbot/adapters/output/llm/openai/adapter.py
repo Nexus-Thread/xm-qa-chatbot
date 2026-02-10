@@ -97,8 +97,6 @@ class OpenAIAdapter(LLMPort):
         """Extract test coverage metrics from a conversation."""
         payload = self._extract_json(conversation, TEST_COVERAGE_PROMPT)
         data = self._parse_schema(payload, TestCoverageSchema)
-        self._raise_if_missing_int(data.manual_total, "manual_total")
-        self._raise_if_missing_int(data.automated_total, "automated_total")
         return TestCoverageMetrics(
             manual_total=data.manual_total,
             automated_total=data.automated_total,
@@ -106,7 +104,7 @@ class OpenAIAdapter(LLMPort):
             manual_updated_last_month=data.manual_updated_last_month,
             automated_created_last_month=data.automated_created_last_month,
             automated_updated_last_month=data.automated_updated_last_month,
-            percentage_automation=0.0,
+            percentage_automation=None,
         )
 
     def extract_with_history(
@@ -132,8 +130,6 @@ class OpenAIAdapter(LLMPort):
         coverage_data = self._parse_schema(coverage_payload, TestCoverageSchema)
         self._raise_if_blank(team_data.project_id, "project identifier")
         self._raise_if_blank(time_data.month, "time window")
-        self._raise_if_missing_int(coverage_data.manual_total, "manual_total")
-        self._raise_if_missing_int(coverage_data.automated_total, "automated_total")
 
         project_id = ProjectId.from_raw(team_data.project_id)
         time_window = self._resolve_time_window(time_data.month, current_date)
@@ -148,7 +144,7 @@ class OpenAIAdapter(LLMPort):
                 manual_updated_last_month=coverage_data.manual_updated_last_month,
                 automated_created_last_month=coverage_data.automated_created_last_month,
                 automated_updated_last_month=coverage_data.automated_updated_last_month,
-                percentage_automation=0.0,
+                percentage_automation=None,
             ),
             overall_test_cases=None,
         )

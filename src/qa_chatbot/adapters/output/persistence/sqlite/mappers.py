@@ -58,13 +58,13 @@ def _test_coverage_from_dict(payload: dict | None) -> TestCoverageMetrics | None
     if not payload:
         return None
     return TestCoverageMetrics(
-        manual_total=payload["manual_total"],
-        automated_total=payload["automated_total"],
-        manual_created_last_month=payload["manual_created_last_month"],
-        manual_updated_last_month=payload["manual_updated_last_month"],
-        automated_created_last_month=payload["automated_created_last_month"],
-        automated_updated_last_month=payload["automated_updated_last_month"],
-        percentage_automation=payload["percentage_automation"],
+        manual_total=payload.get("manual_total"),
+        automated_total=payload.get("automated_total"),
+        manual_created_last_month=payload.get("manual_created_last_month"),
+        manual_updated_last_month=payload.get("manual_updated_last_month"),
+        automated_created_last_month=payload.get("automated_created_last_month"),
+        automated_updated_last_month=payload.get("automated_updated_last_month"),
+        percentage_automation=payload.get("percentage_automation"),
     )
 
 

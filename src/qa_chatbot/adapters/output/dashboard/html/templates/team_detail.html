@@ -64,9 +64,9 @@
             <div>
               <h4 class="text-sm font-semibold text-slate-700">Test Coverage</h4>
               <ul class="text-sm text-slate-600 space-y-1">
-                <li>Manual TCs: {{ snapshot.qa_metrics.manual_total or "-" }}</li>
-                <li>Automated TCs: {{ snapshot.qa_metrics.automated_total or "-" }}</li>
-                <li>Automation %: {{ snapshot.qa_metrics.percentage_automation or "-" }}</li>
+                <li>Manual TCs: {{ snapshot.qa_metrics.manual_total if snapshot.qa_metrics.manual_total is not none else "-" }}</li>
+                <li>Automated TCs: {{ snapshot.qa_metrics.automated_total if snapshot.qa_metrics.automated_total is not none else "-" }}</li>
+                <li>Automation %: {{ snapshot.qa_metrics.percentage_automation if snapshot.qa_metrics.percentage_automation is not none else "-" }}</li>
               </ul>
             </div>
           </div>

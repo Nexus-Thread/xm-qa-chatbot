@@ -38,5 +38,5 @@ TEST_COVERAGE_PROMPT = (
     "Return JSON with these exact fields: "
     "manual_total, automated_total, manual_created_last_month, manual_updated_last_month, "
     "automated_created_last_month, automated_updated_last_month. "
-    "All fields are required integers."
+    "Each field is an integer or null. Use null for any field not mentioned in the conversation."
 )

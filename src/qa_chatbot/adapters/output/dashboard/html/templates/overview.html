@@ -94,7 +94,7 @@
         <h2 class="text-xl font-semibold mb-3">Section B — Test Coverage</h2>
         <p class="text-sm text-slate-600 mb-4">
           Overall number of test cases across all projects:
-          <span class="font-semibold">{{ report.overall_test_cases or "-" }}</span>
+          <span class="font-semibold">{{ report.overall_test_cases if report.overall_test_cases is not none else "-" }}</span>
         </p>
         <div class="overflow-auto bg-white rounded-xl shadow-sm">
           <table class="min-w-full text-sm">
@@ -116,13 +116,13 @@
               <tr>
                 <td class="px-4 py-3">{{ row.business_stream }}</td>
                 <td class="px-4 py-3 font-medium">{{ row.project_name }}</td>
-                <td class="px-4 py-3 text-right">{{ row.percentage_automation or "-" }}</td>
-                <td class="px-4 py-3 text-right">{{ row.manual_total or "-" }}</td>
-                <td class="px-4 py-3 text-right">{{ row.manual_created_last_month or "-" }}</td>
-                <td class="px-4 py-3 text-right">{{ row.manual_updated_last_month or "-" }}</td>
-                <td class="px-4 py-3 text-right">{{ row.automated_total or "-" }}</td>
-                <td class="px-4 py-3 text-right">{{ row.automated_created_last_month or "-" }}</td>
-                <td class="px-4 py-3 text-right">{{ row.automated_updated_last_month or "-" }}</td>
+                <td class="px-4 py-3 text-right">{{ row.percentage_automation if row.percentage_automation is not none else "-" }}</td>
+                <td class="px-4 py-3 text-right">{{ row.manual_total if row.manual_total is not none else "-" }}</td>
+                <td class="px-4 py-3 text-right">{{ row.manual_created_last_month if row.manual_created_last_month is not none else "-" }}</td>
+                <td class="px-4 py-3 text-right">{{ row.manual_updated_last_month if row.manual_updated_last_month is not none else "-" }}</td>
+                <td class="px-4 py-3 text-right">{{ row.automated_total if row.automated_total is not none else "-" }}</td>
+                <td class="px-4 py-3 text-right">{{ row.automated_created_last_month if row.automated_created_last_month is not none else "-" }}</td>
+                <td class="px-4 py-3 text-right">{{ row.automated_updated_last_month if row.automated_updated_last_month is not none else "-" }}</td>
               </tr>
               {% else %}
               <tr>

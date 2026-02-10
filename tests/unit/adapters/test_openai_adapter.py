@@ -15,6 +15,8 @@ from qa_chatbot.domain.registries import build_default_registry
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
+EXPECTED_MANUAL_TOTAL = 100
+
 
 @dataclass
 class FakeMessage:
@@ -141,13 +143,30 @@ def test_extract_project_id_raises_for_blank_response() -> None:
         adapter.extract_project_id("Unknown", registry)
 
 
-def test_extract_test_coverage_raises_for_missing_counts() -> None:
-    """Raise when coverage counts are missing."""
+def test_extract_test_coverage_accepts_partial_data() -> None:
+    """Accept partial coverage data with null fields."""
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"manual_total": 100, "automated_total": null}'))])])
+    adapter = OpenAIAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeClient(responses),
+    )
+
+    result = adapter.extract_test_coverage("Manual total is 100")
+
+    assert result.manual_total == EXPECTED_MANUAL_TOTAL
+    assert result.automated_total is None
+    assert result.manual_created_last_month is None
+
+
+def test_extract_test_coverage_accepts_all_null() -> None:
+    """Accept response with all null fields."""
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"manual_total": null}'))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeClient(responses),
     )
 
-    with pytest.raises(LLMExtractionError):
-        adapter.extract_test_coverage("No metrics provided")
+    result = adapter.extract_test_coverage("No metrics provided")
+
+    assert result.manual_total is None
+    assert result.automated_total is None

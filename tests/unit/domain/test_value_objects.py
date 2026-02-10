@@ -12,6 +12,17 @@ from qa_chatbot.domain import (
     TimeWindow,
 )
 
+# Merge test constants
+EXISTING_MANUAL_TOTAL = 1000
+EXISTING_AUTOMATED_TOTAL = 500
+EXISTING_MANUAL_CREATED = 10
+EXISTING_MANUAL_UPDATED = 20
+EXISTING_AUTOMATED_CREATED = 5
+EXISTING_AUTOMATED_UPDATED = 3
+EXISTING_PERCENTAGE = 33.33
+UPDATED_MANUAL_TOTAL = 1100
+PARTIAL_MANUAL_TOTAL = 100
+
 
 def test_project_id_normalizes_value() -> None:
     """Normalize project identifiers."""
@@ -61,3 +72,57 @@ def test_test_coverage_rejects_negative_counts() -> None:
             automated_updated_last_month=0,
             percentage_automation=0.0,
         )
+
+
+def test_test_coverage_allows_none_fields() -> None:
+    """Allow None for any individual coverage field."""
+    coverage = TestCoverageMetrics(manual_total=PARTIAL_MANUAL_TOTAL)
+
+    assert coverage.manual_total == PARTIAL_MANUAL_TOTAL
+    assert coverage.automated_total is None
+    assert coverage.percentage_automation is None
+
+
+def test_test_coverage_merge_fills_none_from_existing() -> None:
+    """Merge fills None fields from existing record."""
+    existing = TestCoverageMetrics(
+        manual_total=EXISTING_MANUAL_TOTAL,
+        automated_total=EXISTING_AUTOMATED_TOTAL,
+        manual_created_last_month=EXISTING_MANUAL_CREATED,
+        manual_updated_last_month=EXISTING_MANUAL_UPDATED,
+        automated_created_last_month=EXISTING_AUTOMATED_CREATED,
+        automated_updated_last_month=EXISTING_AUTOMATED_UPDATED,
+        percentage_automation=EXISTING_PERCENTAGE,
+    )
+    partial = TestCoverageMetrics(manual_total=UPDATED_MANUAL_TOTAL)
+
+    merged = partial.merge_with(existing)
+
+    assert merged.manual_total == UPDATED_MANUAL_TOTAL
+    assert merged.automated_total == EXISTING_AUTOMATED_TOTAL
+    assert merged.manual_created_last_month == EXISTING_MANUAL_CREATED
+    assert merged.percentage_automation == EXISTING_PERCENTAGE
+
+
+def test_test_coverage_merge_preserves_zero() -> None:
+    """Merge preserves explicitly provided zero values."""
+    existing = TestCoverageMetrics(
+        manual_total=EXISTING_MANUAL_TOTAL,
+        automated_total=EXISTING_AUTOMATED_TOTAL,
+    )
+    update = TestCoverageMetrics(manual_total=0, automated_total=None)
+
+    merged = update.merge_with(existing)
+
+    assert merged.manual_total == 0
+    assert merged.automated_total == EXISTING_AUTOMATED_TOTAL
+
+
+def test_test_coverage_merge_with_none_existing() -> None:
+    """Merge with None existing returns self unchanged."""
+    partial = TestCoverageMetrics(manual_total=PARTIAL_MANUAL_TOTAL)
+
+    merged = partial.merge_with(None)
+
+    assert merged.manual_total == PARTIAL_MANUAL_TOTAL
+    assert merged.automated_total is None

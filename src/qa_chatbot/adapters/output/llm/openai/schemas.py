@@ -21,9 +21,9 @@ class TimeWindowSchema(BaseModel):
 class TestCoverageSchema(BaseModel):
     """Schema for test coverage extraction."""
 
-    manual_total: int
-    automated_total: int
-    manual_created_last_month: int
-    manual_updated_last_month: int
-    automated_created_last_month: int
-    automated_updated_last_month: int
+    manual_total: int | None = None
+    automated_total: int | None = None
+    manual_created_last_month: int | None = None
+    manual_updated_last_month: int | None = None
+    automated_created_last_month: int | None = None
+    automated_updated_last_month: int | None = None

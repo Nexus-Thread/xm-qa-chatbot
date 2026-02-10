@@ -231,6 +231,8 @@ class GenerateMonthlyReportUseCase:
     def _compute_automation_percentage(self, coverage: TestCoverageMetrics | None) -> float | None:
         if coverage is None:
             return None
+        if coverage.manual_total is None or coverage.automated_total is None:
+            return None
         percentage = self.edge_case_policy.compute_automation_percentage(
             manual_total=coverage.manual_total,
             automated_total=coverage.automated_total,
