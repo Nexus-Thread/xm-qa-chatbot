@@ -6,6 +6,7 @@ import traceback
 from datetime import datetime
 from pathlib import Path
 
+from qa_chatbot.adapters.input import EnvSettingsAdapter
 from qa_chatbot.adapters.output import HtmlDashboardAdapter, InMemoryMetricsAdapter, SQLiteAdapter
 from qa_chatbot.application import SubmitTeamDataUseCase
 from qa_chatbot.application.dtos import SubmissionCommand
@@ -16,6 +17,8 @@ from qa_chatbot.domain import ProjectId, TestCoverageMetrics, TimeWindow
 
 def submit_test_coverage_data() -> None:
     """Submit test coverage data directly through use cases."""
+    settings = EnvSettingsAdapter().load()
+
     print("=" * 60)
     print("SUBMITTING DATA DIRECTLY TO USE CASES")
     print("=" * 60)
@@ -32,13 +35,17 @@ def submit_test_coverage_data() -> None:
 
     # Initialize adapters (same as in main.py)
     print("Step 1: Initializing storage adapter...")
-    storage = SQLiteAdapter(database_url="sqlite:///./qa_chatbot.db", echo=False)
+    storage = SQLiteAdapter(database_url=settings.database_url, echo=settings.database_echo)
     storage.initialize_schema()
     print("✅ Storage initialized\n")
 
     print("Step 2: Initializing dashboard adapter...")
-    dashboard_output_dir = Path("./dashboard_html")
-    dashboard_adapter = HtmlDashboardAdapter(storage_port=storage, output_dir=dashboard_output_dir)
+    dashboard_output_dir = Path(settings.dashboard_output_dir)
+    dashboard_adapter = HtmlDashboardAdapter(
+        storage_port=storage,
+        output_dir=dashboard_output_dir,
+        reporting_config_path=Path(settings.reporting_config_path),
+    )
     print("✅ Dashboard adapter initialized\n")
 
     print("Step 3: Initializing metrics adapter...")

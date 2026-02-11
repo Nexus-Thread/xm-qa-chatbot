@@ -29,7 +29,11 @@ def main() -> None:
     storage.initialize_schema()
 
     dashboard_output_dir = Path(settings.dashboard_output_dir)
-    dashboard_adapter = HtmlDashboardAdapter(storage_port=storage, output_dir=dashboard_output_dir)
+    dashboard_adapter = HtmlDashboardAdapter(
+        storage_port=storage,
+        output_dir=dashboard_output_dir,
+        reporting_config_path=Path(settings.reporting_config_path),
+    )
 
     llm_adapter = OpenAIAdapter(
         settings=OpenAISettings(

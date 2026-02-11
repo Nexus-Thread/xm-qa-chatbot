@@ -21,6 +21,10 @@ class EnvSettings(BaseSettings):
     database_url: str = Field(default="sqlite:///./qa_chatbot.db", validation_alias="DATABASE_URL")
     database_echo: bool = Field(default=False, validation_alias="DATABASE_ECHO")
     dashboard_output_dir: Path = Field(default=Path("./dashboard_html"), validation_alias="DASHBOARD_OUTPUT_DIR")
+    reporting_config_path: Path = Field(
+        default=Path("config/reporting_config.yaml"),
+        validation_alias="REPORTING_CONFIG_PATH",
+    )
     server_port: int = Field(default=7860, validation_alias="GRADIO_SERVER_PORT", ge=1, le=65535)
     share: bool = Field(default=False, validation_alias="GRADIO_SHARE")
     log_level: str = Field(default="INFO", validation_alias="LOG_LEVEL")

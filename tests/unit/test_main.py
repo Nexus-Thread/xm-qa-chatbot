@@ -18,6 +18,7 @@ def test_main_wires_components(monkeypatch: pytest.MonkeyPatch) -> None:
         database_url="sqlite:///./qa_chatbot.db",
         database_echo=False,
         dashboard_output_dir="./dashboard_html",
+        reporting_config_path="config/reporting_config.yaml",
         openai_base_url="http://localhost",
         openai_api_key="test",
         openai_model="gpt-test",

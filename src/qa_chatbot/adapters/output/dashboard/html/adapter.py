@@ -27,6 +27,7 @@ class HtmlDashboardAdapter(DashboardPort):
 
     storage_port: StoragePort
     output_dir: Path
+    reporting_config_path: Path
     report_timezone: str = "UTC"
 
     def __post_init__(self) -> None:
@@ -39,7 +40,7 @@ class HtmlDashboardAdapter(DashboardPort):
             autoescape=select_autoescape(["html"]),
         )
         self._use_case = GetDashboardDataUseCase(self.storage_port)
-        report_config = ReportingConfig.load(path=Path("config/reporting_config.yaml"))
+        report_config = ReportingConfig.load(path=self.reporting_config_path)
         registry = report_config.to_registry()
         edge_case_policy = EdgeCasePolicy.from_config(report_config.edge_case_policy)
         regression_suites = tuple(

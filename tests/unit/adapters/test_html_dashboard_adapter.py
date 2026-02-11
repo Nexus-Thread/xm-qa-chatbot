@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -12,8 +13,6 @@ from qa_chatbot.adapters.output.dashboard.html import HtmlDashboardAdapter
 from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWindow
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter
 
 
@@ -113,7 +112,11 @@ def _seed_submissions(sqlite_adapter: SQLiteAdapter) -> None:
 def dashboard_adapter(sqlite_adapter: SQLiteAdapter, tmp_path: Path) -> HtmlDashboardAdapter:
     """Provide the HTML dashboard adapter with seeded data."""
     _seed_submissions(sqlite_adapter)
-    adapter = HtmlDashboardAdapter(storage_port=sqlite_adapter, output_dir=tmp_path / "dashboards")
+    adapter = HtmlDashboardAdapter(
+        storage_port=sqlite_adapter,
+        output_dir=tmp_path / "dashboards",
+        reporting_config_path=Path("config/reporting_config.yaml"),
+    )
     return _with_fixed_report_timestamp(adapter)
 
 

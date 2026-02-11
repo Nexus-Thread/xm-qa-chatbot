@@ -27,10 +27,11 @@ python scripts/generate_dashboard.py
 ```
 
 Options:
-- `--database-url`: Database connection URL (default: `sqlite:///./qa_chatbot.db`)
-- `--output-dir`: Output directory for HTML files (default: `./dashboard_html`)
+- `--database-url`: Database connection URL (default: value from `DATABASE_URL`)
+- `--output-dir`: Output directory for HTML files (default: value from `DASHBOARD_OUTPUT_DIR`)
+- `--reporting-config-path`: Path to reporting YAML (default: value from `REPORTING_CONFIG_PATH`)
 - `--months`: Number of recent months to include (default: 6)
-- `--log-level`: Logging level (default: INFO)
+- `--log-level`: Logging level (default: value from `LOG_LEVEL`)
 
 ### Serve dashboards
 
@@ -47,6 +48,8 @@ Then open `http://127.0.0.1:8000/overview.html` in your browser.
 Copy `.env.example` to `.env` and adjust values as needed. Environment variables override `.env` values.
 The application loads settings at startup via the environment input adapter and validates configuration,
 raising an error if values are missing or invalid.
+
+Configuration precedence is: CLI flags (where available) → environment variables / `.env` → code defaults.
 
 ## OpenAI migration notes
 
@@ -68,6 +71,7 @@ Retries use exponential backoff defined in `src/qa_chatbot/adapters/output/llm/o
 | `DATABASE_URL` | `sqlite:///./qa_chatbot.db` | SQLite connection string. |
 | `DATABASE_ECHO` | `false` | SQLAlchemy logging toggle. |
 | `DASHBOARD_OUTPUT_DIR` | `./dashboard_html` | Output folder for generated dashboards. |
+| `REPORTING_CONFIG_PATH` | `config/reporting_config.yaml` | Path to reporting YAML used for dashboards and reporting calculations. |
 | `GRADIO_SERVER_PORT` | `7860` | Gradio server port. |
 | `GRADIO_SHARE` | `false` | Generate a public Gradio share link. |
 | `LOG_LEVEL` | `INFO` | Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`). |

@@ -19,6 +19,7 @@ class AppSettings:
     database_url: str
     database_echo: bool
     dashboard_output_dir: Path
+    reporting_config_path: Path
     server_port: int
     share: bool
     log_level: str

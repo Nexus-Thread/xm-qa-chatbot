@@ -6,24 +6,20 @@ import random
 from datetime import UTC, datetime
 from pathlib import Path
 
-import yaml
-
+from qa_chatbot.adapters.input import EnvSettingsAdapter
 from qa_chatbot.adapters.output import HtmlDashboardAdapter, InMemoryMetricsAdapter, SQLiteAdapter
 from qa_chatbot.application import SubmitTeamDataUseCase
 from qa_chatbot.application.dtos import SubmissionCommand
+from qa_chatbot.config import ReportingConfig
 from qa_chatbot.domain import ProjectId, TestCoverageMetrics, TimeWindow
 
 # ruff: noqa: T201
 
 
-def load_active_projects() -> list[dict]:
+def load_active_projects(reporting_config_path: Path) -> list[dict[str, str]]:
     """Load all active projects from the reporting config."""
-    config_path = Path("config/reporting_config.yaml")
-    with config_path.open() as f:
-        config = yaml.safe_load(f)
-
-    # Filter active projects (is_active != False)
-    projects = [p for p in config["projects"] if p.get("is_active", True)]
+    config = ReportingConfig.load(path=reporting_config_path)
+    projects = [{"id": project.id, "name": project.name} for project in config.projects if project.is_active]
     print(f"✅ Loaded {len(projects)} active projects\n")
     return projects
 
@@ -95,6 +91,8 @@ def create_test_coverage_metrics(data: dict[str, int]) -> TestCoverageMetrics:
 
 def seed_database() -> None:
     """Seed the database with pseudo-random data."""
+    settings = EnvSettingsAdapter().load()
+
     print("=" * 80)
     print("DATABASE SEEDING SCRIPT")
     print("=" * 80)
@@ -106,13 +104,14 @@ def seed_database() -> None:
 
     # Initialize adapters
     print("Step 1: Initializing adapters...")
-    storage = SQLiteAdapter(database_url="sqlite:///./qa_chatbot.db", echo=False)
+    storage = SQLiteAdapter(database_url=settings.database_url, echo=settings.database_echo)
     storage.initialize_schema()
 
-    dashboard_output_dir = Path("./dashboard_html")
+    dashboard_output_dir = Path(settings.dashboard_output_dir)
     dashboard_adapter = HtmlDashboardAdapter(
         storage_port=storage,
         output_dir=dashboard_output_dir,
+        reporting_config_path=Path(settings.reporting_config_path),
     )
 
     metrics_adapter = InMemoryMetricsAdapter()
@@ -125,7 +124,7 @@ def seed_database() -> None:
 
     # Load projects
     print("Step 3: Loading active projects...")
-    projects = load_active_projects()
+    projects = load_active_projects(Path(settings.reporting_config_path))
 
     # Create use case
     submitter = SubmitTeamDataUseCase(

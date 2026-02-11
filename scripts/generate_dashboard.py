@@ -7,6 +7,7 @@ import logging
 import traceback
 from pathlib import Path
 
+from qa_chatbot.adapters.input import EnvSettingsAdapter
 from qa_chatbot.adapters.output import HtmlDashboardAdapter, SQLiteAdapter
 from qa_chatbot.config import LoggingSettings, configure_logging
 
@@ -18,14 +19,20 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate dashboard HTML files from existing database submissions.")
     parser.add_argument(
         "--database-url",
-        default="sqlite:///./qa_chatbot.db",
-        help="Database connection URL (default: sqlite:///./qa_chatbot.db).",
+        default=None,
+        help="Database connection URL (default: value from env settings).",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("./dashboard_html"),
-        help="Output directory for generated HTML files (default: ./dashboard_html).",
+        default=None,
+        help="Output directory for generated HTML files (default: value from env settings).",
+    )
+    parser.add_argument(
+        "--reporting-config-path",
+        type=Path,
+        default=None,
+        help="Path to reporting configuration YAML (default: value from env settings).",
     )
     parser.add_argument(
         "--months",
@@ -35,9 +42,9 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--log-level",
-        default="INFO",
+        default=None,
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
-        help="Logging level (default: INFO).",
+        help="Logging level (default: value from env settings).",
     )
     return parser.parse_args()
 
@@ -45,6 +52,7 @@ def parse_args() -> argparse.Namespace:
 def generate_dashboards(
     database_url: str,
     output_dir: Path,
+    reporting_config_path: Path,
     months_limit: int,
     log_level: str,
 ) -> None:
@@ -57,6 +65,7 @@ def generate_dashboards(
     print("=" * 80)
     print(f"\nDatabase: {database_url}")
     print(f"Output directory: {output_dir}")
+    print(f"Reporting config: {reporting_config_path}")
     print(f"Months to include: {months_limit}")
     print("=" * 80 + "\n")
 
@@ -66,7 +75,11 @@ def generate_dashboards(
     storage.initialize_schema()
 
     logger.info("Initializing dashboard adapter")
-    dashboard = HtmlDashboardAdapter(storage_port=storage, output_dir=output_dir)
+    dashboard = HtmlDashboardAdapter(
+        storage_port=storage,
+        output_dir=output_dir,
+        reporting_config_path=reporting_config_path,
+    )
 
     # Fetch data from storage
     logger.info("Fetching recent months from database")
@@ -120,13 +133,15 @@ def generate_dashboards(
 
 def main() -> None:
     """Entry point for the dashboard generation script."""
+    settings = EnvSettingsAdapter().load()
     args = parse_args()
     try:
         generate_dashboards(
-            database_url=args.database_url,
-            output_dir=args.output_dir,
+            database_url=args.database_url or settings.database_url,
+            output_dir=args.output_dir or Path(settings.dashboard_output_dir),
+            reporting_config_path=args.reporting_config_path or Path(settings.reporting_config_path),
             months_limit=args.months,
-            log_level=args.log_level,
+            log_level=args.log_level or settings.log_level,
         )
     except Exception as e:
         print(f"\n❌ FATAL ERROR: {e}")

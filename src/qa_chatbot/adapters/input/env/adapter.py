@@ -27,6 +27,7 @@ class EnvSettingsAdapter:
             database_url=settings.database_url,
             database_echo=settings.database_echo,
             dashboard_output_dir=settings.dashboard_output_dir,
+            reporting_config_path=settings.reporting_config_path,
             server_port=settings.server_port,
             share=settings.share,
             log_level=settings.log_level,
