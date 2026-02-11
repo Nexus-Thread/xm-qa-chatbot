@@ -125,7 +125,6 @@ def _with_fixed_report_timestamp(adapter: HtmlDashboardAdapter) -> HtmlDashboard
     adapter._report_use_case = report_use_case.__class__(  # noqa: SLF001
         storage_port=report_use_case.storage_port,
         jira_port=report_use_case.jira_port,
-        release_port=report_use_case.release_port,
         registry=report_use_case.registry,
         timezone=report_use_case.timezone,
         edge_case_policy=report_use_case.edge_case_policy,

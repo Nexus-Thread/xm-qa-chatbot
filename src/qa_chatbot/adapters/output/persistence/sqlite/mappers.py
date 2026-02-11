@@ -19,6 +19,7 @@ def submission_to_model(submission: Submission) -> SubmissionModel:
         created_at=submission.created_at,
         test_coverage=_test_coverage_to_dict(submission.test_coverage),
         overall_test_cases=submission.overall_test_cases,
+        supported_releases_count=submission.supported_releases_count,
         raw_conversation=submission.raw_conversation,
     )
 
@@ -35,6 +36,7 @@ def model_to_submission(model: SubmissionModel) -> Submission:
         month=time_window_from_iso(model.month),
         test_coverage=_test_coverage_from_dict(model.test_coverage),
         overall_test_cases=model.overall_test_cases,
+        supported_releases_count=model.supported_releases_count,
         created_at=created_at,
         raw_conversation=model.raw_conversation,
     )

@@ -107,6 +107,12 @@ class OpenAIAdapter(LLMPort):
             percentage_automation=None,
         )
 
+    def extract_supported_releases_count(self, conversation: str) -> int | None:
+        """Extract supported releases count from a conversation."""
+        payload = self._extract_json(conversation, TEST_COVERAGE_PROMPT)
+        data = self._parse_schema(payload, TestCoverageSchema)
+        return data.supported_releases_count
+
     def extract_with_history(
         self,
         conversation: str,
@@ -147,6 +153,7 @@ class OpenAIAdapter(LLMPort):
                 percentage_automation=None,
             ),
             overall_test_cases=None,
+            supported_releases_count=coverage_data.supported_releases_count,
         )
 
     def _extract_json(

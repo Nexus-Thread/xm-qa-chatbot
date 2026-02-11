@@ -22,6 +22,7 @@ class Submission:
     month: TimeWindow
     test_coverage: TestCoverageMetrics | None
     overall_test_cases: int | None
+    supported_releases_count: int | None
     created_at: datetime
     raw_conversation: str | None = None
 
@@ -38,6 +39,7 @@ class Submission:
         month: TimeWindow,
         test_coverage: TestCoverageMetrics | None,
         overall_test_cases: int | None,
+        supported_releases_count: int | None = None,
         raw_conversation: str | None = None,
         created_at: datetime | None = None,
     ) -> Submission:
@@ -48,6 +50,7 @@ class Submission:
             month=month,
             test_coverage=test_coverage,
             overall_test_cases=overall_test_cases,
+            supported_releases_count=supported_releases_count,
             raw_conversation=raw_conversation,
             created_at=created_at or datetime.now(tz=UTC),
         )

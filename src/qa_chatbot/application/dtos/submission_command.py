@@ -19,5 +19,6 @@ class SubmissionCommand:
     time_window: TimeWindow
     test_coverage: TestCoverageMetrics | None
     overall_test_cases: int | None
+    supported_releases_count: int | None = None
     raw_conversation: str | None = None
     created_at: datetime | None = None

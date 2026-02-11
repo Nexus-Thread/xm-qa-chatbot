@@ -24,6 +24,9 @@ class LLMPort(Protocol):
     def extract_test_coverage(self, conversation: str) -> TestCoverageMetrics:
         """Extract test coverage metrics from a conversation."""
 
+    def extract_supported_releases_count(self, conversation: str) -> int | None:
+        """Extract supported releases count from a conversation."""
+
     def extract_with_history(
         self,
         conversation: str,

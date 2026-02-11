@@ -46,6 +46,11 @@ class FakeLLM:
             percentage_automation=33.33,
         )
 
+    def extract_supported_releases_count(self, conversation: str) -> int | None:
+        """Return a fixed supported releases count."""
+        _ = conversation
+        return 2
+
     def extract_with_history(
         self,
         conversation: str,
@@ -69,6 +74,7 @@ class FakeLLM:
                 percentage_automation=33.33,
             ),
             overall_test_cases=None,
+            supported_releases_count=2,
         )
 
 

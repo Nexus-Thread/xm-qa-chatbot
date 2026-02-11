@@ -55,7 +55,6 @@ class HtmlDashboardAdapter(DashboardPort):
         self._report_use_case = GenerateMonthlyReportUseCase(
             storage_port=self.storage_port,
             jira_port=MockJiraAdapter(config=report_config),
-            release_port=None,
             registry=registry,
             regression_suites=regression_suites,
             timezone=self.report_timezone,

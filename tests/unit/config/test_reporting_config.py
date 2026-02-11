@@ -27,8 +27,6 @@ streams:
       - id: project_b2
         name: Project B2
         order: 20
-        release_source:
-          source: manual
         defect_leakage:
           numerator:
             jira_source_key: b2_num
@@ -37,8 +35,6 @@ streams:
       - id: project_b1
         name: Project B1
         order: 10
-        release_source:
-          source: manual
         defect_leakage:
           numerator:
             jira_source_key: b1_num
@@ -51,8 +47,6 @@ streams:
       - id: project_a1
         name: Project A1
         order: 10
-        release_source:
-          source: manual
         defect_leakage:
           numerator:
             jira_source_key: a1_num
@@ -74,13 +68,6 @@ jira:
     capa: test
     defect_leakage_numerator: test
     defect_leakage_denominator: test
-release_sources:
-  manual:
-    enabled: true
-  jira_fix_version:
-    enabled: false
-  release_calendar:
-    enabled: false
 edge_case_policy:
   leakage_zero_denominator: zero
   automation_zero_total: zero
@@ -112,8 +99,6 @@ projects:
     name: Project A1
     business_stream_id: stream_a
     order: 10
-    release_source:
-      source: manual
     defect_leakage:
       numerator:
         jira_source_key: a1_num
@@ -135,13 +120,6 @@ jira:
     capa: test
     defect_leakage_numerator: test
     defect_leakage_denominator: test
-release_sources:
-  manual:
-    enabled: true
-  jira_fix_version:
-    enabled: false
-  release_calendar:
-    enabled: false
 edge_case_policy:
   leakage_zero_denominator: zero
   automation_zero_total: zero

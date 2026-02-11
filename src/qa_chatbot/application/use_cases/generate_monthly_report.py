@@ -37,7 +37,7 @@ from qa_chatbot.domain import (
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from qa_chatbot.application.ports.output import JiraMetricsPort, ReleaseSupportPort, StoragePort
+    from qa_chatbot.application.ports.output import JiraMetricsPort, StoragePort
     from qa_chatbot.domain import Project, StreamRegistry
 
 
@@ -47,7 +47,6 @@ class GenerateMonthlyReportUseCase:
 
     storage_port: StoragePort
     jira_port: JiraMetricsPort
-    release_port: ReleaseSupportPort | None
     registry: StreamRegistry
     timezone: str
     edge_case_policy: EdgeCasePolicy
@@ -64,7 +63,7 @@ class GenerateMonthlyReportUseCase:
         missing_by_project: dict[str, list[str]] = {}
 
         for project in self.registry.active_projects():
-            quality_rows.append(self._build_quality_row(project, period, missing, missing_by_project))
+            quality_rows.append(self._build_quality_row(project, period, month, missing, missing_by_project))
             coverage_rows.append(self._build_coverage_row(project, month, missing, missing_by_project))
 
         quality_rows = self._with_portfolio_quality_row(quality_rows)
@@ -89,19 +88,12 @@ class GenerateMonthlyReportUseCase:
         self,
         project: Project,
         period: ReportingPeriod,
+        month: TimeWindow,
         missing: list[str],
         missing_by_project: dict[str, list[str]],
     ) -> QualityMetricsRow:
         stream_name = self.registry.stream_name(project.business_stream_id)
-        supported_releases = self._safe_fetch_optional(
-            missing,
-            f"supported_releases:{project.id}",
-            lambda: (
-                self.release_port.fetch_supported_releases(ProjectId(project.id), period) if self.release_port else None
-            ),
-            project.id,
-            missing_by_project,
-        )
+        supported_releases = self._extract_supported_releases(project_id=ProjectId(project.id), month=month)
         bugs_found = self._safe_fetch(
             missing,
             f"bugs_found:{project.id}",
@@ -194,6 +186,13 @@ class GenerateMonthlyReportUseCase:
         if not totals:
             return None
         return sum(totals)
+
+    def _extract_supported_releases(self, project_id: ProjectId, month: TimeWindow) -> int | None:
+        submissions = self.storage_port.get_submissions_by_project(project_id, month)
+        if not submissions:
+            return None
+        latest = max(submissions, key=lambda item: item.created_at)
+        return latest.supported_releases_count
 
     def _build_completeness(
         self,
@@ -309,22 +308,6 @@ class GenerateMonthlyReportUseCase:
         project_id: str,
         missing_by_project: dict[str, list[str]],
     ) -> object:
-        try:
-            return func()
-        except Exception:  # noqa: BLE001
-            # Intentionally broad: mark data as missing rather than failing entire report
-            missing.append(label)
-            missing_by_project.setdefault(project_id, []).append(label.split(":", maxsplit=1)[0])
-            return None
-
-    @staticmethod
-    def _safe_fetch_optional(
-        missing: list[str],
-        label: str,
-        func: Callable[[], object | None],
-        project_id: str,
-        missing_by_project: dict[str, list[str]],
-    ) -> object | None:
         try:
             return func()
         except Exception:  # noqa: BLE001

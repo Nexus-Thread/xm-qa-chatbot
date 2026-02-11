@@ -25,4 +25,5 @@ class SubmissionModel(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
     test_coverage: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     overall_test_cases: Mapped[int | None] = mapped_column(JSON, nullable=True)
+    supported_releases_count: Mapped[int | None] = mapped_column(JSON, nullable=True)
     raw_conversation: Mapped[str | None] = mapped_column(String, nullable=True)

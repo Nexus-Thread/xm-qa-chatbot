@@ -34,7 +34,8 @@ def prompt_for_time_window(default_window: TimeWindow) -> str:
 def prompt_for_test_coverage() -> str:
     """Return the prompt for test coverage collection."""
     return (
-        "Share any test coverage details you have (manual/automated totals or created/updated counts). "
+        "Share test coverage details and supported releases count if available "
+        "(manual/automated totals or created/updated counts, plus supported releases). "
         "It's OK to provide only part of the data."
     )
 
@@ -47,6 +48,7 @@ def prompt_for_confirmation(summary: str) -> str:
 def format_extraction_summary(result: ExtractionResult) -> str:
     """Format an extraction result into a readable summary."""
     lines = [f"Project: {result.project_id.value}", f"Month: {result.time_window.to_iso_month()}"]
+    lines.append(f"Supported releases count: {result.supported_releases_count}")
     if result.test_coverage:
         lines.append(_format_test_coverage(result.test_coverage))
     return "\n".join(lines)
@@ -57,6 +59,7 @@ def format_submission_summary(
     time_window: TimeWindow,
     test_coverage: TestCoverageMetrics | None,
     overall_test_cases: int | None,
+    supported_releases_count: int | None,
 ) -> str:
     """Format the current conversation data into a summary."""
     summary = ExtractionResult(
@@ -64,6 +67,7 @@ def format_submission_summary(
         time_window=time_window,
         test_coverage=test_coverage,
         overall_test_cases=overall_test_cases,
+        supported_releases_count=supported_releases_count,
     )
     return format_extraction_summary(summary)
 

@@ -40,6 +40,7 @@ class ConversationSession:
     stream_project: ProjectId | None = None
     time_window: TimeWindow | None = None
     test_coverage: TestCoverageMetrics | None = None
+    supported_releases_count: int | None = None
     pending_section: ConversationState | None = None
     pending_project: ProjectId | None = None
     history: list[dict[str, str]] = field(default_factory=list)
@@ -176,6 +177,7 @@ class ConversationManager:
             return self._request_skip_confirmation(session, ConversationState.TEST_COVERAGE, "test coverage")
         try:
             session.test_coverage = self._extractor.extract_test_coverage(message)
+            session.supported_releases_count = self._extractor.extract_supported_releases_count(message)
         except DomainError as err:
             return formatters.format_error_message(str(err)) + " " + formatters.prompt_for_test_coverage()
 
@@ -227,6 +229,7 @@ class ConversationManager:
             time_window=session.time_window,
             test_coverage=session.test_coverage,
             overall_test_cases=None,
+            supported_releases_count=session.supported_releases_count,
         )
         return formatters.prompt_for_confirmation(summary)
 
@@ -299,6 +302,7 @@ class ConversationManager:
             session.time_window = None
         elif section == ConversationState.TEST_COVERAGE:
             session.test_coverage = None
+            session.supported_releases_count = None
 
     def _build_command(self, session: ConversationSession) -> SubmissionCommand:
         """Build a submission command from session data."""
@@ -321,6 +325,7 @@ class ConversationManager:
             time_window=session.time_window,
             test_coverage=session.test_coverage,
             overall_test_cases=None,
+            supported_releases_count=session.supported_releases_count,
             raw_conversation=raw_conversation,
         )
 
@@ -384,6 +389,7 @@ class ConversationManager:
         session.stream_project = new_session.stream_project
         session.time_window = new_session.time_window
         session.test_coverage = new_session.test_coverage
+        session.supported_releases_count = new_session.supported_releases_count
         session.pending_section = new_session.pending_section
         session.history = new_session.history
         return welcome, session

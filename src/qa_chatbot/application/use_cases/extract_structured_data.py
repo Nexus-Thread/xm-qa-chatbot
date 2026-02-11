@@ -38,17 +38,27 @@ class ExtractStructuredDataUseCase:
         """Extract test coverage metrics from a conversation."""
         return self._timed_extract("test_coverage", self.llm_port.extract_test_coverage, conversation)
 
+    def extract_supported_releases_count(self, conversation: str) -> int | None:
+        """Extract supported releases count from a conversation."""
+        return self._timed_extract(
+            "supported_releases_count",
+            self.llm_port.extract_supported_releases_count,
+            conversation,
+        )
+
     def execute(self, conversation: str, current_date: date, registry: StreamRegistry) -> ExtractionResult:
         """Extract structured data from a conversation."""
         project_id, _ = self.extract_project_id(conversation, registry)
         time_window = self.extract_time_window(conversation, current_date)
         test_coverage = self.extract_test_coverage(conversation)
+        supported_releases_count = self.extract_supported_releases_count(conversation)
 
         return ExtractionResult(
             project_id=project_id,
             time_window=time_window,
             test_coverage=test_coverage,
             overall_test_cases=None,
+            supported_releases_count=supported_releases_count,
         )
 
     def execute_sections(
@@ -63,12 +73,14 @@ class ExtractStructuredDataUseCase:
         project_id, _ = self.extract_project_id(conversation, registry)
         time_window = self.extract_time_window(conversation, current_date)
         test_coverage = self.extract_test_coverage(conversation) if include_test_coverage else None
+        supported_releases_count = self.extract_supported_releases_count(conversation)
 
         return ExtractionResult(
             project_id=project_id,
             time_window=time_window,
             test_coverage=test_coverage,
             overall_test_cases=None,
+            supported_releases_count=supported_releases_count,
         )
 
     def execute_with_history(

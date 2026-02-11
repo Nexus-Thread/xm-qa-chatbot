@@ -23,7 +23,6 @@ class ReportingConfig(BaseModel):
     version: str = Field(default="1.0")
     streams: list[StreamConfig]
     jira: JiraConfig
-    release_sources: ReleaseSourceConfig
     regression_suites: list[RegressionSuiteConfig] = Field(default_factory=list)
     edge_case_policy: EdgeCasePolicyConfig
 
@@ -103,7 +102,6 @@ class ProjectConfig(BaseModel):
     aliases: list[str] = Field(default_factory=list)
     is_active: bool = Field(default=True)
     jira_sources: list[JiraProjectSourceConfig] = Field(default_factory=list)
-    release_source: ReleaseSourceSelection
     defect_leakage: DefectLeakageScopeConfig
 
 
@@ -164,39 +162,6 @@ class LeakageScopeSelection(BaseModel):
     """Reference to a Jira source for leakage calculations."""
 
     jira_source_key: str
-
-
-class ReleaseSourceConfig(BaseModel):
-    """Defines supported release data source options."""
-
-    manual: ManualReleaseConfig
-    jira_fix_version: JiraFixVersionConfig
-    release_calendar: ReleaseCalendarConfig
-
-
-class ReleaseSourceSelection(BaseModel):
-    """Selects a release source for a project."""
-
-    source: str
-    manual_value: int | None = Field(default=None)
-
-
-class ManualReleaseConfig(BaseModel):
-    """Manual override for releases."""
-
-    enabled: bool = Field(default=True)
-
-
-class JiraFixVersionConfig(BaseModel):
-    """Jira fixVersion based release counting."""
-
-    enabled: bool = Field(default=False)
-
-
-class ReleaseCalendarConfig(BaseModel):
-    """External release calendar placeholder."""
-
-    enabled: bool = Field(default=False)
 
 
 class RegressionSuiteConfig(BaseModel):
