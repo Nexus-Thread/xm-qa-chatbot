@@ -34,3 +34,12 @@ def test_settings_rejects_invalid_log_level(monkeypatch: pytest.MonkeyPatch) -> 
 
     with pytest.raises(InvalidConfigurationError):
         EnvSettingsAdapter().load()
+
+
+def test_settings_normalizes_log_level(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Normalize log level to uppercase."""
+    monkeypatch.setenv("LOG_LEVEL", "warning")
+
+    settings = EnvSettingsAdapter().load()
+
+    assert settings.log_level == "WARNING"

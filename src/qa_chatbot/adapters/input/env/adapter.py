@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic_core import ValidationError
+from pydantic import ValidationError
 
 from qa_chatbot.application.dtos import AppSettings
 from qa_chatbot.domain.exceptions import InvalidConfigurationError
