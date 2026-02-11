@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from qa_chatbot.domain.entities import BusinessStream, Project
 from qa_chatbot.domain.exceptions import InvalidConfigurationError
@@ -18,13 +18,19 @@ if TYPE_CHECKING:
 class ReportingConfig(BaseModel):
     """Configuration for monthly QA summary reporting."""
 
+    model_config = ConfigDict(extra="forbid")
+
     version: str = Field(default="1.0")
     streams: list[StreamConfig]
-    projects: list[ProjectConfig]
     jira: JiraConfig
     release_sources: ReleaseSourceConfig
     regression_suites: list[RegressionSuiteConfig] = Field(default_factory=list)
     edge_case_policy: EdgeCasePolicyConfig
+
+    @property
+    def all_projects(self) -> tuple[ProjectConfig, ...]:
+        """Return all projects across streams ordered by stream and project order."""
+        return tuple(project for _, project in self._ordered_stream_projects())
 
     @classmethod
     def load(cls, *, path: Path) -> ReportingConfig:
@@ -46,42 +52,53 @@ class ReportingConfig(BaseModel):
 
     def to_registry(self) -> StreamRegistry:
         """Build a stream registry from the configuration."""
+        ordered_pairs = self._ordered_stream_projects()
         streams = tuple(
-            BusinessStream(
-                id=stream.id,
-                name=stream.name,
-                order=stream.order,
-            )
-            for stream in sorted(self.streams, key=lambda item: item.order)
+            BusinessStream(id=stream.id, name=stream.name, order=stream.order) for stream in self._ordered_streams()
         )
         projects = tuple(
             Project(
                 id=project.id,
                 name=project.name,
-                business_stream_id=project.business_stream_id,
+                business_stream_id=stream.id,
                 aliases=tuple(project.aliases),
                 is_active=project.is_active,
             )
-            for project in sorted(self.projects, key=lambda item: item.order)
+            for stream, project in ordered_pairs
         )
         return StreamRegistry(streams=streams, projects=projects)
+
+    def _ordered_streams(self) -> list[StreamConfig]:
+        """Return streams sorted by configured order."""
+        return sorted(self.streams, key=lambda item: item.order)
+
+    def _ordered_stream_projects(self) -> list[tuple[StreamConfig, ProjectConfig]]:
+        """Return stream-project pairs ordered by project order."""
+        ordered_pairs: list[tuple[StreamConfig, ProjectConfig]] = []
+        for stream in self._ordered_streams():
+            ordered_pairs.extend((stream, project) for project in stream.projects)
+        return sorted(ordered_pairs, key=lambda item: item[1].order)
 
 
 class StreamConfig(BaseModel):
     """Defines a business stream in the report."""
 
+    model_config = ConfigDict(extra="forbid")
+
     id: str
     name: str
     order: int = Field(ge=0)
     is_active: bool = Field(default=True)
+    projects: list[ProjectConfig] = Field(default_factory=list)
 
 
 class ProjectConfig(BaseModel):
     """Defines a project within a business stream."""
 
+    model_config = ConfigDict(extra="forbid")
+
     id: str
     name: str
-    business_stream_id: str
     order: int = Field(ge=0)
     aliases: list[str] = Field(default_factory=list)
     is_active: bool = Field(default=True)

@@ -19,7 +19,7 @@ from qa_chatbot.domain import ProjectId, TestCoverageMetrics, TimeWindow
 def load_active_projects(reporting_config_path: Path) -> list[dict[str, str]]:
     """Load all active projects from the reporting config."""
     config = ReportingConfig.load(path=reporting_config_path)
-    projects = [{"id": project.id, "name": project.name} for project in config.projects if project.is_active]
+    projects = [{"id": project.id, "name": project.name} for project in config.all_projects if project.is_active]
     print(f"✅ Loaded {len(projects)} active projects\n")
     return projects
 

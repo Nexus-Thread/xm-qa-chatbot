@@ -62,7 +62,7 @@ class MockJiraAdapter(JiraMetricsPort):
         return f"{self.config.jira.url}/issues/?jql={query}"
 
     def _find_project_source(self, project_id: ProjectId) -> JiraProjectSourceConfig | None:
-        for project in self.config.projects:
+        for project in self.config.all_projects:
             if project.id == project_id.value:
                 if not project.jira_sources:
                     return None
