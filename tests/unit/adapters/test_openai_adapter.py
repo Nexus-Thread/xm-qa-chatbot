@@ -9,7 +9,13 @@ from typing import TYPE_CHECKING
 import pytest
 
 from qa_chatbot.adapters.output.llm.openai import OpenAIAdapter, OpenAISettings
-from qa_chatbot.domain import AmbiguousExtractionError, LLMExtractionError, ProjectId, TimeWindow
+from qa_chatbot.domain import (
+    AmbiguousExtractionError,
+    ExtractionConfidence,
+    LLMExtractionError,
+    ProjectId,
+    TimeWindow,
+)
 from qa_chatbot.domain.registries import build_default_registry
 
 if TYPE_CHECKING:
@@ -89,7 +95,21 @@ def test_extract_project_id_parses_response() -> None:
     project_id, confidence = adapter.extract_project_id("We are Project A", registry)
 
     assert project_id == ProjectId("Project A")
-    assert confidence == "high"
+    assert confidence == ExtractionConfidence.from_raw("high")
+
+
+def test_extract_project_id_falls_back_to_low_on_invalid_confidence() -> None:
+    """Fallback to low confidence when the model returns unsupported value."""
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": "Project A", "confidence": "very sure"}'))])])
+    adapter = OpenAIAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeClient(responses),
+    )
+
+    registry = build_default_registry()
+    _, confidence = adapter.extract_project_id("We are Project A", registry)
+
+    assert confidence == ExtractionConfidence.low()
 
 
 def test_extract_time_window_parses_month() -> None:

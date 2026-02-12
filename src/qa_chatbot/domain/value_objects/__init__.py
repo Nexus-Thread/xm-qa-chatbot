@@ -1,5 +1,6 @@
 """Domain value objects."""
 
+from .extraction_confidence import ExtractionConfidence
 from .metrics import (
     BucketCount,
     CapaStatus,
@@ -18,6 +19,7 @@ __all__ = [
     "BucketCount",
     "CapaStatus",
     "DefectLeakage",
+    "ExtractionConfidence",
     "PortfolioAggregates",
     "PriorityBucket",
     "PriorityMapping",

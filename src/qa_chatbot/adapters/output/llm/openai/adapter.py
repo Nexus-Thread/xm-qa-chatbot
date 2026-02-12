@@ -15,6 +15,7 @@ from qa_chatbot.application.dtos import ExtractionResult
 from qa_chatbot.application.ports.output import LLMPort
 from qa_chatbot.domain import (
     AmbiguousExtractionError,
+    ExtractionConfidence,
     LLMExtractionError,
     ProjectId,
     TestCoverageMetrics,
@@ -73,16 +74,21 @@ class OpenAIAdapter(LLMPort):
         """Return token usage for the most recent call."""
         return self._last_usage
 
-    def extract_project_id(self, conversation: str, registry: StreamRegistry) -> tuple[ProjectId, str]:
+    def extract_project_id(
+        self,
+        conversation: str,
+        registry: StreamRegistry,
+    ) -> tuple[ProjectId, ExtractionConfidence]:
         """Extract a project identifier from a conversation."""
         prompt = build_project_id_prompt(registry)
         payload = self._extract_json(conversation, prompt)
         data = self._parse_schema(payload, ProjectIdSchema)
         self._raise_if_blank(data.project_id, "project identifier")
 
-        confidence = data.confidence.lower().strip()
-        if confidence not in {"high", "medium", "low"}:
-            confidence = "low"
+        try:
+            confidence = ExtractionConfidence.from_raw(data.confidence)
+        except ValueError:
+            confidence = ExtractionConfidence.low()
 
         return ProjectId.from_raw(data.project_id), confidence
 

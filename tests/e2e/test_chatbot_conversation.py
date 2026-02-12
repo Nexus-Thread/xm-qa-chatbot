@@ -11,7 +11,7 @@ import pytest
 from qa_chatbot.adapters.input.gradio.conversation_manager import ConversationManager, ConversationSession
 from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitTeamDataUseCase
 from qa_chatbot.application.dtos import ExtractionResult
-from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWindow
+from qa_chatbot.domain import ExtractionConfidence, ProjectId, Submission, TestCoverageMetrics, TimeWindow
 
 if TYPE_CHECKING:
     from qa_chatbot.domain.registries import StreamRegistry
@@ -21,11 +21,15 @@ if TYPE_CHECKING:
 class FakeLLM:
     """Deterministic LLM adapter for testing."""
 
-    def extract_project_id(self, conversation: str, registry: StreamRegistry) -> tuple[ProjectId, str]:
+    def extract_project_id(
+        self,
+        conversation: str,
+        registry: StreamRegistry,
+    ) -> tuple[ProjectId, ExtractionConfidence]:
         """Return a fixed project ID."""
         _ = conversation
         _ = registry
-        return ProjectId("qa-project"), "high"
+        return ProjectId("qa-project"), ExtractionConfidence.from_raw("high")
 
     def extract_time_window(self, conversation: str, current_date: date) -> TimeWindow:
         """Return a fixed time window."""

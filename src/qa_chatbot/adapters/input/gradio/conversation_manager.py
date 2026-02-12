@@ -8,13 +8,19 @@ from typing import TYPE_CHECKING
 
 from qa_chatbot.adapters.input.gradio import formatters
 from qa_chatbot.application.dtos import SubmissionCommand
-from qa_chatbot.domain import DomainError, MissingSubmissionDataError, ProjectId, TimeWindow, build_default_registry
+from qa_chatbot.domain import (
+    DomainError,
+    MissingSubmissionDataError,
+    ProjectId,
+    TimeWindow,
+    build_default_registry,
+)
 
 if TYPE_CHECKING:
     from datetime import date
 
     from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitTeamDataUseCase
-    from qa_chatbot.domain.value_objects import TestCoverageMetrics
+    from qa_chatbot.domain.value_objects import ExtractionConfidence, TestCoverageMetrics
 
 # Time window parsing constants
 YEAR_MONTH_PARTS = 2
@@ -43,6 +49,7 @@ class ConversationSession:
     supported_releases_count: int | None = None
     pending_section: ConversationState | None = None
     pending_project: ProjectId | None = None
+    pending_confidence: ExtractionConfidence | None = None
     history: list[dict[str, str]] = field(default_factory=list)
 
 
@@ -111,13 +118,14 @@ class ConversationManager:
         try:
             project_id, confidence = self._extractor.extract_project_id(message, registry)
 
-            if confidence == "high":
+            if confidence.is_high:
                 session.stream_project = project_id
                 session.state = ConversationState.TIME_WINDOW
                 default_window = TimeWindow.default_for(today)
                 return formatters.prompt_for_time_window(default_window)
 
             session.pending_project = project_id
+            session.pending_confidence = confidence
             session.state = ConversationState.PROJECT_CONFIRMATION
             project = registry.find_project(project_id.value)
             project_name = project.name if project else project_id.value
@@ -144,11 +152,13 @@ class ConversationManager:
         if self._is_affirmative(message) and session.pending_project is not None:
             session.stream_project = session.pending_project
             session.pending_project = None
+            session.pending_confidence = None
             session.state = ConversationState.TIME_WINDOW
             default_window = TimeWindow.default_for(today)
             return formatters.prompt_for_time_window(default_window)
 
         session.pending_project = None
+        session.pending_confidence = None
         session.state = ConversationState.PROJECT_ID
         return "No problem. " + formatters.prompt_for_project()
 
@@ -294,6 +304,7 @@ class ConversationManager:
         """Reset stored values for a section."""
         if section == ConversationState.PROJECT_ID:
             session.stream_project = None
+            session.pending_confidence = None
         elif section == ConversationState.TIME_WINDOW:
             session.time_window = None
         elif section == ConversationState.TEST_COVERAGE:
@@ -387,5 +398,6 @@ class ConversationManager:
         session.test_coverage = new_session.test_coverage
         session.supported_releases_count = new_session.supported_releases_count
         session.pending_section = new_session.pending_section
+        session.pending_confidence = new_session.pending_confidence
         session.history = new_session.history
         return welcome, session

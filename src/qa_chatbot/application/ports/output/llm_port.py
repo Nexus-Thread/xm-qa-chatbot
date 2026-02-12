@@ -8,14 +8,18 @@ if TYPE_CHECKING:
     from datetime import date
 
     from qa_chatbot.application.dtos import ExtractionResult
-    from qa_chatbot.domain import ProjectId, TestCoverageMetrics, TimeWindow
+    from qa_chatbot.domain import ExtractionConfidence, ProjectId, TestCoverageMetrics, TimeWindow
     from qa_chatbot.domain.registries import StreamRegistry
 
 
 class LLMPort(Protocol):
     """Protocol for extracting structured data from conversations."""
 
-    def extract_project_id(self, conversation: str, registry: StreamRegistry) -> tuple[ProjectId, str]:
+    def extract_project_id(
+        self,
+        conversation: str,
+        registry: StreamRegistry,
+    ) -> tuple[ProjectId, ExtractionConfidence]:
         """Extract a project identifier from a conversation with confidence level."""
 
     def extract_time_window(self, conversation: str, current_date: date) -> TimeWindow:

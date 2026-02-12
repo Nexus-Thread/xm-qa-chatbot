@@ -5,6 +5,7 @@ from datetime import date
 import pytest
 
 from qa_chatbot.domain import (
+    ExtractionConfidence,
     InvalidProjectIdError,
     InvalidTimeWindowError,
     ProjectId,
@@ -35,6 +36,20 @@ def test_project_id_rejects_empty_value() -> None:
     """Reject empty project identifiers."""
     with pytest.raises(InvalidProjectIdError):
         ProjectId.from_raw("  ")
+
+
+def test_extraction_confidence_normalizes_value() -> None:
+    """Normalize extraction confidence values."""
+    confidence = ExtractionConfidence.from_raw("  HIGH  ")
+
+    assert confidence.value == "high"
+    assert confidence.is_high is True
+
+
+def test_extraction_confidence_rejects_invalid_value() -> None:
+    """Reject unsupported extraction confidence values."""
+    with pytest.raises(ValueError, match="Confidence must be one of: high, medium, low"):
+        ExtractionConfidence.from_raw("certain")
 
 
 def test_time_window_validates_ranges() -> None:
