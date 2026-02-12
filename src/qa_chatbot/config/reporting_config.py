@@ -51,9 +51,7 @@ class ReportingConfig(BaseModel):
     def to_registry(self) -> StreamRegistry:
         """Build a stream registry from the configuration."""
         ordered_pairs = self._ordered_stream_projects()
-        streams = tuple(
-            BusinessStream(id=stream.id, name=stream.name, order=stream.order) for stream in self._ordered_streams()
-        )
+        streams = tuple(BusinessStream(id=stream.id, name=stream.name, order=stream.order) for stream in self._ordered_streams())
         projects = tuple(
             Project(
                 id=project.id,

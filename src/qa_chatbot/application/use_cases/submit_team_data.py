@@ -79,17 +79,10 @@ class SubmitTeamDataUseCase:
         existing = max(existing_submissions, key=lambda s: s.created_at)
 
         merged_coverage = command.test_coverage
-        if merged_coverage is not None:
-            merged_coverage = merged_coverage.merge_with(existing.test_coverage)
-        else:
-            merged_coverage = existing.test_coverage
+        merged_coverage = merged_coverage.merge_with(existing.test_coverage) if merged_coverage is not None else existing.test_coverage
 
-        merged_overall = (
-            command.overall_test_cases if command.overall_test_cases is not None else existing.overall_test_cases
-        )
+        merged_overall = command.overall_test_cases if command.overall_test_cases is not None else existing.overall_test_cases
         merged_supported_releases = (
-            command.supported_releases_count
-            if command.supported_releases_count is not None
-            else existing.supported_releases_count
+            command.supported_releases_count if command.supported_releases_count is not None else existing.supported_releases_count
         )
         return merged_coverage, merged_overall, merged_supported_releases

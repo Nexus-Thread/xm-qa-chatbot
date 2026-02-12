@@ -275,11 +275,7 @@ class OpenAIAdapter(LLMPort):
         """Normalize history into chat message dicts."""
         if not history:
             return []
-        return [
-            {"role": entry.get("role", "user"), "content": entry.get("content", "")}
-            for entry in history
-            if entry.get("content")
-        ]
+        return [{"role": entry.get("role", "user"), "content": entry.get("content", "")} for entry in history if entry.get("content")]
 
     @staticmethod
     def _extract_usage(response: Any) -> TokenUsage | None:  # noqa: ANN401

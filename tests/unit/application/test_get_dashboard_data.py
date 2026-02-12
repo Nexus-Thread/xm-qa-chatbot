@@ -24,11 +24,7 @@ class FakeStoragePort:
 
     def get_submissions_by_project(self, team_id: ProjectId, month: TimeWindow) -> list[Submission]:
         """Return submissions for a project and month."""
-        return [
-            submission
-            for submission in self._submissions
-            if submission.project_id == team_id and submission.month == month
-        ]
+        return [submission for submission in self._submissions if submission.project_id == team_id and submission.month == month]
 
     def get_all_projects(self) -> list[ProjectId]:
         """Return all project IDs in sorted order."""

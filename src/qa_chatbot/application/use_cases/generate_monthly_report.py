@@ -244,9 +244,7 @@ class GenerateMonthlyReportUseCase:
     def _with_portfolio_quality_row(self, rows: list[QualityMetricsRow]) -> list[QualityMetricsRow]:
         supported = [row.supported_releases_count or 0 for row in rows if not row.is_portfolio]
         bugs = [
-            BucketCount(p1_p2=int(row.bugs_found.p1_p2 or 0), p3_p4=int(row.bugs_found.p3_p4 or 0))
-            for row in rows
-            if not row.is_portfolio
+            BucketCount(p1_p2=int(row.bugs_found.p1_p2 or 0), p3_p4=int(row.bugs_found.p3_p4 or 0)) for row in rows if not row.is_portfolio
         ]
         incidents = [
             BucketCount(p1_p2=int(row.production_incidents.p1_p2 or 0), p3_p4=int(row.production_incidents.p3_p4 or 0))

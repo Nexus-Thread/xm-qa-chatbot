@@ -137,14 +137,10 @@ class TestCoverageMetrics:
             manual_total=self.manual_total if self.manual_total is not None else existing.manual_total,
             automated_total=self.automated_total if self.automated_total is not None else existing.automated_total,
             manual_created_last_month=(
-                self.manual_created_last_month
-                if self.manual_created_last_month is not None
-                else existing.manual_created_last_month
+                self.manual_created_last_month if self.manual_created_last_month is not None else existing.manual_created_last_month
             ),
             manual_updated_last_month=(
-                self.manual_updated_last_month
-                if self.manual_updated_last_month is not None
-                else existing.manual_updated_last_month
+                self.manual_updated_last_month if self.manual_updated_last_month is not None else existing.manual_updated_last_month
             ),
             automated_created_last_month=(
                 self.automated_created_last_month

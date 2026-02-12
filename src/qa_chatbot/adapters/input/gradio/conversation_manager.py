@@ -129,9 +129,7 @@ class ConversationManager:
                 try:
                     ProjectId.from_raw(message)
                     return (
-                        formatters.format_error_message("I couldn't match that to a known project.")
-                        + " "
-                        + formatters.prompt_for_project()
+                        formatters.format_error_message("I couldn't match that to a known project.") + " " + formatters.prompt_for_project()
                     )
                 except DomainError as err:
                     return formatters.format_error_message(str(err)) + " " + formatters.prompt_for_project()
@@ -162,9 +160,7 @@ class ConversationManager:
                 parsed_window = self._extractor.extract_time_window(message, today)
             except DomainError as err:
                 default_window = TimeWindow.default_for(today)
-                return (
-                    formatters.format_error_message(str(err)) + " " + formatters.prompt_for_time_window(default_window)
-                )
+                return formatters.format_error_message(str(err)) + " " + formatters.prompt_for_time_window(default_window)
 
         session.time_window = parsed_window
         session.state = ConversationState.TEST_COVERAGE
