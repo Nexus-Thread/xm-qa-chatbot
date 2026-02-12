@@ -101,17 +101,51 @@ class ProjectConfig(BaseModel):
     aliases: list[str] = Field(default_factory=list)
     is_active: bool = Field(default=True)
     jira_sources: list[JiraProjectSourceConfig] = Field(default_factory=list)
+    jira_filters: JiraProjectFiltersConfig
     defect_leakage: DefectLeakageScopeConfig
 
 
 class JiraConfig(BaseModel):
     """Global Jira configuration defaults."""
 
-    url: str
+    connection: JiraConnectionConfig
     priority_mapping: PriorityMappingConfig
     qa_found_logic: QaFoundLogicConfig
     time_window_field: str = Field(default="created")
     query_templates: JiraQueryTemplatesConfig
+
+    @property
+    def url(self) -> str:
+        """Return Jira base URL for backward-compatible consumers."""
+        return self.connection.base_url
+
+
+class JiraConnectionConfig(BaseModel):
+    """Connection details for Jira API access."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    base_url: str
+    username: str
+    api_token: str
+
+
+class JiraProjectFiltersConfig(BaseModel):
+    """Project-specific Jira filters used by report metrics."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    lower: JiraPriorityFilterGroupConfig
+    prod: JiraPriorityFilterGroupConfig
+
+
+class JiraPriorityFilterGroupConfig(BaseModel):
+    """Priority-bucket filter strings for one Jira issue scope."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    p1_p2: str
+    p3_p4: str
 
 
 class JiraProjectSourceConfig(BaseModel):

@@ -12,6 +12,13 @@ streams:
         jira_source_key: affiliate_numerator
       denominator:
         jira_source_key: affiliate_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = AFFILIATE AND priority in (P1, P2)
+        p3_p4: project = AFFILIATE AND priority in (P3, P4)
+      prod:
+        p1_p2: project = AFFILIATE AND priority in (P1, P2)
+        p3_p4: project = AFFILIATE AND priority in (P3, P4)
 - id: backbone_bridge
   name: Backbone Systems / Bridge
   order: 20
@@ -24,6 +31,13 @@ streams:
         jira_source_key: bridge_numerator
       denominator:
         jira_source_key: bridge_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = BRIDGE AND priority in (P1, P2)
+        p3_p4: project = BRIDGE AND priority in (P3, P4)
+      prod:
+        p1_p2: project = BRIDGE AND priority in (P1, P2)
+        p3_p4: project = BRIDGE AND priority in (P3, P4)
 - id: backbone_platform
   name: Backbone Systems / Platform Systems
   order: 30
@@ -36,6 +50,13 @@ streams:
         jira_source_key: jthales_numerator
       denominator:
         jira_source_key: jthales_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = JTHALES AND priority in (P1, P2)
+        p3_p4: project = JTHALES AND priority in (P3, P4)
+      prod:
+        p1_p2: project = JTHALES AND priority in (P1, P2)
+        p3_p4: project = JTHALES AND priority in (P3, P4)
   - id: jmanager_server_portal
     name: jManager Server and Portal
     order: 20
@@ -49,6 +70,13 @@ streams:
       project_key: JMGR
       issue_types:
       - Bug
+    jira_filters:
+      lower:
+        p1_p2: project = JMGR AND priority in (P1, P2)
+        p3_p4: project = JMGR AND priority in (P3, P4)
+      prod:
+        p1_p2: project = JMGR AND priority in (P1, P2)
+        p3_p4: project = JMGR AND priority in (P3, P4)
   - id: symbols_management_service
     name: Symbols Management Service
     order: 30
@@ -62,6 +90,13 @@ streams:
       project_key: SYM
       issue_types:
       - Bug
+    jira_filters:
+      lower:
+        p1_p2: project = SYM AND priority in (P1, P2)
+        p3_p4: project = SYM AND priority in (P3, P4)
+      prod:
+        p1_p2: project = SYM AND priority in (P1, P2)
+        p3_p4: project = SYM AND priority in (P3, P4)
   - id: local_depositors_service
     name: Local Depositors Service
     order: 40
@@ -75,6 +110,13 @@ streams:
       project_key: LDS
       issue_types:
       - Bug
+    jira_filters:
+      lower:
+        p1_p2: project = LDS AND priority in (P1, P2)
+        p3_p4: project = LDS AND priority in (P3, P4)
+      prod:
+        p1_p2: project = LDS AND priority in (P1, P2)
+        p3_p4: project = LDS AND priority in (P3, P4)
   - id: fees_management_service
     name: Fees Management Service
     order: 50
@@ -88,6 +130,13 @@ streams:
       project_key: FEES
       issue_types:
       - Bug
+    jira_filters:
+      lower:
+        p1_p2: project = FEES AND priority in (P1, P2)
+        p3_p4: project = FEES AND priority in (P3, P4)
+      prod:
+        p1_p2: project = FEES AND priority in (P1, P2)
+        p3_p4: project = FEES AND priority in (P3, P4)
   - id: admin_tools_service
     name: Admin Tools Service
     order: 60
@@ -101,6 +150,13 @@ streams:
       project_key: ADMIN
       issue_types:
       - Bug
+    jira_filters:
+      lower:
+        p1_p2: project = ADMIN AND priority in (P1, P2)
+        p3_p4: project = ADMIN AND priority in (P3, P4)
+      prod:
+        p1_p2: project = ADMIN AND priority in (P1, P2)
+        p3_p4: project = ADMIN AND priority in (P3, P4)
   - id: funding_service
     name: Funding Service (Not Live)
     order: 70
@@ -110,6 +166,13 @@ streams:
         jira_source_key: funding_service_numerator
       denominator:
         jira_source_key: funding_service_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = FUNDING_SERVICE AND priority in (P1, P2)
+        p3_p4: project = FUNDING_SERVICE AND priority in (P3, P4)
+      prod:
+        p1_p2: project = FUNDING_SERVICE AND priority in (P1, P2)
+        p3_p4: project = FUNDING_SERVICE AND priority in (P3, P4)
   - id: jtools
     name: JTools
     order: 80
@@ -118,6 +181,13 @@ streams:
         jira_source_key: jtools_numerator
       denominator:
         jira_source_key: jtools_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = JTOOLS AND priority in (P1, P2)
+        p3_p4: project = JTOOLS AND priority in (P3, P4)
+      prod:
+        p1_p2: project = JTOOLS AND priority in (P1, P2)
+        p3_p4: project = JTOOLS AND priority in (P3, P4)
   - id: data_access_layer
     name: Data Access Layer (DAL)
     order: 90
@@ -131,6 +201,13 @@ streams:
       project_key: DAL
       issue_types:
       - Bug
+    jira_filters:
+      lower:
+        p1_p2: project = DAL AND priority in (P1, P2)
+        p3_p4: project = DAL AND priority in (P3, P4)
+      prod:
+        p1_p2: project = DAL AND priority in (P1, P2)
+        p3_p4: project = DAL AND priority in (P3, P4)
 - id: backbone_trading
   name: Backbone Systems / Trading Platform
   order: 40
@@ -148,6 +225,13 @@ streams:
       project_key: META
       issue_types:
       - Bug
+    jira_filters:
+      lower:
+        p1_p2: project = META AND priority in (P1, P2)
+        p3_p4: project = META AND priority in (P3, P4)
+      prod:
+        p1_p2: project = META AND priority in (P1, P2)
+        p3_p4: project = META AND priority in (P3, P4)
   - id: plugins
     name: Plugins
     order: 20
@@ -161,6 +245,13 @@ streams:
       project_key: PLUG
       issue_types:
       - Bug
+    jira_filters:
+      lower:
+        p1_p2: project = PLUG AND priority in (P1, P2)
+        p3_p4: project = PLUG AND priority in (P3, P4)
+      prod:
+        p1_p2: project = PLUG AND priority in (P1, P2)
+        p3_p4: project = PLUG AND priority in (P3, P4)
   - id: tsda
     name: TSDA
     order: 30
@@ -174,6 +265,13 @@ streams:
       project_key: TSDA
       issue_types:
       - Bug
+    jira_filters:
+      lower:
+        p1_p2: project = TSDA AND priority in (P1, P2)
+        p3_p4: project = TSDA AND priority in (P3, P4)
+      prod:
+        p1_p2: project = TSDA AND priority in (P1, P2)
+        p3_p4: project = TSDA AND priority in (P3, P4)
   - id: horn
     name: HORN
     order: 40
@@ -187,6 +285,13 @@ streams:
       project_key: HORN
       issue_types:
       - Bug
+    jira_filters:
+      lower:
+        p1_p2: project = HORN AND priority in (P1, P2)
+        p3_p4: project = HORN AND priority in (P3, P4)
+      prod:
+        p1_p2: project = HORN AND priority in (P1, P2)
+        p3_p4: project = HORN AND priority in (P3, P4)
 - id: client_engagement
   name: Client Engagement
   order: 50
@@ -199,6 +304,13 @@ streams:
         jira_source_key: social_copy_trading_numerator
       denominator:
         jira_source_key: social_copy_trading_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = SOCIAL_TRADING_COPY AND priority in (P1, P2)
+        p3_p4: project = SOCIAL_TRADING_COPY AND priority in (P3, P4)
+      prod:
+        p1_p2: project = SOCIAL_TRADING_COPY AND priority in (P1, P2)
+        p3_p4: project = SOCIAL_TRADING_COPY AND priority in (P3, P4)
   - id: social_trading_competitions
     name: Social Trading – Competitions
     order: 20
@@ -207,6 +319,13 @@ streams:
         jira_source_key: social_competitions_numerator
       denominator:
         jira_source_key: social_competitions_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = SOCIAL_TRADING_COMPETITIONS AND priority in (P1, P2)
+        p3_p4: project = SOCIAL_TRADING_COMPETITIONS AND priority in (P3, P4)
+      prod:
+        p1_p2: project = SOCIAL_TRADING_COMPETITIONS AND priority in (P1, P2)
+        p3_p4: project = SOCIAL_TRADING_COMPETITIONS AND priority in (P3, P4)
   - id: promotions_tool
     name: Promotions Tool
     order: 30
@@ -215,6 +334,13 @@ streams:
         jira_source_key: promotions_tool_numerator
       denominator:
         jira_source_key: promotions_tool_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = PROMOTIONS_TOOL AND priority in (P1, P2)
+        p3_p4: project = PROMOTIONS_TOOL AND priority in (P3, P4)
+      prod:
+        p1_p2: project = PROMOTIONS_TOOL AND priority in (P1, P2)
+        p3_p4: project = PROMOTIONS_TOOL AND priority in (P3, P4)
   - id: client_loyalty_loyalty
     name: Client Loyalty – Loyalty
     order: 40
@@ -223,6 +349,13 @@ streams:
         jira_source_key: loyalty_numerator
       denominator:
         jira_source_key: loyalty_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = CLIENT_LOYALTY_LOYALTY AND priority in (P1, P2)
+        p3_p4: project = CLIENT_LOYALTY_LOYALTY AND priority in (P3, P4)
+      prod:
+        p1_p2: project = CLIENT_LOYALTY_LOYALTY AND priority in (P1, P2)
+        p3_p4: project = CLIENT_LOYALTY_LOYALTY AND priority in (P3, P4)
   - id: client_loyalty_bonus
     name: Client Loyalty – Bonus
     order: 50
@@ -231,6 +364,13 @@ streams:
         jira_source_key: bonus_numerator
       denominator:
         jira_source_key: bonus_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = CLIENT_LOYALTY_BONUS AND priority in (P1, P2)
+        p3_p4: project = CLIENT_LOYALTY_BONUS AND priority in (P3, P4)
+      prod:
+        p1_p2: project = CLIENT_LOYALTY_BONUS AND priority in (P1, P2)
+        p3_p4: project = CLIENT_LOYALTY_BONUS AND priority in (P3, P4)
   - id: market_intelligence
     name: Market Intelligence
     order: 60
@@ -239,6 +379,13 @@ streams:
         jira_source_key: market_intelligence_numerator
       denominator:
         jira_source_key: market_intelligence_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = MARKET_INTELLIGENCE AND priority in (P1, P2)
+        p3_p4: project = MARKET_INTELLIGENCE AND priority in (P3, P4)
+      prod:
+        p1_p2: project = MARKET_INTELLIGENCE AND priority in (P1, P2)
+        p3_p4: project = MARKET_INTELLIGENCE AND priority in (P3, P4)
   - id: artificial_intelligence
     name: Artificial Intelligence (AI)
     order: 70
@@ -247,6 +394,13 @@ streams:
         jira_source_key: artificial_intelligence_numerator
       denominator:
         jira_source_key: artificial_intelligence_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = ARTIFICIAL_INTELLIGENCE AND priority in (P1, P2)
+        p3_p4: project = ARTIFICIAL_INTELLIGENCE AND priority in (P3, P4)
+      prod:
+        p1_p2: project = ARTIFICIAL_INTELLIGENCE AND priority in (P1, P2)
+        p3_p4: project = ARTIFICIAL_INTELLIGENCE AND priority in (P3, P4)
   - id: client_communication
     name: Client Communication
     order: 80
@@ -255,6 +409,13 @@ streams:
         jira_source_key: client_communication_numerator
       denominator:
         jira_source_key: client_communication_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = CLIENT_COMMUNICATION AND priority in (P1, P2)
+        p3_p4: project = CLIENT_COMMUNICATION AND priority in (P3, P4)
+      prod:
+        p1_p2: project = CLIENT_COMMUNICATION AND priority in (P1, P2)
+        p3_p4: project = CLIENT_COMMUNICATION AND priority in (P3, P4)
   - id: education
     name: Education
     order: 90
@@ -263,6 +424,13 @@ streams:
         jira_source_key: education_numerator
       denominator:
         jira_source_key: education_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = EDUCATION AND priority in (P1, P2)
+        p3_p4: project = EDUCATION AND priority in (P3, P4)
+      prod:
+        p1_p2: project = EDUCATION AND priority in (P1, P2)
+        p3_p4: project = EDUCATION AND priority in (P3, P4)
 - id: client_journey
   name: Client Journey
   order: 60
@@ -275,6 +443,13 @@ streams:
         jira_source_key: client_support_numerator
       denominator:
         jira_source_key: client_support_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = CLIENT_SUPPORT AND priority in (P1, P2)
+        p3_p4: project = CLIENT_SUPPORT AND priority in (P3, P4)
+      prod:
+        p1_p2: project = CLIENT_SUPPORT AND priority in (P1, P2)
+        p3_p4: project = CLIENT_SUPPORT AND priority in (P3, P4)
   - id: client_authentication
     name: Client Authentication
     order: 20
@@ -283,6 +458,13 @@ streams:
         jira_source_key: client_authentication_numerator
       denominator:
         jira_source_key: client_authentication_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = CLIENT_AUTHENTICATION AND priority in (P1, P2)
+        p3_p4: project = CLIENT_AUTHENTICATION AND priority in (P3, P4)
+      prod:
+        p1_p2: project = CLIENT_AUTHENTICATION AND priority in (P1, P2)
+        p3_p4: project = CLIENT_AUTHENTICATION AND priority in (P3, P4)
   - id: client_trading
     name: Client Trading
     order: 30
@@ -296,6 +478,13 @@ streams:
       project_key: CLTR
       issue_types:
       - Bug
+    jira_filters:
+      lower:
+        p1_p2: project = CLTR AND priority in (P1, P2)
+        p3_p4: project = CLTR AND priority in (P3, P4)
+      prod:
+        p1_p2: project = CLTR AND priority in (P1, P2)
+        p3_p4: project = CLTR AND priority in (P3, P4)
   - id: onboarding_account_mgmt
     name: Onboarding & Account Management
     order: 40
@@ -304,6 +493,13 @@ streams:
         jira_source_key: onboarding_numerator
       denominator:
         jira_source_key: onboarding_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = ONBOARDING_ACCOUNT_MGMT AND priority in (P1, P2)
+        p3_p4: project = ONBOARDING_ACCOUNT_MGMT AND priority in (P3, P4)
+      prod:
+        p1_p2: project = ONBOARDING_ACCOUNT_MGMT AND priority in (P1, P2)
+        p3_p4: project = ONBOARDING_ACCOUNT_MGMT AND priority in (P3, P4)
   - id: realtime_communications
     name: Realtime Communications
     order: 50
@@ -312,6 +508,13 @@ streams:
         jira_source_key: realtime_communications_numerator
       denominator:
         jira_source_key: realtime_communications_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = REALTIME_COMMUNICATIONS AND priority in (P1, P2)
+        p3_p4: project = REALTIME_COMMUNICATIONS AND priority in (P3, P4)
+      prod:
+        p1_p2: project = REALTIME_COMMUNICATIONS AND priority in (P1, P2)
+        p3_p4: project = REALTIME_COMMUNICATIONS AND priority in (P3, P4)
 - id: funding
   name: Funding
   order: 70
@@ -329,6 +532,13 @@ streams:
       project_key: PAY
       issue_types:
       - Bug
+    jira_filters:
+      lower:
+        p1_p2: project = PAY AND priority in (P1, P2)
+        p3_p4: project = PAY AND priority in (P3, P4)
+      prod:
+        p1_p2: project = PAY AND priority in (P1, P2)
+        p3_p4: project = PAY AND priority in (P3, P4)
   - id: withdrawals
     name: Withdrawals
     order: 20
@@ -337,6 +547,13 @@ streams:
         jira_source_key: withdrawals_numerator
       denominator:
         jira_source_key: withdrawals_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = WITHDRAWALS AND priority in (P1, P2)
+        p3_p4: project = WITHDRAWALS AND priority in (P3, P4)
+      prod:
+        p1_p2: project = WITHDRAWALS AND priority in (P1, P2)
+        p3_p4: project = WITHDRAWALS AND priority in (P3, P4)
 - id: internal_systems
   name: Internal Systems
   order: 80
@@ -349,6 +566,13 @@ streams:
         jira_source_key: kyc_numerator
       denominator:
         jira_source_key: kyc_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = KYC AND priority in (P1, P2)
+        p3_p4: project = KYC AND priority in (P3, P4)
+      prod:
+        p1_p2: project = KYC AND priority in (P1, P2)
+        p3_p4: project = KYC AND priority in (P3, P4)
   - id: scc
     name: SCC
     order: 20
@@ -357,6 +581,13 @@ streams:
         jira_source_key: scc_numerator
       denominator:
         jira_source_key: scc_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = SCC AND priority in (P1, P2)
+        p3_p4: project = SCC AND priority in (P3, P4)
+      prod:
+        p1_p2: project = SCC AND priority in (P1, P2)
+        p3_p4: project = SCC AND priority in (P3, P4)
   - id: crm
     name: CRM
     order: 30
@@ -365,6 +596,13 @@ streams:
         jira_source_key: crm_numerator
       denominator:
         jira_source_key: crm_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = CRM AND priority in (P1, P2)
+        p3_p4: project = CRM AND priority in (P3, P4)
+      prod:
+        p1_p2: project = CRM AND priority in (P1, P2)
+        p3_p4: project = CRM AND priority in (P3, P4)
   - id: digital_marketing
     name: Digital Marketing
     order: 40
@@ -373,6 +611,13 @@ streams:
         jira_source_key: digital_marketing_numerator
       denominator:
         jira_source_key: digital_marketing_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = DIGITAL_MARKETING AND priority in (P1, P2)
+        p3_p4: project = DIGITAL_MARKETING AND priority in (P3, P4)
+      prod:
+        p1_p2: project = DIGITAL_MARKETING AND priority in (P1, P2)
+        p3_p4: project = DIGITAL_MARKETING AND priority in (P3, P4)
 - id: mobile
   name: Mobile
   order: 90
@@ -385,6 +630,13 @@ streams:
         jira_source_key: mobile_xm_trading_point_numerator
       denominator:
         jira_source_key: mobile_xm_trading_point_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = MOBILE_TRADING_POINT AND priority in (P1, P2)
+        p3_p4: project = MOBILE_TRADING_POINT AND priority in (P3, P4)
+      prod:
+        p1_p2: project = MOBILE_TRADING_POINT AND priority in (P1, P2)
+        p3_p4: project = MOBILE_TRADING_POINT AND priority in (P3, P4)
 - id: www_cfa
   name: WWW / Client Face Application (CFA)
   order: 100
@@ -397,6 +649,13 @@ streams:
         jira_source_key: angular_core_web_numerator
       denominator:
         jira_source_key: angular_core_web_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = ANGULAR_CORE_WEB AND priority in (P1, P2)
+        p3_p4: project = ANGULAR_CORE_WEB AND priority in (P3, P4)
+      prod:
+        p1_p2: project = ANGULAR_CORE_WEB AND priority in (P1, P2)
+        p3_p4: project = ANGULAR_CORE_WEB AND priority in (P3, P4)
   - id: angular_www
     name: Angular WWW
     order: 20
@@ -405,8 +664,14 @@ streams:
         jira_source_key: angular_www_numerator
       denominator:
         jira_source_key: angular_www_denominator
+    jira_filters:
+      lower:
+        p1_p2: project = ANGULAR_WWW AND priority in (P1, P2)
+        p3_p4: project = ANGULAR_WWW AND priority in (P3, P4)
+      prod:
+        p1_p2: project = ANGULAR_WWW AND priority in (P1, P2)
+        p3_p4: project = ANGULAR_WWW AND priority in (P3, P4)
 jira:
-  url: https://jira.example.com
   time_window_field: created
   priority_mapping:
     p1_p2:
@@ -428,6 +693,10 @@ jira:
       created < {end}
     defect_leakage_denominator: project in ({project_keys}) AND created >= {start}
       AND created < {end}
+  connection:
+    base_url: https://jira.example.com
+    username: jira-user@example.com
+    api_token: replace-with-jira-api-token
 regression_suites:
 - key: manual_web
   name: Manual Web Regression

@@ -27,6 +27,13 @@ streams:
       - id: project_b2
         name: Project B2
         order: 20
+        jira_filters:
+          lower:
+            p1_p2: project = B2 AND priority in (P1, P2)
+            p3_p4: project = B2 AND priority in (P3, P4)
+          prod:
+            p1_p2: project = B2 AND priority in (P1, P2)
+            p3_p4: project = B2 AND priority in (P3, P4)
         defect_leakage:
           numerator:
             jira_source_key: b2_num
@@ -35,6 +42,13 @@ streams:
       - id: project_b1
         name: Project B1
         order: 10
+        jira_filters:
+          lower:
+            p1_p2: project = B1 AND priority in (P1, P2)
+            p3_p4: project = B1 AND priority in (P3, P4)
+          prod:
+            p1_p2: project = B1 AND priority in (P1, P2)
+            p3_p4: project = B1 AND priority in (P3, P4)
         defect_leakage:
           numerator:
             jira_source_key: b1_num
@@ -47,13 +61,23 @@ streams:
       - id: project_a1
         name: Project A1
         order: 10
+        jira_filters:
+          lower:
+            p1_p2: project = A1 AND priority in (P1, P2)
+            p3_p4: project = A1 AND priority in (P3, P4)
+          prod:
+            p1_p2: project = A1 AND priority in (P1, P2)
+            p3_p4: project = A1 AND priority in (P3, P4)
         defect_leakage:
           numerator:
             jira_source_key: a1_num
           denominator:
             jira_source_key: a1_den
 jira:
-  url: https://jira.example.com
+  connection:
+    base_url: https://jira.example.com
+    username: jira-user@example.com
+    api_token: token
   time_window_field: created
   priority_mapping:
     p1_p2: [P1]
@@ -95,13 +119,23 @@ projects:
     name: Project A1
     business_stream_id: stream_a
     order: 10
+    jira_filters:
+      lower:
+        p1_p2: project = A1 AND priority in (P1, P2)
+        p3_p4: project = A1 AND priority in (P3, P4)
+      prod:
+        p1_p2: project = A1 AND priority in (P1, P2)
+        p3_p4: project = A1 AND priority in (P3, P4)
     defect_leakage:
       numerator:
         jira_source_key: a1_num
       denominator:
         jira_source_key: a1_den
 jira:
-  url: https://jira.example.com
+  connection:
+    base_url: https://jira.example.com
+    username: jira-user@example.com
+    api_token: token
   time_window_field: created
   priority_mapping:
     p1_p2: [P1]
