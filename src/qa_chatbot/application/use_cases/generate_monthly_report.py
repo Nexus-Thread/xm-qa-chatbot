@@ -18,6 +18,7 @@ from qa_chatbot.application.dtos import (
     TestCoverageRow,
 )
 from qa_chatbot.application.services.reporting_calculations import (
+    ROUNDING_DECIMALS,
     EdgeCasePolicy,
     compute_portfolio_aggregates,
     format_regression_time,
@@ -265,7 +266,7 @@ class GenerateMonthlyReportUseCase:
             bugs=bugs,
             incidents=incidents,
             leakage=leakage,
-            rounding_decimals=self.edge_case_policy.rounding_decimals,
+            rounding_decimals=ROUNDING_DECIMALS,
         )
         portfolio_row = QualityMetricsRow(
             business_stream="All Streams",

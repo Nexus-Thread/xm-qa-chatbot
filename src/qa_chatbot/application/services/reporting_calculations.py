@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
-from qa_chatbot.domain.value_objects.metrics import BucketCount, DefectLeakage, RegressionTimeBlock
+from qa_chatbot.domain.value_objects.metrics import (
+    BucketCount,
+    DefectLeakage,
+    RegressionTimeBlock,
+    RegressionTimeEntry,
+)
 from qa_chatbot.domain.value_objects.portfolio_aggregates import PortfolioAggregates
 
 # Time conversion constants
@@ -16,18 +21,20 @@ class EdgeCasePolicy:
 
     rounding_decimals = ROUNDING_DECIMALS
 
+    def _compute_percentage(self, numerator: int, denominator: int) -> float:
+        """Compute percentage with zero-denominator handling."""
+        if denominator == 0:
+            return float("nan")
+        return round((numerator / denominator) * 100, ROUNDING_DECIMALS)
+
     def compute_automation_percentage(self, manual_total: int, automated_total: int) -> float:
         """Compute automation percentage with edge-case handling."""
         total = manual_total + automated_total
-        if total == 0:
-            return float("nan")
-        return round((automated_total / total) * 100, self.rounding_decimals)
+        return self._compute_percentage(numerator=automated_total, denominator=total)
 
     def compute_defect_leakage_rate(self, numerator: int, denominator: int) -> float:
         """Compute defect leakage percentage with edge-case handling."""
-        if denominator == 0:
-            return float("nan")
-        return round((numerator / denominator) * 100, self.rounding_decimals)
+        return self._compute_percentage(numerator=numerator, denominator=denominator)
 
 
 def format_regression_time(block: RegressionTimeBlock) -> tuple[tuple[str, str], ...]:
@@ -37,16 +44,21 @@ def format_regression_time(block: RegressionTimeBlock) -> tuple[tuple[str, str],
     formatted: list[tuple[str, str]] = []
     for entry in block.entries:
         duration = _format_duration(entry.duration_minutes)
-        extras: list[str] = []
-        if entry.context_count is not None:
-            extras.append(f"({entry.context_count})")
-        if entry.threads is not None:
-            extras.append(f"{entry.threads} threads")
-        if entry.notes:
-            extras.append(entry.notes)
-        label_suffix = f" {' '.join(extras)}" if extras else ""
-        formatted.append((f"{entry.suite_name}{label_suffix}", duration))
+        label = _build_regression_label(entry)
+        formatted.append((label, duration))
     return tuple(formatted)
+
+
+def _build_regression_label(entry: RegressionTimeEntry) -> str:
+    extras: list[str] = []
+    if entry.context_count is not None:
+        extras.append(f"({entry.context_count})")
+    if entry.threads is not None:
+        extras.append(f"{entry.threads} threads")
+    if entry.notes:
+        extras.append(entry.notes)
+    suffix = f" {' '.join(extras)}" if extras else ""
+    return f"{entry.suite_name}{suffix}"
 
 
 def _format_duration(minutes: float) -> str:
