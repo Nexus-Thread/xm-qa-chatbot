@@ -1,6 +1,6 @@
 """Domain layer for XM QA chatbot."""
 
-from .entities import BusinessStream, Project, ReportingPeriod, Submission, TeamData
+from .entities import BusinessStream, Project, ReportingPeriod, Submission
 from .exceptions import (
     AmbiguousExtractionError,
     DashboardRenderError,
@@ -56,7 +56,6 @@ __all__ = [
     "ReportingPeriod",
     "StreamRegistry",
     "Submission",
-    "TeamData",
     "TestCoverageMetrics",
     "TimeWindow",
     "ValidationService",
