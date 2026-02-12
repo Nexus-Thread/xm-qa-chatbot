@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from qa_chatbot.config import ReportingConfig
+from qa_chatbot.adapters.input.reporting_config import ReportingConfigFileAdapter
 from qa_chatbot.domain.exceptions import InvalidConfigurationError
 
 if TYPE_CHECKING:
@@ -96,7 +96,7 @@ jira:
         encoding="utf-8",
     )
 
-    config = ReportingConfig.load(path=config_file)
+    config = ReportingConfigFileAdapter().load(path=config_file)
     registry = config.to_registry()
 
     assert [stream.id for stream in registry.streams] == ["stream_a", "stream_b"]
@@ -155,4 +155,4 @@ jira:
     )
 
     with pytest.raises(InvalidConfigurationError):
-        ReportingConfig.load(path=config_file)
+        ReportingConfigFileAdapter().load(path=config_file)

@@ -8,11 +8,11 @@ from typing import TYPE_CHECKING
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from qa_chatbot.adapters.input.reporting_config import ReportingConfigFileAdapter
 from qa_chatbot.adapters.output.jira_mock import MockJiraAdapter
 from qa_chatbot.application.ports import DashboardPort, StoragePort
 from qa_chatbot.application.services.reporting_calculations import EdgeCasePolicy
 from qa_chatbot.application.use_cases import GenerateMonthlyReportUseCase, GetDashboardDataUseCase
-from qa_chatbot.config import ReportingConfig
 from qa_chatbot.domain import RegressionTimeEntry
 from qa_chatbot.domain.exceptions import DashboardRenderError
 
@@ -40,7 +40,7 @@ class HtmlDashboardAdapter(DashboardPort):
             autoescape=select_autoescape(["html"]),
         )
         self._use_case = GetDashboardDataUseCase(self.storage_port)
-        report_config = ReportingConfig.load(path=self.reporting_config_path)
+        report_config = ReportingConfigFileAdapter().load(path=self.reporting_config_path)
         registry = report_config.to_registry()
         edge_case_policy = EdgeCasePolicy()
         regression_suites = tuple(

@@ -7,10 +7,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from qa_chatbot.adapters.input import EnvSettingsAdapter
+from qa_chatbot.adapters.input.reporting_config import ReportingConfigFileAdapter
 from qa_chatbot.adapters.output import HtmlDashboardAdapter, InMemoryMetricsAdapter, SQLiteAdapter
 from qa_chatbot.application import SubmitTeamDataUseCase
 from qa_chatbot.application.dtos import SubmissionCommand
-from qa_chatbot.config import ReportingConfig
 from qa_chatbot.domain import ProjectId, TestCoverageMetrics, TimeWindow
 
 # ruff: noqa: T201
@@ -18,7 +18,7 @@ from qa_chatbot.domain import ProjectId, TestCoverageMetrics, TimeWindow
 
 def load_active_projects(reporting_config_path: Path) -> list[dict[str, str]]:
     """Load all active projects from the reporting config."""
-    config = ReportingConfig.load(path=reporting_config_path)
+    config = ReportingConfigFileAdapter().load(path=reporting_config_path)
     projects = [{"id": project.id, "name": project.name} for project in config.all_projects if project.is_active]
     print(f"✅ Loaded {len(projects)} active projects\n")
     return projects

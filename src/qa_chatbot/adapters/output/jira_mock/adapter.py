@@ -10,10 +10,7 @@ from qa_chatbot.domain import BucketCount, CapaStatus, DefectLeakage, ProjectId,
 from qa_chatbot.domain.exceptions import InvalidConfigurationError
 
 if TYPE_CHECKING:
-    from qa_chatbot.config import ReportingConfig
-
-if TYPE_CHECKING:
-    from qa_chatbot.config.reporting_config import JiraProjectSourceConfig
+    from qa_chatbot.adapters.input.reporting_config import JiraProjectSourceConfig, ReportingConfig
 
 
 @dataclass(frozen=True)

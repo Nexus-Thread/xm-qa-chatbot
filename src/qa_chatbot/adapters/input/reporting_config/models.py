@@ -1,18 +1,11 @@
-"""Reporting configuration loaded from YAML."""
+"""Reporting configuration models."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
 from qa_chatbot.domain.entities import BusinessStream, Project
-from qa_chatbot.domain.exceptions import InvalidConfigurationError
 from qa_chatbot.domain.registries import StreamRegistry
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 
 class ReportingConfig(BaseModel):
@@ -29,24 +22,6 @@ class ReportingConfig(BaseModel):
     def all_projects(self) -> tuple[ProjectConfig, ...]:
         """Return all projects across streams ordered by stream and project order."""
         return tuple(project for _, project in self._ordered_stream_projects())
-
-    @classmethod
-    def load(cls, *, path: Path) -> ReportingConfig:
-        """Load reporting configuration from YAML."""
-        try:
-            raw_data = yaml.safe_load(path.read_text(encoding="utf-8"))
-        except FileNotFoundError as exc:
-            message = f"Reporting config file not found: {path}"
-            raise InvalidConfigurationError(message) from exc
-        except (OSError, yaml.YAMLError) as exc:
-            message = f"Unable to read reporting config from {path}: {exc}"
-            raise InvalidConfigurationError(message) from exc
-
-        try:
-            return cls.model_validate(raw_data)
-        except Exception as exc:  # pragma: no cover - surfaced at startup
-            message = f"Invalid reporting configuration: {exc}"
-            raise InvalidConfigurationError(message) from exc
 
     def to_registry(self) -> StreamRegistry:
         """Build a stream registry from the configuration."""
