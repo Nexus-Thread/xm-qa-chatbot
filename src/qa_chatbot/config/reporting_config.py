@@ -24,7 +24,6 @@ class ReportingConfig(BaseModel):
     streams: list[StreamConfig]
     jira: JiraConfig
     regression_suites: list[RegressionSuiteConfig] = Field(default_factory=list)
-    edge_case_policy: EdgeCasePolicyConfig
 
     @property
     def all_projects(self) -> tuple[ProjectConfig, ...]:
@@ -171,11 +170,3 @@ class RegressionSuiteConfig(BaseModel):
     name: str
     category: str
     platform: str
-
-
-class EdgeCasePolicyConfig(BaseModel):
-    """Defines edge-case handling and rounding rules."""
-
-    leakage_zero_denominator: str = Field(default="zero")
-    automation_zero_total: str = Field(default="zero")
-    rounding_decimals: int = Field(default=2, ge=0, le=6)

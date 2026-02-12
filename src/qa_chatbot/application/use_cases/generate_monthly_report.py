@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from math import isnan
 from typing import TYPE_CHECKING
 
 from qa_chatbot.application.dtos import (
@@ -232,13 +231,10 @@ class GenerateMonthlyReportUseCase:
             return None
         if coverage.manual_total is None or coverage.automated_total is None:
             return None
-        percentage = self.edge_case_policy.compute_automation_percentage(
+        return self.edge_case_policy.compute_automation_percentage(
             manual_total=coverage.manual_total,
             automated_total=coverage.automated_total,
         )
-        if isnan(percentage):
-            return None
-        return percentage
 
     def _build_regression_time_entries(self) -> tuple[RegressionTimeEntryDTO, ...]:
         block = RegressionTimeBlock(entries=self.regression_suites)

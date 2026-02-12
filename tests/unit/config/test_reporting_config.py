@@ -68,10 +68,6 @@ jira:
     capa: test
     defect_leakage_numerator: test
     defect_leakage_denominator: test
-edge_case_policy:
-  leakage_zero_denominator: zero
-  automation_zero_total: zero
-  rounding_decimals: 2
         """.strip(),
         encoding="utf-8",
     )
@@ -120,10 +116,6 @@ jira:
     capa: test
     defect_leakage_numerator: test
     defect_leakage_denominator: test
-edge_case_policy:
-  leakage_zero_denominator: zero
-  automation_zero_total: zero
-  rounding_decimals: 2
         """.strip(),
         encoding="utf-8",
     )

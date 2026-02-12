@@ -437,7 +437,3 @@ regression_suites:
   name: API Automation
   category: automation
   platform: backend
-edge_case_policy:
-  leakage_zero_denominator: zero
-  automation_zero_total: zero
-  rounding_decimals: 2

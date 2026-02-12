@@ -42,7 +42,7 @@ class HtmlDashboardAdapter(DashboardPort):
         self._use_case = GetDashboardDataUseCase(self.storage_port)
         report_config = ReportingConfig.load(path=self.reporting_config_path)
         registry = report_config.to_registry()
-        edge_case_policy = EdgeCasePolicy.from_config(report_config.edge_case_policy)
+        edge_case_policy = EdgeCasePolicy()
         regression_suites = tuple(
             RegressionTimeEntry(
                 category=suite.category,

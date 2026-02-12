@@ -2,52 +2,31 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
-
 from qa_chatbot.domain.value_objects.metrics import BucketCount, DefectLeakage, RegressionTimeBlock
 from qa_chatbot.domain.value_objects.portfolio_aggregates import PortfolioAggregates
-
-if TYPE_CHECKING:
-    from qa_chatbot.config.reporting_config import EdgeCasePolicyConfig
 
 # Time conversion constants
 SECONDS_PER_MINUTE = 60
 MINUTES_PER_HOUR = 60
+ROUNDING_DECIMALS = 2
 
 
-@dataclass(frozen=True)
 class EdgeCasePolicy:
     """Defines how to handle calculation edge cases."""
 
-    leakage_zero_denominator: str
-    automation_zero_total: str
-    rounding_decimals: int
-
-    @classmethod
-    def from_config(cls, config: EdgeCasePolicyConfig) -> EdgeCasePolicy:
-        """Create policy from config."""
-        return cls(
-            leakage_zero_denominator=config.leakage_zero_denominator,
-            automation_zero_total=config.automation_zero_total,
-            rounding_decimals=config.rounding_decimals,
-        )
+    rounding_decimals = ROUNDING_DECIMALS
 
     def compute_automation_percentage(self, manual_total: int, automated_total: int) -> float:
         """Compute automation percentage with edge-case handling."""
         total = manual_total + automated_total
         if total == 0:
-            if self.automation_zero_total == "na":
-                return float("nan")
-            return 0.0
+            return float("nan")
         return round((automated_total / total) * 100, self.rounding_decimals)
 
     def compute_defect_leakage_rate(self, numerator: int, denominator: int) -> float:
         """Compute defect leakage percentage with edge-case handling."""
         if denominator == 0:
-            if self.leakage_zero_denominator == "na":
-                return float("nan")
-            return 0.0
+            return float("nan")
         return round((numerator / denominator) * 100, self.rounding_decimals)
 
 
