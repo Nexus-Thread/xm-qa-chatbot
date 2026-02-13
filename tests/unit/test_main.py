@@ -34,7 +34,12 @@ def test_main_wires_components(monkeypatch: pytest.MonkeyPatch) -> None:
 
     fake_storage = MagicMock()
     monkeypatch.setattr(qa_chatbot.main, "SQLiteAdapter", lambda **_: fake_storage)
-    monkeypatch.setattr(qa_chatbot.main, "HtmlDashboardAdapter", lambda **_: MagicMock())
+    html_adapter = MagicMock()
+    confluence_adapter = MagicMock()
+    composite_adapter = MagicMock()
+    monkeypatch.setattr(qa_chatbot.main, "HtmlDashboardAdapter", lambda **_: html_adapter)
+    monkeypatch.setattr(qa_chatbot.main, "ConfluenceDashboardAdapter", lambda **_: confluence_adapter)
+    monkeypatch.setattr(qa_chatbot.main, "CompositeDashboardAdapter", lambda **_: composite_adapter)
     monkeypatch.setattr(qa_chatbot.main, "OpenAIAdapter", lambda **_: MagicMock())
     metrics_adapter = MagicMock()
     monkeypatch.setattr(qa_chatbot.main, "InMemoryMetricsAdapter", lambda: metrics_adapter)

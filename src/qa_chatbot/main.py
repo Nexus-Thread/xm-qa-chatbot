@@ -7,6 +7,8 @@ from pathlib import Path
 from qa_chatbot.adapters.input import EnvSettingsAdapter, GradioAdapter, GradioSettings
 from qa_chatbot.adapters.input.gradio.conversation_manager import ConversationManager
 from qa_chatbot.adapters.output import (
+    CompositeDashboardAdapter,
+    ConfluenceDashboardAdapter,
     HtmlDashboardAdapter,
     InMemoryMetricsAdapter,
     OpenAIAdapter,
@@ -29,12 +31,22 @@ def main() -> None:
     storage.initialize_schema()
 
     dashboard_output_dir = Path(settings.dashboard_output_dir)
-    dashboard_adapter = HtmlDashboardAdapter(
+    html_dashboard_adapter = HtmlDashboardAdapter(
         storage_port=storage,
         output_dir=dashboard_output_dir,
         jira_base_url=settings.jira_base_url,
         jira_username=settings.jira_username,
         jira_api_token=settings.jira_api_token,
+    )
+    confluence_dashboard_adapter = ConfluenceDashboardAdapter(
+        storage_port=storage,
+        output_dir=dashboard_output_dir,
+        jira_base_url=settings.jira_base_url,
+        jira_username=settings.jira_username,
+        jira_api_token=settings.jira_api_token,
+    )
+    dashboard_adapter = CompositeDashboardAdapter(
+        adapters=(html_dashboard_adapter, confluence_dashboard_adapter),
     )
 
     llm_adapter = OpenAIAdapter(

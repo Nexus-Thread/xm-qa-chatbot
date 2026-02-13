@@ -1,4 +1,4 @@
-"""Generate dashboard HTML files from existing database data."""
+"""Generate dashboard artifacts from existing database data."""
 
 from __future__ import annotations
 
@@ -9,18 +9,24 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from qa_chatbot.adapters.input import EnvSettingsAdapter
-from qa_chatbot.adapters.output import HtmlDashboardAdapter, SQLiteAdapter
+from qa_chatbot.adapters.output import (
+    CompositeDashboardAdapter,
+    ConfluenceDashboardAdapter,
+    HtmlDashboardAdapter,
+    SQLiteAdapter,
+)
 from qa_chatbot.config import LoggingSettings, configure_logging
 
 if TYPE_CHECKING:
     from qa_chatbot.application.dtos import AppSettings
+    from qa_chatbot.domain import ProjectId, TimeWindow
 
 # ruff: noqa: T201
 
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(description="Generate dashboard HTML files from existing database submissions.")
+    parser = argparse.ArgumentParser(description="Generate dashboard files from existing database submissions.")
     parser.add_argument(
         "--database-url",
         default=None,
@@ -30,7 +36,7 @@ def parse_args() -> argparse.Namespace:
         "--output-dir",
         type=Path,
         default=None,
-        help="Output directory for generated HTML files (default: value from env settings).",
+        help="Output directory for generated dashboard files (default: value from env settings).",
     )
     parser.add_argument(
         "--months",
@@ -67,60 +73,97 @@ def generate_dashboards(
     print(f"Months to include: {months_limit}")
     print("=" * 80 + "\n")
 
-    # Initialize adapters
+    storage = _build_storage(database_url=database_url, logger=logger)
+    dashboard = _build_dashboard_adapter(storage=storage, output_dir=output_dir, settings=settings, logger=logger)
+    recent_months, projects = _load_generation_inputs(storage=storage, months_limit=months_limit, logger=logger)
+    if recent_months is None or projects is None:
+        return
+    print(f"📊 Found {len(projects)} projects and {len(recent_months)} recent months\n")
+    generated_files, overview_path = _generate_views(
+        dashboard=dashboard,
+        projects=projects,
+        recent_months=recent_months,
+    )
+    _print_summary(output_dir=output_dir, generated_files=generated_files, overview_path=overview_path)
+
+
+def _build_storage(database_url: str, logger: logging.Logger) -> SQLiteAdapter:
     logger.info("Initializing storage adapter")
     storage = SQLiteAdapter(database_url=database_url, echo=False)
     storage.initialize_schema()
+    return storage
 
+
+def _build_dashboard_adapter(
+    storage: SQLiteAdapter,
+    output_dir: Path,
+    settings: AppSettings,
+    logger: logging.Logger,
+) -> CompositeDashboardAdapter:
     logger.info("Initializing dashboard adapter")
-    dashboard = HtmlDashboardAdapter(
+    html_dashboard = HtmlDashboardAdapter(
         storage_port=storage,
         output_dir=output_dir,
         jira_base_url=settings.jira_base_url,
         jira_username=settings.jira_username,
         jira_api_token=settings.jira_api_token,
     )
+    confluence_dashboard = ConfluenceDashboardAdapter(
+        storage_port=storage,
+        output_dir=output_dir,
+        jira_base_url=settings.jira_base_url,
+        jira_username=settings.jira_username,
+        jira_api_token=settings.jira_api_token,
+    )
+    return CompositeDashboardAdapter(adapters=(html_dashboard, confluence_dashboard))
 
-    # Fetch data from storage
+
+def _load_generation_inputs(
+    storage: SQLiteAdapter,
+    months_limit: int,
+    logger: logging.Logger,
+) -> tuple[list[TimeWindow], list[ProjectId]] | tuple[None, None]:
     logger.info("Fetching recent months from database")
     recent_months = storage.get_recent_months(limit=months_limit)
     if not recent_months:
         print("❌ No data found in database. Nothing to generate.")
         print("\nTip: Run 'python scripts/seed_database.py' to populate the database.\n")
-        return
+        return None, None
 
     logger.info("Fetching all projects from database")
     projects = storage.get_all_projects()
     if not projects:
         print("❌ No projects found in database. Nothing to generate.")
-        return
+        return None, None
+    return recent_months, projects
 
-    print(f"📊 Found {len(projects)} projects and {len(recent_months)} recent months\n")
 
-    # Generate dashboards
+def _generate_views(
+    dashboard: CompositeDashboardAdapter,
+    projects: list[ProjectId],
+    recent_months: list[TimeWindow],
+) -> tuple[list[Path], Path]:
     generated_files: list[Path] = []
-
-    # 1. Overview dashboard (latest month)
     latest_month = recent_months[0]
     print(f"Generating overview dashboard for {latest_month.to_iso_month()}...")
     overview_path = dashboard.generate_overview(latest_month)
     generated_files.append(overview_path)
     print(f"  ✅ {overview_path}")
 
-    # 2. Team detail dashboards (one per project)
     print(f"\nGenerating team detail dashboards for {len(projects)} projects...")
     for project in projects:
         team_path = dashboard.generate_team_detail(project, recent_months)
         generated_files.append(team_path)
         print(f"  ✅ {team_path}")
 
-    # 3. Trends dashboard (all projects)
     print("\nGenerating trends dashboard...")
     trends_path = dashboard.generate_trends(projects, recent_months)
     generated_files.append(trends_path)
     print(f"  ✅ {trends_path}")
+    return generated_files, overview_path
 
-    # Summary
+
+def _print_summary(output_dir: Path, generated_files: list[Path], overview_path: Path) -> None:
     print("\n" + "=" * 80)
     print(f"✅ SUCCESS: Generated {len(generated_files)} dashboard files")
     print("=" * 80)
@@ -128,6 +171,7 @@ def generate_dashboards(
     print("\nNext steps:")
     print("  1. Serve the dashboard: python scripts/serve_dashboard.py")
     print(f"  2. Open in browser: http://127.0.0.1:8000/{overview_path.name}")
+    print("  3. Confluence-ready files are generated as *.confluence.html in the same directory")
     print()
 
 

@@ -14,13 +14,17 @@ Project navigation map: [docs/project-navigation.md](docs/project-navigation.md)
    ```
 3. Open the UI at `http://localhost:7860`.
 
-## Dashboard HTML
+## Dashboard artifacts
 
-Each submission refreshes static dashboard pages under `DASHBOARD_OUTPUT_DIR` (default: `./dashboard_html`).
+Each submission refreshes static dashboard files under `DASHBOARD_OUTPUT_DIR` (default: `./dashboard_html`).
 
-### Generate dashboards from existing data
+Generated outputs include:
+- Browser-ready HTML pages: `overview.html`, `team-*.html`, `trends.html`
+- Confluence-ready local artifacts: `overview.confluence.html`, `team-*.confluence.html`, `trends.confluence.html`
 
-To regenerate all dashboard HTML files from existing database submissions:
+### Generate dashboard files from existing data
+
+To regenerate all dashboard files from existing database submissions:
 
 ```bash
 python scripts/generate_dashboard.py
@@ -28,11 +32,11 @@ python scripts/generate_dashboard.py
 
 Options:
 - `--database-url`: Database connection URL (default: value from `DATABASE_URL`)
-- `--output-dir`: Output directory for HTML files (default: value from `DASHBOARD_OUTPUT_DIR`)
+- `--output-dir`: Output directory for dashboard files (default: value from `DASHBOARD_OUTPUT_DIR`)
 - `--months`: Number of recent months to include (default: 6)
 - `--log-level`: Logging level (default: value from `LOG_LEVEL`)
 
-### Serve dashboards
+### Serve browser dashboards locally
 
 Serve the generated dashboard HTML locally:
 
@@ -41,6 +45,8 @@ python scripts/serve_dashboard.py --directory ./dashboard_html --host 127.0.0.1 
 ```
 
 Then open `http://127.0.0.1:8000/overview.html` in your browser.
+
+For Confluence prep, use the generated `*.confluence.html` files from the same directory.
 
 ## Configuration
 
