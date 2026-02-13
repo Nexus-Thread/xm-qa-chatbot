@@ -56,10 +56,10 @@ def test_sqlite_adapter_resubmission_replaces_data(
     updated_coverage = TestCoverageMetrics(
         manual_total=2000,  # Changed from 1000
         automated_total=500,  # Changed from 0
-        manual_created_last_month=50,
-        manual_updated_last_month=60,
-        automated_created_last_month=25,
-        automated_updated_last_month=30,
+        manual_created_in_reporting_month=50,
+        manual_updated_in_reporting_month=60,
+        automated_created_in_reporting_month=25,
+        automated_updated_in_reporting_month=30,
         percentage_automation=20.0,
     )
     resubmission = Submission.create(

@@ -178,7 +178,7 @@ def test_extract_test_coverage_accepts_partial_data() -> None:
 
     assert result.manual_total == EXPECTED_MANUAL_TOTAL
     assert result.automated_total is None
-    assert result.manual_created_last_month is None
+    assert result.manual_created_in_reporting_month is None
 
 
 def test_extract_test_coverage_accepts_all_null() -> None:

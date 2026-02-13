@@ -23,8 +23,8 @@ class TestCoverageSchema(BaseModel):
 
     manual_total: int | None = None
     automated_total: int | None = None
-    manual_created_last_month: int | None = None
-    manual_updated_last_month: int | None = None
-    automated_created_last_month: int | None = None
-    automated_updated_last_month: int | None = None
+    manual_created_in_reporting_month: int | None = None
+    manual_updated_in_reporting_month: int | None = None
+    automated_created_in_reporting_month: int | None = None
+    automated_updated_in_reporting_month: int | None = None
     supported_releases_count: int | None = None

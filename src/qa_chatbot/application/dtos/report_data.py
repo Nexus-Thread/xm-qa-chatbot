@@ -62,11 +62,11 @@ class TestCoverageRow:
     project_name: str
     percentage_automation: float | None
     manual_total: int | None
-    manual_created_last_month: int | None
-    manual_updated_last_month: int | None
+    manual_created_in_reporting_month: int | None
+    manual_updated_in_reporting_month: int | None
     automated_total: int | None
-    automated_created_last_month: int | None
-    automated_updated_last_month: int | None
+    automated_created_in_reporting_month: int | None
+    automated_updated_in_reporting_month: int | None
     is_portfolio: bool = False
 
 

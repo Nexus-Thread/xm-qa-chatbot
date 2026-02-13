@@ -33,7 +33,7 @@ TIME_WINDOW_PROMPT = "Extract the reporting month from the conversation. Return 
 TEST_COVERAGE_PROMPT = (
     "Extract test coverage metrics from the conversation. "
     "Return JSON with these exact fields: "
-    "manual_total, automated_total, manual_created_last_month, manual_updated_last_month, "
-    "automated_created_last_month, automated_updated_last_month, supported_releases_count. "
+    "manual_total, automated_total, manual_created_in_reporting_month, manual_updated_in_reporting_month, "
+    "automated_created_in_reporting_month, automated_updated_in_reporting_month, supported_releases_count. "
     "Each field is an integer or null. Use null for any field not mentioned in the conversation."
 )

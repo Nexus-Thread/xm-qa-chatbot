@@ -44,10 +44,10 @@ def test_coverage_done() -> TestCoverageMetrics:
     return TestCoverageMetrics(
         manual_total=10,
         automated_total=5,
-        manual_created_last_month=1,
-        manual_updated_last_month=1,
-        automated_created_last_month=1,
-        automated_updated_last_month=1,
+        manual_created_in_reporting_month=1,
+        manual_updated_in_reporting_month=1,
+        automated_created_in_reporting_month=1,
+        automated_updated_in_reporting_month=1,
         percentage_automation=33.33,
     )
 

@@ -113,10 +113,10 @@ def test_test_coverage_rejects_negative_counts() -> None:
         TestCoverageMetrics(
             manual_total=-1,
             automated_total=0,
-            manual_created_last_month=0,
-            manual_updated_last_month=0,
-            automated_created_last_month=0,
-            automated_updated_last_month=0,
+            manual_created_in_reporting_month=0,
+            manual_updated_in_reporting_month=0,
+            automated_created_in_reporting_month=0,
+            automated_updated_in_reporting_month=0,
             percentage_automation=0.0,
         )
 
@@ -135,10 +135,10 @@ def test_test_coverage_merge_fills_none_from_existing() -> None:
     existing = TestCoverageMetrics(
         manual_total=EXISTING_MANUAL_TOTAL,
         automated_total=EXISTING_AUTOMATED_TOTAL,
-        manual_created_last_month=EXISTING_MANUAL_CREATED,
-        manual_updated_last_month=EXISTING_MANUAL_UPDATED,
-        automated_created_last_month=EXISTING_AUTOMATED_CREATED,
-        automated_updated_last_month=EXISTING_AUTOMATED_UPDATED,
+        manual_created_in_reporting_month=EXISTING_MANUAL_CREATED,
+        manual_updated_in_reporting_month=EXISTING_MANUAL_UPDATED,
+        automated_created_in_reporting_month=EXISTING_AUTOMATED_CREATED,
+        automated_updated_in_reporting_month=EXISTING_AUTOMATED_UPDATED,
         percentage_automation=EXISTING_PERCENTAGE,
     )
     partial = TestCoverageMetrics(manual_total=UPDATED_MANUAL_TOTAL)
@@ -147,7 +147,7 @@ def test_test_coverage_merge_fills_none_from_existing() -> None:
 
     assert merged.manual_total == UPDATED_MANUAL_TOTAL
     assert merged.automated_total == EXISTING_AUTOMATED_TOTAL
-    assert merged.manual_created_last_month == EXISTING_MANUAL_CREATED
+    assert merged.manual_created_in_reporting_month == EXISTING_MANUAL_CREATED
     assert merged.percentage_automation == EXISTING_PERCENTAGE
 
 

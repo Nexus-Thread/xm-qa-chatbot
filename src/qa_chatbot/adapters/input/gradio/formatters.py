@@ -103,9 +103,9 @@ def _format_test_coverage(metrics: TestCoverageMetrics) -> str:
         "Test Coverage:",
         f"- Manual total: {metrics.manual_total}",
         f"- Automated total: {metrics.automated_total}",
-        f"- Manual created last month: {metrics.manual_created_last_month}",
-        f"- Manual updated last month: {metrics.manual_updated_last_month}",
-        f"- Automated created last month: {metrics.automated_created_last_month}",
-        f"- Automated updated last month: {metrics.automated_updated_last_month}",
+        f"- Manual created in reporting month: {metrics.manual_created_in_reporting_month}",
+        f"- Manual updated in reporting month: {metrics.manual_updated_in_reporting_month}",
+        f"- Automated created in reporting month: {metrics.automated_created_in_reporting_month}",
+        f"- Automated updated in reporting month: {metrics.automated_updated_in_reporting_month}",
     ]
     return "\n".join(parts)

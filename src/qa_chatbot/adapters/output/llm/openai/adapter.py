@@ -101,10 +101,10 @@ class OpenAIAdapter(LLMPort):
         return TestCoverageMetrics(
             manual_total=data.manual_total,
             automated_total=data.automated_total,
-            manual_created_last_month=data.manual_created_last_month,
-            manual_updated_last_month=data.manual_updated_last_month,
-            automated_created_last_month=data.automated_created_last_month,
-            automated_updated_last_month=data.automated_updated_last_month,
+            manual_created_in_reporting_month=data.manual_created_in_reporting_month,
+            manual_updated_in_reporting_month=data.manual_updated_in_reporting_month,
+            automated_created_in_reporting_month=data.automated_created_in_reporting_month,
+            automated_updated_in_reporting_month=data.automated_updated_in_reporting_month,
             percentage_automation=None,
         )
 
@@ -147,10 +147,10 @@ class OpenAIAdapter(LLMPort):
             test_coverage=TestCoverageMetrics(
                 manual_total=coverage_data.manual_total,
                 automated_total=coverage_data.automated_total,
-                manual_created_last_month=coverage_data.manual_created_last_month,
-                manual_updated_last_month=coverage_data.manual_updated_last_month,
-                automated_created_last_month=coverage_data.automated_created_last_month,
-                automated_updated_last_month=coverage_data.automated_updated_last_month,
+                manual_created_in_reporting_month=coverage_data.manual_created_in_reporting_month,
+                manual_updated_in_reporting_month=coverage_data.manual_updated_in_reporting_month,
+                automated_created_in_reporting_month=coverage_data.automated_created_in_reporting_month,
+                automated_updated_in_reporting_month=coverage_data.automated_updated_in_reporting_month,
                 percentage_automation=None,
             ),
             overall_test_cases=None,

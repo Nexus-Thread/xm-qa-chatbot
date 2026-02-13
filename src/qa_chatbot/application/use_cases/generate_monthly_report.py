@@ -158,11 +158,11 @@ class GenerateMonthlyReportUseCase:
             project_name=project.name,
             percentage_automation=percentage,
             manual_total=coverage.manual_total if coverage else None,
-            manual_created_last_month=coverage.manual_created_last_month if coverage else None,
-            manual_updated_last_month=coverage.manual_updated_last_month if coverage else None,
+            manual_created_in_reporting_month=coverage.manual_created_in_reporting_month if coverage else None,
+            manual_updated_in_reporting_month=coverage.manual_updated_in_reporting_month if coverage else None,
             automated_total=coverage.automated_total if coverage else None,
-            automated_created_last_month=coverage.automated_created_last_month if coverage else None,
-            automated_updated_last_month=coverage.automated_updated_last_month if coverage else None,
+            automated_created_in_reporting_month=coverage.automated_created_in_reporting_month if coverage else None,
+            automated_updated_in_reporting_month=coverage.automated_updated_in_reporting_month if coverage else None,
         )
 
     def _extract_overall_test_cases(self, month: TimeWindow) -> int | None:

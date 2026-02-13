@@ -48,10 +48,10 @@ def _test_coverage_to_dict(metrics: TestCoverageMetrics | None) -> dict | None:
     return {
         "manual_total": metrics.manual_total,
         "automated_total": metrics.automated_total,
-        "manual_created_last_month": metrics.manual_created_last_month,
-        "manual_updated_last_month": metrics.manual_updated_last_month,
-        "automated_created_last_month": metrics.automated_created_last_month,
-        "automated_updated_last_month": metrics.automated_updated_last_month,
+        "manual_created_in_reporting_month": metrics.manual_created_in_reporting_month,
+        "manual_updated_in_reporting_month": metrics.manual_updated_in_reporting_month,
+        "automated_created_in_reporting_month": metrics.automated_created_in_reporting_month,
+        "automated_updated_in_reporting_month": metrics.automated_updated_in_reporting_month,
         "percentage_automation": metrics.percentage_automation,
     }
 
@@ -62,10 +62,10 @@ def _test_coverage_from_dict(payload: dict | None) -> TestCoverageMetrics | None
     return TestCoverageMetrics(
         manual_total=payload.get("manual_total"),
         automated_total=payload.get("automated_total"),
-        manual_created_last_month=payload.get("manual_created_last_month"),
-        manual_updated_last_month=payload.get("manual_updated_last_month"),
-        automated_created_last_month=payload.get("automated_created_last_month"),
-        automated_updated_last_month=payload.get("automated_updated_last_month"),
+        manual_created_in_reporting_month=payload.get("manual_created_in_reporting_month"),
+        manual_updated_in_reporting_month=payload.get("manual_updated_in_reporting_month"),
+        automated_created_in_reporting_month=payload.get("automated_created_in_reporting_month"),
+        automated_updated_in_reporting_month=payload.get("automated_updated_in_reporting_month"),
         percentage_automation=payload.get("percentage_automation"),
     )
 

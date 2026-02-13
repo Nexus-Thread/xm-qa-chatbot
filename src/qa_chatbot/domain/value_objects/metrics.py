@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import TypeVar
 
 from qa_chatbot.domain.exceptions import InvalidConfigurationError
+
+T = TypeVar("T")
 
 
 @dataclass(frozen=True)
@@ -109,21 +112,26 @@ class TestCoverageMetrics:
 
     manual_total: int | None = None
     automated_total: int | None = None
-    manual_created_last_month: int | None = None
-    manual_updated_last_month: int | None = None
-    automated_created_last_month: int | None = None
-    automated_updated_last_month: int | None = None
+    manual_created_in_reporting_month: int | None = None
+    manual_updated_in_reporting_month: int | None = None
+    automated_created_in_reporting_month: int | None = None
+    automated_updated_in_reporting_month: int | None = None
     percentage_automation: float | None = None
+
+    @staticmethod
+    def _pick(current: T | None, existing: T | None) -> T | None:
+        """Return current value when provided, otherwise fallback to existing."""
+        return current if current is not None else existing
 
     def __post_init__(self) -> None:
         """Validate coverage metrics values."""
         counts = [
             self.manual_total,
             self.automated_total,
-            self.manual_created_last_month,
-            self.manual_updated_last_month,
-            self.automated_created_last_month,
-            self.automated_updated_last_month,
+            self.manual_created_in_reporting_month,
+            self.manual_updated_in_reporting_month,
+            self.automated_created_in_reporting_month,
+            self.automated_updated_in_reporting_month,
         ]
         if any(count is not None and count < 0 for count in counts):
             msg = "Test coverage counts must be non-negative"
@@ -134,25 +142,26 @@ class TestCoverageMetrics:
         if existing is None:
             return self
         return TestCoverageMetrics(
-            manual_total=self.manual_total if self.manual_total is not None else existing.manual_total,
-            automated_total=self.automated_total if self.automated_total is not None else existing.automated_total,
-            manual_created_last_month=(
-                self.manual_created_last_month if self.manual_created_last_month is not None else existing.manual_created_last_month
+            manual_total=self._pick(self.manual_total, existing.manual_total),
+            automated_total=self._pick(self.automated_total, existing.automated_total),
+            manual_created_in_reporting_month=self._pick(
+                self.manual_created_in_reporting_month,
+                existing.manual_created_in_reporting_month,
             ),
-            manual_updated_last_month=(
-                self.manual_updated_last_month if self.manual_updated_last_month is not None else existing.manual_updated_last_month
+            manual_updated_in_reporting_month=self._pick(
+                self.manual_updated_in_reporting_month,
+                existing.manual_updated_in_reporting_month,
             ),
-            automated_created_last_month=(
-                self.automated_created_last_month
-                if self.automated_created_last_month is not None
-                else existing.automated_created_last_month
+            automated_created_in_reporting_month=self._pick(
+                self.automated_created_in_reporting_month,
+                existing.automated_created_in_reporting_month,
             ),
-            automated_updated_last_month=(
-                self.automated_updated_last_month
-                if self.automated_updated_last_month is not None
-                else existing.automated_updated_last_month
+            automated_updated_in_reporting_month=self._pick(
+                self.automated_updated_in_reporting_month,
+                existing.automated_updated_in_reporting_month,
             ),
-            percentage_automation=(
-                self.percentage_automation if self.percentage_automation is not None else existing.percentage_automation
+            percentage_automation=self._pick(
+                self.percentage_automation,
+                existing.percentage_automation,
             ),
         )
