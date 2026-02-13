@@ -8,11 +8,14 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from qa_chatbot.adapters.output.llm.openai import OpenAIAdapter, OpenAISettings
-from qa_chatbot.domain import (
+from qa_chatbot.adapters.output.llm.openai import (
     AmbiguousExtractionError,
-    ExtractionConfidence,
     LLMExtractionError,
+    OpenAIAdapter,
+    OpenAISettings,
+)
+from qa_chatbot.domain import (
+    ExtractionConfidence,
     ProjectId,
     TimeWindow,
 )

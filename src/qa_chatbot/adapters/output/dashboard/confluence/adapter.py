@@ -5,12 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from qa_chatbot.adapters.output.dashboard.exceptions import DashboardRenderError
 from qa_chatbot.adapters.output.jira_mock import MockJiraAdapter
 from qa_chatbot.application.ports import DashboardPort, StoragePort
 from qa_chatbot.application.services.reporting_calculations import EdgeCasePolicy
 from qa_chatbot.application.use_cases import GenerateMonthlyReportUseCase, GetDashboardDataUseCase
 from qa_chatbot.domain import RegressionTimeEntry, build_default_registry, build_default_reporting_registry
-from qa_chatbot.domain.exceptions import DashboardRenderError
 
 if TYPE_CHECKING:
     from pathlib import Path

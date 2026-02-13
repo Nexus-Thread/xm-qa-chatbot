@@ -13,16 +13,10 @@ from pydantic import BaseModel, ValidationError
 
 from qa_chatbot.application.dtos import ExtractionResult
 from qa_chatbot.application.ports.output import LLMPort
-from qa_chatbot.domain import (
-    AmbiguousExtractionError,
-    ExtractionConfidence,
-    LLMExtractionError,
-    ProjectId,
-    TestCoverageMetrics,
-    TimeWindow,
-)
+from qa_chatbot.domain import ExtractionConfidence, ProjectId, TestCoverageMetrics, TimeWindow
 
 from .client import build_client
+from .exceptions import AmbiguousExtractionError, LLMExtractionError
 from .prompts import SYSTEM_PROMPT, TEST_COVERAGE_PROMPT, TIME_WINDOW_PROMPT, build_project_id_prompt
 from .retry_logic import DEFAULT_BACKOFF_SECONDS, DEFAULT_MAX_RETRIES
 from .schemas import ProjectIdSchema, TestCoverageSchema, TimeWindowSchema

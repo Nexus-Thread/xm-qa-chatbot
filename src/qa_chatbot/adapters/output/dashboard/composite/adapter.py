@@ -5,8 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from qa_chatbot.adapters.output.dashboard.exceptions import DashboardRenderError
 from qa_chatbot.application.ports import DashboardPort
-from qa_chatbot.domain.exceptions import DashboardRenderError
 
 if TYPE_CHECKING:
     from collections.abc import Callable

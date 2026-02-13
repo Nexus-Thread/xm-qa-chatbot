@@ -2,14 +2,11 @@
 
 from .entities import BusinessStream, Project, ReportingPeriod, Submission
 from .exceptions import (
-    AmbiguousExtractionError,
-    DashboardRenderError,
     DomainError,
     InvalidConfigurationError,
     InvalidProjectIdError,
     InvalidSubmissionTeamError,
     InvalidTimeWindowError,
-    LLMExtractionError,
     MissingSubmissionDataError,
 )
 from .registries import (
@@ -36,11 +33,9 @@ from .value_objects import (
 )
 
 __all__ = [
-    "AmbiguousExtractionError",
     "BucketCount",
     "BusinessStream",
     "CapaStatus",
-    "DashboardRenderError",
     "DefectLeakage",
     "DomainError",
     "ExtractionConfidence",
@@ -48,7 +43,6 @@ __all__ = [
     "InvalidProjectIdError",
     "InvalidSubmissionTeamError",
     "InvalidTimeWindowError",
-    "LLMExtractionError",
     "MissingSubmissionDataError",
     "PortfolioAggregates",
     "PriorityBucket",

@@ -10,9 +10,9 @@ import pytest
 
 from qa_chatbot.adapters.output.dashboard.composite import CompositeDashboardAdapter
 from qa_chatbot.adapters.output.dashboard.confluence import ConfluenceDashboardAdapter
+from qa_chatbot.adapters.output.dashboard.exceptions import DashboardRenderError
 from qa_chatbot.application.ports import DashboardPort
 from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWindow
-from qa_chatbot.domain.exceptions import DashboardRenderError
 
 if TYPE_CHECKING:
     from pathlib import Path
