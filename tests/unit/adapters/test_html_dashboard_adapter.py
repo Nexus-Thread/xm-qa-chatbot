@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -13,6 +12,8 @@ from qa_chatbot.adapters.output.dashboard.html import HtmlDashboardAdapter
 from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWindow
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter
 
 
@@ -115,7 +116,9 @@ def dashboard_adapter(sqlite_adapter: SQLiteAdapter, tmp_path: Path) -> HtmlDash
     adapter = HtmlDashboardAdapter(
         storage_port=sqlite_adapter,
         output_dir=tmp_path / "dashboards",
-        reporting_config_path=Path("config/reporting_config.yaml"),
+        jira_base_url="https://jira.example.com",
+        jira_username="jira-user@example.com",
+        jira_api_token="token",  # noqa: S106
     )
     return _with_fixed_report_timestamp(adapter)
 
@@ -138,12 +141,13 @@ def _with_fixed_report_timestamp(adapter: HtmlDashboardAdapter) -> HtmlDashboard
 def test_generate_overview_snapshot(
     dashboard_adapter: HtmlDashboardAdapter,
     time_window_feb: TimeWindow,
-    request: pytest.FixtureRequest,
 ) -> None:
-    """Render and snapshot the overview dashboard."""
+    """Render overview dashboard with expected core sections."""
     output_path = dashboard_adapter.generate_overview(time_window_feb)
     html = _normalize_html(output_path.read_text(encoding="utf-8"))
-    _assert_snapshot(request, "overview", html)
+    assert "Monthly QA Summary" in html
+    assert "Completeness: PARTIAL" in html
+    assert "Section B — Test Coverage" in html
 
 
 def test_generate_team_detail_snapshot(

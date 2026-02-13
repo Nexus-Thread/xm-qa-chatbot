@@ -18,7 +18,9 @@ def test_settings_loads_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.openai_base_url == "http://localhost:11434/v1"
     assert settings.openai_api_key == "test-key"
     assert settings.openai_model == "llama2"
-    assert str(settings.reporting_config_path) == "config/reporting_config.yaml"
+    assert settings.jira_base_url == "https://jira.example.com"
+    assert settings.jira_username == "jira-user@example.com"
+    assert settings.jira_api_token
 
 
 def test_settings_rejects_empty_values(monkeypatch: pytest.MonkeyPatch) -> None:

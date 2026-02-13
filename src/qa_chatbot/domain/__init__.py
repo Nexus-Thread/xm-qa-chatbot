@@ -12,7 +12,12 @@ from .exceptions import (
     LLMExtractionError,
     MissingSubmissionDataError,
 )
-from .registries import StreamRegistry, build_default_registry
+from .registries import (
+    ReportingRegistry,
+    StreamRegistry,
+    build_default_registry,
+    build_default_reporting_registry,
+)
 from .services import ValidationService
 from .value_objects import (
     BucketCount,
@@ -54,10 +59,12 @@ __all__ = [
     "RegressionTimeBlock",
     "RegressionTimeEntry",
     "ReportingPeriod",
+    "ReportingRegistry",
     "StreamRegistry",
     "Submission",
     "TestCoverageMetrics",
     "TimeWindow",
     "ValidationService",
     "build_default_registry",
+    "build_default_reporting_registry",
 ]

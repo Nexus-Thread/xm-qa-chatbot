@@ -32,7 +32,9 @@ def main() -> None:
     dashboard_adapter = HtmlDashboardAdapter(
         storage_port=storage,
         output_dir=dashboard_output_dir,
-        reporting_config_path=Path(settings.reporting_config_path),
+        jira_base_url=settings.jira_base_url,
+        jira_username=settings.jira_username,
+        jira_api_token=settings.jira_api_token,
     )
 
     llm_adapter = OpenAIAdapter(

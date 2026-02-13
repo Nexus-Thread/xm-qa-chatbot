@@ -8,12 +8,11 @@ from typing import TYPE_CHECKING
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from qa_chatbot.adapters.input.reporting_config import ReportingConfigFileAdapter
 from qa_chatbot.adapters.output.jira_mock import MockJiraAdapter
 from qa_chatbot.application.ports import DashboardPort, StoragePort
 from qa_chatbot.application.services.reporting_calculations import EdgeCasePolicy
 from qa_chatbot.application.use_cases import GenerateMonthlyReportUseCase, GetDashboardDataUseCase
-from qa_chatbot.domain import RegressionTimeEntry
+from qa_chatbot.domain import RegressionTimeEntry, build_default_registry, build_default_reporting_registry
 from qa_chatbot.domain.exceptions import DashboardRenderError
 
 if TYPE_CHECKING:
@@ -27,7 +26,9 @@ class HtmlDashboardAdapter(DashboardPort):
 
     storage_port: StoragePort
     output_dir: Path
-    reporting_config_path: Path
+    jira_base_url: str
+    jira_username: str
+    jira_api_token: str
     report_timezone: str = "UTC"
 
     def __post_init__(self) -> None:
@@ -40,8 +41,8 @@ class HtmlDashboardAdapter(DashboardPort):
             autoescape=select_autoescape(["html"]),
         )
         self._use_case = GetDashboardDataUseCase(self.storage_port)
-        report_config = ReportingConfigFileAdapter().load(path=self.reporting_config_path)
-        registry = report_config.to_registry()
+        registry = build_default_registry()
+        reporting_registry = build_default_reporting_registry()
         edge_case_policy = EdgeCasePolicy()
         regression_suites = tuple(
             RegressionTimeEntry(
@@ -50,11 +51,16 @@ class HtmlDashboardAdapter(DashboardPort):
                 platform=suite.platform,
                 duration_minutes=120.0,
             )
-            for suite in report_config.regression_suites
+            for suite in reporting_registry.regression_suites
         )
         self._report_use_case = GenerateMonthlyReportUseCase(
             storage_port=self.storage_port,
-            jira_port=MockJiraAdapter(config=report_config),
+            jira_port=MockJiraAdapter(
+                reporting_registry=reporting_registry,
+                jira_base_url=self.jira_base_url,
+                jira_username=self.jira_username,
+                jira_api_token=self.jira_api_token,
+            ),
             registry=registry,
             regression_suites=regression_suites,
             timezone=self.report_timezone,

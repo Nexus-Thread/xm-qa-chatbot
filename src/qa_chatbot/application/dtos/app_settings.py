@@ -19,7 +19,9 @@ class AppSettings:
     database_url: str
     database_echo: bool
     dashboard_output_dir: Path
-    reporting_config_path: Path
+    jira_base_url: str
+    jira_username: str
+    jira_api_token: str
     server_port: int
     share: bool
     log_level: str

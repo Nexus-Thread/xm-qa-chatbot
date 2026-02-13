@@ -7,19 +7,18 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from qa_chatbot.adapters.input import EnvSettingsAdapter
-from qa_chatbot.adapters.input.reporting_config import ReportingConfigFileAdapter
 from qa_chatbot.adapters.output import HtmlDashboardAdapter, InMemoryMetricsAdapter, SQLiteAdapter
 from qa_chatbot.application import SubmitTeamDataUseCase
 from qa_chatbot.application.dtos import SubmissionCommand
-from qa_chatbot.domain import ProjectId, TestCoverageMetrics, TimeWindow
+from qa_chatbot.domain import ProjectId, TestCoverageMetrics, TimeWindow, build_default_registry
 
 # ruff: noqa: T201
 
 
-def load_active_projects(reporting_config_path: Path) -> list[dict[str, str]]:
-    """Load all active projects from the reporting config."""
-    config = ReportingConfigFileAdapter().load(path=reporting_config_path)
-    projects = [{"id": project.id, "name": project.name} for project in config.all_projects if project.is_active]
+def load_active_projects() -> list[dict[str, str]]:
+    """Load all active projects from the hardcoded registry."""
+    registry = build_default_registry()
+    projects = [{"id": project.id, "name": project.name} for project in registry.active_projects()]
     print(f"✅ Loaded {len(projects)} active projects\n")
     return projects
 
@@ -111,7 +110,9 @@ def seed_database() -> None:
     dashboard_adapter = HtmlDashboardAdapter(
         storage_port=storage,
         output_dir=dashboard_output_dir,
-        reporting_config_path=Path(settings.reporting_config_path),
+        jira_base_url=settings.jira_base_url,
+        jira_username=settings.jira_username,
+        jira_api_token=settings.jira_api_token,
     )
 
     metrics_adapter = InMemoryMetricsAdapter()
@@ -124,7 +125,7 @@ def seed_database() -> None:
 
     # Load projects
     print("Step 3: Loading active projects...")
-    projects = load_active_projects(Path(settings.reporting_config_path))
+    projects = load_active_projects()
 
     # Create use case
     submitter = SubmitTeamDataUseCase(

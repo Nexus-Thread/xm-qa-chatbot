@@ -29,7 +29,6 @@ python scripts/generate_dashboard.py
 Options:
 - `--database-url`: Database connection URL (default: value from `DATABASE_URL`)
 - `--output-dir`: Output directory for HTML files (default: value from `DASHBOARD_OUTPUT_DIR`)
-- `--reporting-config-path`: Path to reporting YAML (default: value from `REPORTING_CONFIG_PATH`)
 - `--months`: Number of recent months to include (default: 6)
 - `--log-level`: Logging level (default: value from `LOG_LEVEL`)
 
@@ -71,7 +70,9 @@ Retries use exponential backoff defined in `src/qa_chatbot/adapters/output/llm/o
 | `DATABASE_URL` | `sqlite:///./qa_chatbot.db` | SQLite connection string. |
 | `DATABASE_ECHO` | `false` | SQLAlchemy logging toggle. |
 | `DASHBOARD_OUTPUT_DIR` | `./dashboard_html` | Output folder for generated dashboards. |
-| `REPORTING_CONFIG_PATH` | `config/reporting_config.yaml` | Path to reporting YAML used for dashboards and reporting calculations. |
+| `JIRA_BASE_URL` | `https://jira.example.com` | Jira base URL for generated issue links. |
+| `JIRA_USERNAME` | `jira-user@example.com` | Jira username stored in app settings for adapter wiring. |
+| `JIRA_API_TOKEN` | `replace-with-jira-api-token` | Jira API token stored in app settings for adapter wiring. |
 | `GRADIO_SERVER_PORT` | `7860` | Gradio server port. |
 | `GRADIO_SHARE` | `false` | Generate a public Gradio share link. |
 | `LOG_LEVEL` | `INFO` | Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`). |

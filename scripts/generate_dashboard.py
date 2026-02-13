@@ -6,10 +6,14 @@ import argparse
 import logging
 import traceback
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from qa_chatbot.adapters.input import EnvSettingsAdapter
 from qa_chatbot.adapters.output import HtmlDashboardAdapter, SQLiteAdapter
 from qa_chatbot.config import LoggingSettings, configure_logging
+
+if TYPE_CHECKING:
+    from qa_chatbot.application.dtos import AppSettings
 
 # ruff: noqa: T201
 
@@ -29,12 +33,6 @@ def parse_args() -> argparse.Namespace:
         help="Output directory for generated HTML files (default: value from env settings).",
     )
     parser.add_argument(
-        "--reporting-config-path",
-        type=Path,
-        default=None,
-        help="Path to reporting configuration YAML (default: value from env settings).",
-    )
-    parser.add_argument(
         "--months",
         type=int,
         default=6,
@@ -52,9 +50,9 @@ def parse_args() -> argparse.Namespace:
 def generate_dashboards(
     database_url: str,
     output_dir: Path,
-    reporting_config_path: Path,
     months_limit: int,
     log_level: str,
+    settings: AppSettings,
 ) -> None:
     """Generate all dashboard views from existing database data."""
     configure_logging(LoggingSettings(level=log_level))
@@ -65,7 +63,7 @@ def generate_dashboards(
     print("=" * 80)
     print(f"\nDatabase: {database_url}")
     print(f"Output directory: {output_dir}")
-    print(f"Reporting config: {reporting_config_path}")
+    print(f"Jira base URL: {settings.jira_base_url}")
     print(f"Months to include: {months_limit}")
     print("=" * 80 + "\n")
 
@@ -78,7 +76,9 @@ def generate_dashboards(
     dashboard = HtmlDashboardAdapter(
         storage_port=storage,
         output_dir=output_dir,
-        reporting_config_path=reporting_config_path,
+        jira_base_url=settings.jira_base_url,
+        jira_username=settings.jira_username,
+        jira_api_token=settings.jira_api_token,
     )
 
     # Fetch data from storage
@@ -139,9 +139,9 @@ def main() -> None:
         generate_dashboards(
             database_url=args.database_url or settings.database_url,
             output_dir=args.output_dir or Path(settings.dashboard_output_dir),
-            reporting_config_path=args.reporting_config_path or Path(settings.reporting_config_path),
             months_limit=args.months,
             log_level=args.log_level or settings.log_level,
+            settings=settings,
         )
     except Exception as e:
         print(f"\n❌ FATAL ERROR: {e}")
