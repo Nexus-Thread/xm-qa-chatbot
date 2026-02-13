@@ -10,7 +10,7 @@ from qa_chatbot.adapters.output.jira_mock import MockJiraAdapter
 from qa_chatbot.application.ports import DashboardPort, StoragePort
 from qa_chatbot.application.services.reporting_calculations import EdgeCasePolicy
 from qa_chatbot.application.use_cases import GenerateMonthlyReportUseCase, GetDashboardDataUseCase
-from qa_chatbot.domain import RegressionTimeEntry, build_default_registry, build_default_reporting_registry
+from qa_chatbot.domain import build_default_registry, build_default_reporting_registry
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -38,15 +38,6 @@ class ConfluenceDashboardAdapter(DashboardPort):
         registry = build_default_registry()
         reporting_registry = build_default_reporting_registry()
         edge_case_policy = EdgeCasePolicy()
-        regression_suites = tuple(
-            RegressionTimeEntry(
-                category=suite.category,
-                suite_name=suite.name,
-                platform=suite.platform,
-                duration_minutes=120.0,
-            )
-            for suite in reporting_registry.regression_suites
-        )
         self._report_use_case = GenerateMonthlyReportUseCase(
             storage_port=self.storage_port,
             jira_port=MockJiraAdapter(
@@ -56,7 +47,6 @@ class ConfluenceDashboardAdapter(DashboardPort):
                 jira_api_token=self.jira_api_token,
             ),
             registry=registry,
-            regression_suites=regression_suites,
             timezone=self.report_timezone,
             edge_case_policy=edge_case_policy,
         )

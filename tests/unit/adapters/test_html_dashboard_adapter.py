@@ -131,7 +131,6 @@ def _with_fixed_report_timestamp(adapter: HtmlDashboardAdapter) -> HtmlDashboard
         registry=report_use_case.registry,
         timezone=report_use_case.timezone,
         edge_case_policy=report_use_case.edge_case_policy,
-        regression_suites=report_use_case.regression_suites,
         completeness_mode=report_use_case.completeness_mode,
         now_provider=lambda: datetime(2026, 2, 4, 12, 0, 0, tzinfo=UTC),
     )

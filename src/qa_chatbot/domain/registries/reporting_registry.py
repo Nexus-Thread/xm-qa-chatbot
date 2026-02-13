@@ -46,22 +46,11 @@ class JiraQueryTemplates:
 
 
 @dataclass(frozen=True)
-class RegressionSuiteDefinition:
-    """Regression suite metadata used in reports."""
-
-    key: str
-    name: str
-    category: str
-    platform: str
-
-
-@dataclass(frozen=True)
 class ReportingRegistry:
     """Static reporting metadata for all projects."""
 
     projects: tuple[ProjectReportingConfig, ...]
     query_templates: JiraQueryTemplates
-    regression_suites: tuple[RegressionSuiteDefinition, ...]
     time_window_field: str = "created"
 
     def project_config(self, project_id: str) -> ProjectReportingConfig:
@@ -81,20 +70,6 @@ def build_default_reporting_registry() -> ReportingRegistry:
         production_incidents="project in ({project_keys}) AND created >= {start} AND created < {end}",
         defect_leakage_numerator="project in ({project_keys}) AND created >= {start} AND created < {end}",
         defect_leakage_denominator="project in ({project_keys}) AND created >= {start} AND created < {end}",
-    )
-    regression_suites = (
-        RegressionSuiteDefinition(
-            key="manual_web",
-            name="Manual Web Regression",
-            category="manual",
-            platform="web",
-        ),
-        RegressionSuiteDefinition(
-            key="automation_api",
-            name="API Automation",
-            category="automation",
-            platform="backend",
-        ),
     )
     project_keys = {
         "jmanager_server_portal": "JMGR",
@@ -132,5 +107,4 @@ def build_default_reporting_registry() -> ReportingRegistry:
     return ReportingRegistry(
         projects=projects,
         query_templates=query_templates,
-        regression_suites=regression_suites,
     )

@@ -16,7 +16,6 @@ from .report_data import (
     DefectLeakageDTO,
     MonthlyReport,
     QualityMetricsRow,
-    RegressionTimeEntryDTO,
     ReportMetadata,
     TestCoverageRow,
 )
@@ -31,7 +30,6 @@ __all__ = [
     "MonthlyReport",
     "OverviewDashboardData",
     "QualityMetricsRow",
-    "RegressionTimeEntryDTO",
     "ReportMetadata",
     "SubmissionCommand",
     "TeamDetailDashboardData",

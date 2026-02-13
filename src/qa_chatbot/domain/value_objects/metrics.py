@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TypeVar
 
 from qa_chatbot.domain.exceptions import InvalidConfigurationError
@@ -40,36 +40,6 @@ class DefectLeakage:
 
 
 @dataclass(frozen=True)
-class RegressionTimeEntry:
-    """Single regression time entry."""
-
-    category: str
-    suite_name: str
-    platform: str
-    duration_minutes: float
-    threads: int | None = None
-    context_count: int | None = None
-    notes: str | None = None
-
-    def __post_init__(self) -> None:
-        """Validate regression time entry values."""
-        if self.duration_minutes < 0:
-            msg = "Regression duration must be non-negative"
-            raise InvalidConfigurationError(msg)
-        if not self.suite_name.strip():
-            msg = "Regression suite name is required"
-            raise InvalidConfigurationError(msg)
-
-
-@dataclass(frozen=True)
-class RegressionTimeBlock:
-    """Collection of regression time entries."""
-
-    entries: tuple[RegressionTimeEntry, ...] = field(default_factory=tuple)
-    free_text_override: str | None = None
-
-
-@dataclass(frozen=True)
 class QualityMetrics:
     """Quality metrics for a project and period."""
 
@@ -77,7 +47,6 @@ class QualityMetrics:
     bugs_found: BucketCount
     production_incidents: BucketCount
     defect_leakage: DefectLeakage
-    regression_time: RegressionTimeBlock
 
     def __post_init__(self) -> None:
         """Validate quality metrics fields."""

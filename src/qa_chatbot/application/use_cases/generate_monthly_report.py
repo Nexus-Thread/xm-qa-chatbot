@@ -12,7 +12,6 @@ from qa_chatbot.application.dtos import (
     DefectLeakageDTO,
     MonthlyReport,
     QualityMetricsRow,
-    RegressionTimeEntryDTO,
     ReportMetadata,
     TestCoverageRow,
 )
@@ -20,14 +19,11 @@ from qa_chatbot.application.services.reporting_calculations import (
     ROUNDING_DECIMALS,
     EdgeCasePolicy,
     compute_portfolio_aggregates,
-    format_regression_time,
 )
 from qa_chatbot.domain import (
     BucketCount,
     DefectLeakage,
     ProjectId,
-    RegressionTimeBlock,
-    RegressionTimeEntry,
     ReportingPeriod,
     TestCoverageMetrics,
     TimeWindow,
@@ -49,7 +45,6 @@ class GenerateMonthlyReportUseCase:
     registry: StreamRegistry
     timezone: str
     edge_case_policy: EdgeCasePolicy
-    regression_suites: tuple[RegressionTimeEntry, ...] = ()
     completeness_mode: str = "partial"
     now_provider: Callable[[], datetime] = field(default_factory=lambda: lambda: datetime.now(tz=UTC))
 
@@ -122,7 +117,6 @@ class GenerateMonthlyReportUseCase:
             bugs_found=self._bucket_to_dto(bugs_found),
             production_incidents=self._bucket_to_dto(incidents),
             defect_leakage=self._defect_to_dto(defect_leakage),
-            regression_time=self._build_regression_time_entries(),
         )
 
     def _build_coverage_row(
@@ -224,11 +218,6 @@ class GenerateMonthlyReportUseCase:
             automated_total=coverage.automated_total,
         )
 
-    def _build_regression_time_entries(self) -> tuple[RegressionTimeEntryDTO, ...]:
-        block = RegressionTimeBlock(entries=self.regression_suites)
-        entries = format_regression_time(block)
-        return tuple(RegressionTimeEntryDTO(label=label, duration=duration) for label, duration in entries)
-
     def _with_portfolio_quality_row(self, rows: list[QualityMetricsRow]) -> list[QualityMetricsRow]:
         supported = [row.supported_releases_count or 0 for row in rows if not row.is_portfolio]
         bugs = [
@@ -272,7 +261,6 @@ class GenerateMonthlyReportUseCase:
                 denominator=aggregates.all_streams_defect_leakage.denominator,
                 rate_percent=aggregates.all_streams_defect_leakage.rate_percent,
             ),
-            regression_time=(),
             is_portfolio=True,
         )
         return [portfolio_row, *rows]

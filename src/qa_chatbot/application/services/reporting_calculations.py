@@ -5,14 +5,9 @@ from __future__ import annotations
 from qa_chatbot.domain.value_objects.metrics import (
     BucketCount,
     DefectLeakage,
-    RegressionTimeBlock,
-    RegressionTimeEntry,
 )
 from qa_chatbot.domain.value_objects.portfolio_aggregates import PortfolioAggregates
 
-# Time conversion constants
-SECONDS_PER_MINUTE = 60
-MINUTES_PER_HOUR = 60
 ROUNDING_DECIMALS = 2
 
 
@@ -35,40 +30,6 @@ class EdgeCasePolicy:
     def compute_defect_leakage_rate(self, numerator: int, denominator: int) -> float:
         """Compute defect leakage percentage with edge-case handling."""
         return self._compute_percentage(numerator=numerator, denominator=denominator)
-
-
-def format_regression_time(block: RegressionTimeBlock) -> tuple[tuple[str, str], ...]:
-    """Format regression time entries into label/duration pairs."""
-    if block.free_text_override:
-        return ((block.free_text_override, ""),)
-    formatted: list[tuple[str, str]] = []
-    for entry in block.entries:
-        duration = _format_duration(entry.duration_minutes)
-        label = _build_regression_label(entry)
-        formatted.append((label, duration))
-    return tuple(formatted)
-
-
-def _build_regression_label(entry: RegressionTimeEntry) -> str:
-    extras: list[str] = []
-    if entry.context_count is not None:
-        extras.append(f"({entry.context_count})")
-    if entry.threads is not None:
-        extras.append(f"{entry.threads} threads")
-    if entry.notes:
-        extras.append(entry.notes)
-    suffix = f" {' '.join(extras)}" if extras else ""
-    return f"{entry.suite_name}{suffix}"
-
-
-def _format_duration(minutes: float) -> str:
-    if minutes < 1:
-        seconds = round(minutes * SECONDS_PER_MINUTE)
-        return f"{seconds}s"
-    if minutes < MINUTES_PER_HOUR:
-        return f"{round(minutes)}m"
-    hours = minutes / MINUTES_PER_HOUR
-    return f"{round(hours, 1)}h"
 
 
 def compute_portfolio_aggregates(

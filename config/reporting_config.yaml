@@ -695,12 +695,3 @@ jira:
     base_url: https://jira.example.com
     username: jira-user@example.com
     api_token: replace-with-jira-api-token
-regression_suites:
-- key: manual_web
-  name: Manual Web Regression
-  category: manual
-  platform: web
-- key: automation_api
-  name: API Automation
-  category: automation
-  platform: backend

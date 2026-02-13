@@ -23,14 +23,6 @@ class DefectLeakageDTO:
 
 
 @dataclass(frozen=True)
-class RegressionTimeEntryDTO:
-    """Regression time entry for rendering."""
-
-    label: str
-    duration: str
-
-
-@dataclass(frozen=True)
 class QualityMetricsRow:
     """Quality metrics row for report output."""
 
@@ -40,7 +32,6 @@ class QualityMetricsRow:
     bugs_found: BucketCountDTO
     production_incidents: BucketCountDTO
     defect_leakage: DefectLeakageDTO
-    regression_time: tuple[RegressionTimeEntryDTO, ...]
     is_portfolio: bool = False
 
 

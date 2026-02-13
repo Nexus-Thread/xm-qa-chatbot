@@ -41,7 +41,6 @@
                 <th class="text-left px-4 py-3">Bugs Found (P1–P2 / P3–P4)</th>
                 <th class="text-left px-4 py-3">Prod Incidents (P1–P2 / P3–P4)</th>
                 <th class="text-left px-4 py-3">Defect Leakage</th>
-                <th class="text-left px-4 py-3">Regression Time</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -65,11 +64,6 @@
                   {% else %}
                   -
                   {% endif %}
-                </td>
-                <td class="px-4 py-3">
-                  {% for entry in row.regression_time %}
-                  <div>{{ entry.label }}: {{ entry.duration }}</div>
-                  {% endfor %}
                 </td>
               </tr>
               {% else %}

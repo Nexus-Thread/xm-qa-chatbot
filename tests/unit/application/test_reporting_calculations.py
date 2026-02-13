@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from math import isnan
 
-from qa_chatbot.application.services import EdgeCasePolicy, compute_portfolio_aggregates, format_regression_time
-from qa_chatbot.domain import BucketCount, DefectLeakage, RegressionTimeBlock, RegressionTimeEntry
+from qa_chatbot.application.services import EdgeCasePolicy, compute_portfolio_aggregates
+from qa_chatbot.domain import BucketCount, DefectLeakage
 
 EXPECTED_AUTOMATION_PERCENTAGE = 33.33
 EXPECTED_SUPPORTED_RELEASES_TOTAL = 6
@@ -37,52 +37,6 @@ def test_compute_automation_percentage_uses_two_decimal_rounding() -> None:
     result = policy.compute_automation_percentage(manual_total=2, automated_total=1)
 
     assert result == EXPECTED_AUTOMATION_PERCENTAGE
-
-
-def test_format_regression_time_prefers_free_text_override() -> None:
-    """Return free-text override entry when provided."""
-    block = RegressionTimeBlock(
-        entries=(
-            RegressionTimeEntry(
-                category="api",
-                suite_name="Ignored",
-                platform="web",
-                duration_minutes=10,
-            ),
-        ),
-        free_text_override="Manual regression only",
-    )
-
-    result = format_regression_time(block)
-
-    assert result == (("Manual regression only", ""),)
-
-
-def test_format_regression_time_formats_label_and_duration() -> None:
-    """Format suite label extras and convert duration to minutes/hours."""
-    block = RegressionTimeBlock(
-        entries=(
-            RegressionTimeEntry(
-                category="api",
-                suite_name="Smoke",
-                platform="web",
-                duration_minutes=45,
-                context_count=3,
-                threads=2,
-                notes="critical",
-            ),
-            RegressionTimeEntry(
-                category="api",
-                suite_name="Full",
-                platform="web",
-                duration_minutes=120,
-            ),
-        ),
-    )
-
-    result = format_regression_time(block)
-
-    assert result == (("Smoke (3) 2 threads critical", "45m"), ("Full", "2.0h"))
 
 
 def test_compute_portfolio_aggregates_returns_expected_totals_and_averages() -> None:

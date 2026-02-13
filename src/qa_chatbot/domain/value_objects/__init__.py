@@ -5,8 +5,6 @@ from .metrics import (
     BucketCount,
     DefectLeakage,
     QualityMetrics,
-    RegressionTimeBlock,
-    RegressionTimeEntry,
     TestCoverageMetrics,
 )
 from .portfolio_aggregates import PortfolioAggregates
@@ -21,8 +19,6 @@ __all__ = [
     "PortfolioAggregates",
     "ProjectId",
     "QualityMetrics",
-    "RegressionTimeBlock",
-    "RegressionTimeEntry",
     "StreamId",
     "TestCoverageMetrics",
     "TimeWindow",

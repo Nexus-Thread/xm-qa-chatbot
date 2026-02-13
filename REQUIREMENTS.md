@@ -27,7 +27,6 @@ Columns (exactly these data concepts):
 	4.	Bugs found by QAs during the month (P1–P2, P3–P4) - these will be linked to JIRA filters - we will use mocked data for initial delivery to simulate JIRA
 	5.	Production incidents during the month (P1–P2, P3–P4) - these will be linked to JIRA filters - we will use mocked data for initial delivery to simulate JIRA
 	6.	Defect Leakage Rate %
-	7.	Time for full regression in hours
 
 Section B: Test Coverage Manual and Automation
 Includes:
@@ -73,20 +72,6 @@ QualityMetrics (per Project, per Period)
 	•	bugs_found: { p1_p2: int, p3_p4: int }
 	•	production_incidents: { p1_p2: int, p3_p4: int }
 •	defect_leakage: { numerator: int, denominator: int, rate_percent: float }
-	•	regression_time: RegressionTimeBlock (structured + renderable)
-
-RegressionTimeBlock
-	•	entries: list[RegressionTimeEntry]
-	•	free_text_override: str | null (optional)
-
-RegressionTimeEntry
-	•	category: enum('manual','automation','api','ui','e2e','integration','component','other')
-	•	suite_name: str
-	•	platform: enum('web','pwa_web','pwa_ios','pwa_android','ios','android','backend','mixed','other')
-	•	duration_minutes: float (canonical)
-	•	threads: int | null
-	•	context_count: int | null (e.g., values shown in parentheses)
-	•	notes: str | null
 
 TestCoverageMetrics (per Project, per Period)
 	•	manual_total: int
@@ -214,23 +199,8 @@ Rounding rules MUST be defined (e.g., 2 decimals for averages, 2 decimals for le
 	•	N/A OR
 	•	a link to a Jira filter/query OR
 	•	a placeholder “/” only if explicitly configured
-	•	Regression time MUST support multi-line structured text.
 
-5.2 Regression time formatting
-
-The system MUST:
-	•	store durations canonically in minutes
-	•	render using human-friendly units:
-	•	seconds (< 1 min)
-	•	minutes
-	•	hours
-	•	preserve annotations:
-	•	“(N)” context counts
-	•	“X threads run”
-	•	“In progress”
-	•	“per brand”
-
-5.3 Test Coverage table
+5.2 Test Coverage table
 	•	MUST render each row with computed automation % to 2 decimals.
 	•	MUST render the portfolio total number as a headline.
 
@@ -268,7 +238,6 @@ MUST support a versioned configuration file (YAML/JSON) defining:
 	•	Streams and projects (ordering, active flags)
 	•	Source definitions per project for each metric
 	•	Priority mapping rules
-	•	Regression suite definitions (optional, recommended)
 
 7.2 Manual overrides
 
@@ -289,7 +258,6 @@ Chatbot submissions are treated as the default input mechanism for test coverage
 	•	bugs found (P1–P2, P3–P4) + links
 	•	production incidents (P1–P2, P3–P4) + links
 	•	defect leakage shown as (n/d)*100 = x% + links for n and d
-	•	regression time rendered as structured multi-line text
 	3.	For Test Coverage, the app outputs:
 	•	portfolio total number of test cases (provided via chatbot submission)
 	•	per project manual/automated totals and monthly deltas (provided via chatbot submission)
