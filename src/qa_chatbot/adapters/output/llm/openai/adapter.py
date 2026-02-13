@@ -14,6 +14,7 @@ from pydantic import BaseModel, ValidationError
 from qa_chatbot.application.dtos import ExtractionResult
 from qa_chatbot.application.ports.output import LLMPort
 from qa_chatbot.domain import ExtractionConfidence, ProjectId, TestCoverageMetrics, TimeWindow
+from qa_chatbot.domain.exceptions import InvalidConfigurationError
 
 from .client import build_client
 from .exceptions import AmbiguousExtractionError, LLMExtractionError
@@ -81,7 +82,7 @@ class OpenAIAdapter(LLMPort):
 
         try:
             confidence = ExtractionConfidence.from_raw(data.confidence)
-        except ValueError:
+        except InvalidConfigurationError:
             confidence = ExtractionConfidence.low()
 
         return ProjectId.from_raw(data.project_id), confidence

@@ -6,6 +6,7 @@ import pytest
 
 from qa_chatbot.domain import (
     ExtractionConfidence,
+    InvalidConfigurationError,
     InvalidProjectIdError,
     InvalidTimeWindowError,
     ProjectId,
@@ -44,11 +45,27 @@ def test_extraction_confidence_normalizes_value() -> None:
 
     assert confidence.value == "high"
     assert confidence.is_high is True
+    assert confidence.is_medium is False
+    assert confidence.is_low is False
+
+
+def test_extraction_confidence_named_constructors_are_symmetric() -> None:
+    """Create confidence values via named constructors."""
+    high = ExtractionConfidence.high()
+    medium = ExtractionConfidence.medium()
+    low = ExtractionConfidence.low()
+
+    assert high.value == "high"
+    assert high.is_high is True
+    assert medium.value == "medium"
+    assert medium.is_medium is True
+    assert low.value == "low"
+    assert low.is_low is True
 
 
 def test_extraction_confidence_rejects_invalid_value() -> None:
     """Reject unsupported extraction confidence values."""
-    with pytest.raises(ValueError, match="Confidence must be one of: high, medium, low"):
+    with pytest.raises(InvalidConfigurationError, match="Confidence must be one of: high, medium, low"):
         ExtractionConfidence.from_raw("certain")
 
 

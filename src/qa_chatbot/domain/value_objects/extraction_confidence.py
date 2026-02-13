@@ -29,6 +29,16 @@ class ExtractionConfidence:
         return cls(value=value)
 
     @classmethod
+    def high(cls) -> ExtractionConfidence:
+        """Return high confidence value."""
+        return cls(value="high")
+
+    @classmethod
+    def medium(cls) -> ExtractionConfidence:
+        """Return medium confidence value."""
+        return cls(value="medium")
+
+    @classmethod
     def low(cls) -> ExtractionConfidence:
         """Return low confidence value."""
         return cls(value="low")
@@ -37,3 +47,13 @@ class ExtractionConfidence:
     def is_high(self) -> bool:
         """Return whether confidence is high."""
         return self.value == "high"
+
+    @property
+    def is_medium(self) -> bool:
+        """Return whether confidence is medium."""
+        return self.value == "medium"
+
+    @property
+    def is_low(self) -> bool:
+        """Return whether confidence is low."""
+        return self.value == "low"
