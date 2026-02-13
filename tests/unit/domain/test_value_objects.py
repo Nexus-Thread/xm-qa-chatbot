@@ -8,8 +8,10 @@ from qa_chatbot.domain import (
     ExtractionConfidence,
     InvalidConfigurationError,
     InvalidProjectIdError,
+    InvalidStreamIdError,
     InvalidTimeWindowError,
     ProjectId,
+    StreamId,
     TestCoverageMetrics,
     TimeWindow,
 )
@@ -37,6 +39,19 @@ def test_project_id_rejects_empty_value() -> None:
     """Reject empty project identifiers."""
     with pytest.raises(InvalidProjectIdError):
         ProjectId.from_raw("  ")
+
+
+def test_stream_id_normalizes_value() -> None:
+    """Normalize stream identifiers."""
+    stream_id = StreamId.from_raw("  backbone_platform ")
+
+    assert stream_id.value == "backbone_platform"
+
+
+def test_stream_id_rejects_empty_value() -> None:
+    """Reject empty stream identifiers."""
+    with pytest.raises(InvalidStreamIdError):
+        StreamId.from_raw("  ")
 
 
 def test_extraction_confidence_normalizes_value() -> None:

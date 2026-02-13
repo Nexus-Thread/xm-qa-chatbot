@@ -9,6 +9,10 @@ class InvalidProjectIdError(DomainError):
     """Raised when a project identifier fails validation."""
 
 
+class InvalidStreamIdError(DomainError):
+    """Raised when a stream identifier fails validation."""
+
+
 class InvalidTimeWindowError(DomainError):
     """Raised when a time window is invalid or unsupported."""
 
