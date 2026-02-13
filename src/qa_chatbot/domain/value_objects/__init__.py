@@ -11,7 +11,6 @@ from .metrics import (
     TestCoverageMetrics,
 )
 from .portfolio_aggregates import PortfolioAggregates
-from .priority_bucket import PriorityBucket, PriorityMapping
 from .project_id import ProjectId
 from .stream_id import StreamId
 from .time_window import TimeWindow
@@ -22,8 +21,6 @@ __all__ = [
     "DefectLeakage",
     "ExtractionConfidence",
     "PortfolioAggregates",
-    "PriorityBucket",
-    "PriorityMapping",
     "ProjectId",
     "QualityMetrics",
     "RegressionTimeBlock",
