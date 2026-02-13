@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import TypeVar
 
 from qa_chatbot.domain.exceptions import InvalidConfigurationError
 
 T = TypeVar("T")
+PERCENTAGE_MIN = 0.0
+PERCENTAGE_MAX = 100.0
 
 
 @dataclass(frozen=True)
@@ -36,6 +39,12 @@ class DefectLeakage:
         """Validate leakage values."""
         if self.numerator < 0 or self.denominator < 0:
             msg = "Defect leakage counts must be non-negative"
+            raise InvalidConfigurationError(msg)
+        if not math.isfinite(self.rate_percent):
+            msg = "Defect leakage rate must be a finite number"
+            raise InvalidConfigurationError(msg)
+        if self.rate_percent < PERCENTAGE_MIN or self.rate_percent > PERCENTAGE_MAX:
+            msg = "Defect leakage rate must be between 0 and 100"
             raise InvalidConfigurationError(msg)
 
 
@@ -87,6 +96,13 @@ class TestCoverageMetrics:
         if any(count is not None and count < 0 for count in counts):
             msg = "Test coverage counts must be non-negative"
             raise InvalidConfigurationError(msg)
+        if self.percentage_automation is not None:
+            if not math.isfinite(self.percentage_automation):
+                msg = "Automation percentage must be a finite number"
+                raise InvalidConfigurationError(msg)
+            if self.percentage_automation < PERCENTAGE_MIN or self.percentage_automation > PERCENTAGE_MAX:
+                msg = "Automation percentage must be between 0 and 100"
+                raise InvalidConfigurationError(msg)
 
     def merge_with(self, existing: TestCoverageMetrics | None) -> TestCoverageMetrics:
         """Fill None fields from an existing record, keeping provided values."""

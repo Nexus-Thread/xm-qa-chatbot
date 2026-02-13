@@ -1,10 +1,12 @@
 """Unit tests for domain value objects."""
 
+import math
 from datetime import date
 
 import pytest
 
 from qa_chatbot.domain import (
+    DefectLeakage,
     ExtractionConfidence,
     InvalidConfigurationError,
     InvalidProjectIdError,
@@ -109,7 +111,10 @@ def test_time_window_default_uses_current_month_after_grace() -> None:
 
 def test_test_coverage_rejects_negative_counts() -> None:
     """Reject invalid coverage metrics values."""
-    with pytest.raises(ValueError, match="Test coverage counts must be non-negative"):
+    with pytest.raises(
+        InvalidConfigurationError,
+        match="Test coverage counts must be non-negative",
+    ):
         TestCoverageMetrics(
             manual_total=-1,
             automated_total=0,
@@ -119,6 +124,42 @@ def test_test_coverage_rejects_negative_counts() -> None:
             automated_updated_in_reporting_month=0,
             percentage_automation=0.0,
         )
+
+
+def test_test_coverage_rejects_out_of_range_percentage() -> None:
+    """Reject automation percentage outside valid bounds."""
+    with pytest.raises(
+        InvalidConfigurationError,
+        match="Automation percentage must be between 0 and 100",
+    ):
+        TestCoverageMetrics(percentage_automation=101.0)
+
+
+def test_test_coverage_rejects_non_finite_percentage() -> None:
+    """Reject non-finite automation percentage values."""
+    with pytest.raises(
+        InvalidConfigurationError,
+        match="Automation percentage must be a finite number",
+    ):
+        TestCoverageMetrics(percentage_automation=math.nan)
+
+
+def test_defect_leakage_rejects_out_of_range_rate() -> None:
+    """Reject leakage rates outside valid bounds."""
+    with pytest.raises(
+        InvalidConfigurationError,
+        match="Defect leakage rate must be between 0 and 100",
+    ):
+        DefectLeakage(numerator=1, denominator=1, rate_percent=120.0)
+
+
+def test_defect_leakage_rejects_non_finite_rate() -> None:
+    """Reject non-finite leakage rates."""
+    with pytest.raises(
+        InvalidConfigurationError,
+        match="Defect leakage rate must be a finite number",
+    ):
+        DefectLeakage(numerator=1, denominator=1, rate_percent=math.inf)
 
 
 def test_test_coverage_allows_none_fields() -> None:
