@@ -12,7 +12,6 @@ from .dashboard_data import (
 from .extraction_result import ExtractionResult
 from .report_data import (
     BucketCountDTO,
-    CapaDTO,
     CompletenessStatus,
     DefectLeakageDTO,
     MonthlyReport,
@@ -26,7 +25,6 @@ from .submission_command import SubmissionCommand
 __all__ = [
     "AppSettings",
     "BucketCountDTO",
-    "CapaDTO",
     "CompletenessStatus",
     "DefectLeakageDTO",
     "ExtractionResult",

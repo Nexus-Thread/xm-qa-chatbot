@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 
 from qa_chatbot.application.dtos import (
     BucketCountDTO,
-    CapaDTO,
     CompletenessStatus,
     DefectLeakageDTO,
     MonthlyReport,
@@ -108,13 +107,6 @@ class GenerateMonthlyReportUseCase:
             project.id,
             missing_by_project,
         )
-        capa = self._safe_fetch(
-            missing,
-            f"capa:{project.id}",
-            lambda: self.jira_port.fetch_capa(ProjectId(project.id), period),
-            project.id,
-            missing_by_project,
-        )
         defect_leakage = self._safe_fetch(
             missing,
             f"defect_leakage:{project.id}",
@@ -129,11 +121,6 @@ class GenerateMonthlyReportUseCase:
             supported_releases_count=self._safe_int(supported_releases),
             bugs_found=self._bucket_to_dto(bugs_found),
             production_incidents=self._bucket_to_dto(incidents),
-            capa=CapaDTO(
-                count=getattr(capa, "count", None),
-                status=getattr(capa, "status", "MISSING"),
-                link=self.jira_port.build_issue_link(ProjectId(project.id), period, "capa"),
-            ),
             defect_leakage=self._defect_to_dto(defect_leakage),
             regression_time=self._build_regression_time_entries(),
         )
@@ -280,7 +267,6 @@ class GenerateMonthlyReportUseCase:
                 p1_p2=aggregates.all_streams_incidents_avg.p1_p2,
                 p3_p4=aggregates.all_streams_incidents_avg.p3_p4,
             ),
-            capa=CapaDTO(count=None, status="N/A", link=None),
             defect_leakage=DefectLeakageDTO(
                 numerator=aggregates.all_streams_defect_leakage.numerator,
                 denominator=aggregates.all_streams_defect_leakage.denominator,

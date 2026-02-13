@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from qa_chatbot.application.ports.output import JiraMetricsPort
 from qa_chatbot.domain import (
     BucketCount,
-    CapaStatus,
     DefectLeakage,
     ProjectId,
     ReportingPeriod,
@@ -37,12 +36,6 @@ class MockJiraAdapter(JiraMetricsPort):
         _ = period
         return BucketCount(p1_p2=1, p3_p4=3)
 
-    def fetch_capa(self, project_id: ProjectId, period: ReportingPeriod) -> CapaStatus:
-        """Return CAPA status for the project and period."""
-        self._ensure_project_exists(project_id)
-        _ = period
-        return CapaStatus(count=1, status="OK")
-
     def fetch_defect_leakage(self, project_id: ProjectId, period: ReportingPeriod) -> DefectLeakage:
         """Return defect leakage metrics for the project and period."""
         self._ensure_project_exists(project_id)
@@ -71,7 +64,6 @@ class MockJiraAdapter(JiraMetricsPort):
         mapping = {
             "bugs_found": templates.bugs_found,
             "production_incidents": templates.production_incidents,
-            "capa": templates.capa,
             "defect_leakage_numerator": templates.defect_leakage_numerator,
             "defect_leakage_denominator": templates.defect_leakage_denominator,
         }

@@ -25,23 +25,6 @@ class BucketCount:
 
 
 @dataclass(frozen=True)
-class CapaStatus:
-    """CAPA status representation."""
-
-    count: int | None
-    status: str
-
-    def __post_init__(self) -> None:
-        """Validate CAPA status."""
-        if self.status not in {"N/A", "OK", "MISSING_SOURCE"}:
-            msg = "CAPA status must be N/A, OK, or MISSING_SOURCE"
-            raise InvalidConfigurationError(msg)
-        if self.count is not None and self.count < 0:
-            msg = "CAPA count must be non-negative"
-            raise InvalidConfigurationError(msg)
-
-
-@dataclass(frozen=True)
 class DefectLeakage:
     """Defect leakage metrics."""
 
@@ -93,7 +76,6 @@ class QualityMetrics:
     supported_releases_count: int
     bugs_found: BucketCount
     production_incidents: BucketCount
-    capa: CapaStatus
     defect_leakage: DefectLeakage
     regression_time: RegressionTimeBlock
 

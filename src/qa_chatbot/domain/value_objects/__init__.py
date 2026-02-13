@@ -3,7 +3,6 @@
 from .extraction_confidence import ExtractionConfidence
 from .metrics import (
     BucketCount,
-    CapaStatus,
     DefectLeakage,
     QualityMetrics,
     RegressionTimeBlock,
@@ -17,7 +16,6 @@ from .time_window import TimeWindow
 
 __all__ = [
     "BucketCount",
-    "CapaStatus",
     "DefectLeakage",
     "ExtractionConfidence",
     "PortfolioAggregates",

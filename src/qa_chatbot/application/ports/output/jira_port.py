@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
-    from qa_chatbot.domain import BucketCount, CapaStatus, DefectLeakage, ProjectId, ReportingPeriod
+    from qa_chatbot.domain import BucketCount, DefectLeakage, ProjectId, ReportingPeriod
 
 
 class JiraMetricsPort(Protocol):
@@ -16,9 +16,6 @@ class JiraMetricsPort(Protocol):
 
     def fetch_production_incidents(self, project_id: ProjectId, period: ReportingPeriod) -> BucketCount:
         """Return production incident counts for the project and period."""
-
-    def fetch_capa(self, project_id: ProjectId, period: ReportingPeriod) -> CapaStatus:
-        """Return CAPA status for the project and period."""
 
     def fetch_defect_leakage(self, project_id: ProjectId, period: ReportingPeriod) -> DefectLeakage:
         """Return defect leakage metrics for the project and period."""

@@ -41,7 +41,6 @@ class JiraQueryTemplates:
 
     bugs_found: str
     production_incidents: str
-    capa: str
     defect_leakage_numerator: str
     defect_leakage_denominator: str
 
@@ -80,7 +79,6 @@ def build_default_reporting_registry() -> ReportingRegistry:
     query_templates = JiraQueryTemplates(
         bugs_found="project in ({project_keys}) AND created >= {start} AND created < {end}",
         production_incidents="project in ({project_keys}) AND created >= {start} AND created < {end}",
-        capa="project in ({project_keys}) AND created >= {start} AND created < {end}",
         defect_leakage_numerator="project in ({project_keys}) AND created >= {start} AND created < {end}",
         defect_leakage_denominator="project in ({project_keys}) AND created >= {start} AND created < {end}",
     )

@@ -29,7 +29,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <th class="text-right px-4 py-3">Supported Releases</th>
 <th class="text-left px-4 py-3">Bugs Found (P1–P2 / P3–P4)</th>
 <th class="text-left px-4 py-3">Prod Incidents (P1–P2 / P3–P4)</th>
-<th class="text-left px-4 py-3">CAPA</th>
 <th class="text-left px-4 py-3">Defect Leakage</th>
 <th class="text-left px-4 py-3">Regression Time</th>
 </tr>
@@ -46,10 +45,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=affiliate+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =
@@ -73,10 +68,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=bridge+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -96,10 +87,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=jthales+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =
@@ -123,10 +110,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=jmanager_server_portal+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -146,10 +129,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=symbols_management_service+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =
@@ -173,10 +152,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=local_depositors_service+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -196,10 +171,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=fees_management_service+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =
@@ -223,10 +194,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=admin_tools_service+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -246,10 +213,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=funding_service+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =
@@ -273,10 +236,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=jtools+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -296,10 +255,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=data_access_layer+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =
@@ -323,10 +278,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=metaproxy+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -346,10 +297,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=plugins+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =
@@ -373,10 +320,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=tsda+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -396,10 +339,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=horn+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =
@@ -423,10 +362,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=social_trading_copy+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -446,10 +381,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=social_trading_competitions+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =
@@ -473,10 +404,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=promotions_tool+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -496,10 +423,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=client_loyalty_loyalty+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =
@@ -523,10 +446,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=client_loyalty_bonus+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -546,10 +465,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=market_intelligence+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =
@@ -573,10 +488,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=artificial_intelligence+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -596,10 +507,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=client_communication+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =
@@ -623,10 +530,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=education+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -646,10 +549,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=client_support+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =
@@ -673,10 +572,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=client_authentication+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -696,10 +591,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=client_trading+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =
@@ -723,10 +614,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=onboarding_account_mgmt+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -746,10 +633,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=realtime_communications+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =
@@ -773,10 +656,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=payments+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -796,10 +675,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=withdrawals+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =
@@ -823,10 +698,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=kyc+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -846,10 +717,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=scc+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =
@@ -873,10 +740,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=crm+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -896,10 +759,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=digital_marketing+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =
@@ -923,10 +782,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=mobile_trading_point+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -948,10 +803,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <div>P3–P4 3</div>
 </td>
 <td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=angular_core_web+AND+period=2026-02+AND+label=capa">View</a>
-</td>
-<td class="px-4 py-3">
 (2/12) * 100 =
 16.67%
 </td>
@@ -971,10 +822,6 @@ Missing: test_coverage:admin_tools_service, test_coverage:affiliate, test_covera
 <td class="px-4 py-3">
 <div>P1–P2 1</div>
 <div>P3–P4 3</div>
-</td>
-<td class="px-4 py-3">
-<span>OK</span>
-<a class="text-blue-600 text-xs" href="https://jira.example.com/issues/?jql=project=angular_www+AND+period=2026-02+AND+label=capa">View</a>
 </td>
 <td class="px-4 py-3">
 (2/12) * 100 =

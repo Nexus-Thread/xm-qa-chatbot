@@ -40,7 +40,6 @@
                 <th class="text-right px-4 py-3">Supported Releases</th>
                 <th class="text-left px-4 py-3">Bugs Found (P1–P2 / P3–P4)</th>
                 <th class="text-left px-4 py-3">Prod Incidents (P1–P2 / P3–P4)</th>
-                <th class="text-left px-4 py-3">CAPA</th>
                 <th class="text-left px-4 py-3">Defect Leakage</th>
                 <th class="text-left px-4 py-3">Regression Time</th>
               </tr>
@@ -60,12 +59,6 @@
                   <div>P3–P4 {{ row.production_incidents.p3_p4 or "-" }}</div>
                 </td>
                 <td class="px-4 py-3">
-                  <span>{{ row.capa.status }}</span>
-                  {% if row.capa.link %}
-                  <a class="text-blue-600 text-xs" href="{{ row.capa.link }}">View</a>
-                  {% endif %}
-                </td>
-                <td class="px-4 py-3">
                   {% if row.defect_leakage.rate_percent is not none %}
                   ({{ row.defect_leakage.numerator }}/{{ row.defect_leakage.denominator }}) * 100 =
                   {{ row.defect_leakage.rate_percent }}%
@@ -81,7 +74,7 @@
               </tr>
               {% else %}
               <tr>
-                <td class="px-4 py-3 text-slate-500" colspan="8">No quality metrics available.</td>
+                <td class="px-4 py-3 text-slate-500" colspan="7">No quality metrics available.</td>
               </tr>
               {% endfor %}
             </tbody>

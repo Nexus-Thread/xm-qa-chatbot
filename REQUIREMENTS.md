@@ -26,9 +26,8 @@ Columns (exactly these data concepts):
 	3.	Supported releases during the month (number)
 	4.	Bugs found by QAs during the month (P1–P2, P3–P4) - these will be linked to JIRA filters - we will use mocked data for initial delivery to simulate JIRA
 	5.	Production incidents during the month (P1–P2, P3–P4) - these will be linked to JIRA filters - we will use mocked data for initial delivery to simulate JIRA
-	6.	CAPAs of production incidents during the month (link/filter)
-	7.	Defect Leakage Rate %
-	8.	Time for full regression in hours
+	6.	Defect Leakage Rate %
+	7.	Time for full regression in hours
 
 Section B: Test Coverage Manual and Automation
 Includes:
@@ -73,8 +72,7 @@ QualityMetrics (per Project, per Period)
 	•	supported_releases_count: int
 	•	bugs_found: { p1_p2: int, p3_p4: int }
 	•	production_incidents: { p1_p2: int, p3_p4: int }
-	•	capa: { count: int | null, status: 'N/A' | 'OK' | 'MISSING_SOURCE' }
-	•	defect_leakage: { numerator: int, denominator: int, rate_percent: float }
+•	defect_leakage: { numerator: int, denominator: int, rate_percent: float }
 	•	regression_time: RegressionTimeBlock (structured + renderable)
 
 RegressionTimeBlock
@@ -109,7 +107,6 @@ Portfolio Aggregates
 
 3. Data Sources & Connectors
 
-3.1 Jira (Defects, Incidents, CAPAs)
 
 The application MUST support per-project configuration of:
 	•	Jira project keys and/or components
@@ -214,7 +211,6 @@ Rounding rules MUST be defined (e.g., 2 decimals for averages, 2 decimals for le
 	•	Bugs and incidents columns MUST render as two-line blocks:
 	•	P1–P2  <value>
 	•	P3–P4  <value>
-	•	CAPA column MUST render:
 	•	N/A OR
 	•	a link to a Jira filter/query OR
 	•	a placeholder “/” only if explicitly configured
@@ -292,7 +288,6 @@ Chatbot submissions are treated as the default input mechanism for test coverage
 	•	supported releases count
 	•	bugs found (P1–P2, P3–P4) + links
 	•	production incidents (P1–P2, P3–P4) + links
-	•	CAPA link or N/A
 	•	defect leakage shown as (n/d)*100 = x% + links for n and d
 	•	regression time rendered as structured multi-line text
 	3.	For Test Coverage, the app outputs:

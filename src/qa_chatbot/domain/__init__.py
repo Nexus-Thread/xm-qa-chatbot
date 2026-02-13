@@ -19,7 +19,6 @@ from .registries import (
 from .services import ValidationService
 from .value_objects import (
     BucketCount,
-    CapaStatus,
     DefectLeakage,
     ExtractionConfidence,
     PortfolioAggregates,
@@ -35,7 +34,6 @@ from .value_objects import (
 __all__ = [
     "BucketCount",
     "BusinessStream",
-    "CapaStatus",
     "DefectLeakage",
     "DomainError",
     "ExtractionConfidence",

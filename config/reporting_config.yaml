@@ -687,7 +687,6 @@ jira:
     bugs_found: project in ({project_keys}) AND created >= {start} AND created < {end}
     production_incidents: project in ({project_keys}) AND created >= {start} AND created
       < {end}
-    capa: project in ({project_keys}) AND created >= {start} AND created < {end}
     defect_leakage_numerator: project in ({project_keys}) AND created >= {start} AND
       created < {end}
     defect_leakage_denominator: project in ({project_keys}) AND created >= {start}

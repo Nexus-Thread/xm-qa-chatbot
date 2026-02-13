@@ -23,15 +23,6 @@ class DefectLeakageDTO:
 
 
 @dataclass(frozen=True)
-class CapaDTO:
-    """CAPA data for rendering."""
-
-    count: int | None
-    status: str
-    link: str | None
-
-
-@dataclass(frozen=True)
 class RegressionTimeEntryDTO:
     """Regression time entry for rendering."""
 
@@ -48,7 +39,6 @@ class QualityMetricsRow:
     supported_releases_count: int | None
     bugs_found: BucketCountDTO
     production_incidents: BucketCountDTO
-    capa: CapaDTO
     defect_leakage: DefectLeakageDTO
     regression_time: tuple[RegressionTimeEntryDTO, ...]
     is_portfolio: bool = False
