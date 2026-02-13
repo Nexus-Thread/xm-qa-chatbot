@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
-import qa_chatbot.main as main_module
+import qa_chatbot.main
 
 if TYPE_CHECKING:
     import pytest
@@ -28,21 +28,21 @@ def test_main_wires_components(monkeypatch: pytest.MonkeyPatch) -> None:
         rate_limit_requests=8,
         rate_limit_window_seconds=60,
     )
-    monkeypatch.setattr(main_module, "EnvSettingsAdapter", lambda: MagicMock(load=lambda: settings))
+    monkeypatch.setattr(qa_chatbot.main, "EnvSettingsAdapter", lambda: MagicMock(load=lambda: settings))
 
     fake_storage = MagicMock()
-    monkeypatch.setattr(main_module, "SQLiteAdapter", lambda **_: fake_storage)
-    monkeypatch.setattr(main_module, "HtmlDashboardAdapter", lambda **_: MagicMock())
-    monkeypatch.setattr(main_module, "OpenAIAdapter", lambda **_: MagicMock())
+    monkeypatch.setattr(qa_chatbot.main, "SQLiteAdapter", lambda **_: fake_storage)
+    monkeypatch.setattr(qa_chatbot.main, "HtmlDashboardAdapter", lambda **_: MagicMock())
+    monkeypatch.setattr(qa_chatbot.main, "OpenAIAdapter", lambda **_: MagicMock())
     metrics_adapter = MagicMock()
-    monkeypatch.setattr(main_module, "InMemoryMetricsAdapter", lambda: metrics_adapter)
-    monkeypatch.setattr(main_module, "ExtractStructuredDataUseCase", lambda **_: MagicMock())
-    monkeypatch.setattr(main_module, "SubmitTeamDataUseCase", lambda **_: MagicMock())
-    monkeypatch.setattr(main_module, "ConversationManager", lambda **_: MagicMock())
+    monkeypatch.setattr(qa_chatbot.main, "InMemoryMetricsAdapter", lambda: metrics_adapter)
+    monkeypatch.setattr(qa_chatbot.main, "ExtractStructuredDataUseCase", lambda **_: MagicMock())
+    monkeypatch.setattr(qa_chatbot.main, "SubmitTeamDataUseCase", lambda **_: MagicMock())
+    monkeypatch.setattr(qa_chatbot.main, "ConversationManager", lambda **_: MagicMock())
     gradio_adapter = MagicMock()
-    monkeypatch.setattr(main_module, "GradioAdapter", lambda **_: gradio_adapter)
+    monkeypatch.setattr(qa_chatbot.main, "GradioAdapter", lambda **_: gradio_adapter)
 
-    main_module.main()
+    qa_chatbot.main.main()
 
     fake_storage.initialize_schema.assert_called_once()
     gradio_adapter.launch.assert_called_once()

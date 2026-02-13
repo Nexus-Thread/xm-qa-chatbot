@@ -160,7 +160,6 @@ streams:
   - id: funding_service
     name: Funding Service (Not Live)
     order: 70
-    is_active: false
     defect_leakage:
       numerator:
         jira_source_key: funding_service_numerator

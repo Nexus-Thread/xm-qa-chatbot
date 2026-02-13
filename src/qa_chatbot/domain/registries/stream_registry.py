@@ -32,7 +32,7 @@ class StreamRegistry:
 
     def active_projects(self) -> tuple[Project, ...]:
         """Return active projects."""
-        return tuple(project for project in self.projects if project.is_active)
+        return self.projects
 
     def projects_for_stream(self, stream_id: str) -> tuple[Project, ...]:
         """Return projects for a given stream."""
@@ -47,12 +47,10 @@ class StreamRegistry:
         raise InvalidConfigurationError(msg)
 
     def find_project(self, project_id: str) -> Project | None:
-        """Find a project by id or alias."""
+        """Find a project by id or name."""
         normalized = project_id.strip().lower()
         for project in self.projects:
             if project.id.lower() == normalized or project.name.lower() == normalized:
-                return project
-            if any(alias.lower() == normalized for alias in project.aliases):
                 return project
         return None
 

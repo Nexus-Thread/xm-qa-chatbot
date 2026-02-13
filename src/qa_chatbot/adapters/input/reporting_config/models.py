@@ -32,8 +32,6 @@ class ReportingConfig(BaseModel):
                 id=project.id,
                 name=project.name,
                 business_stream_id=stream.id,
-                aliases=tuple(project.aliases),
-                is_active=project.is_active,
             )
             for stream, project in ordered_pairs
         )
@@ -59,7 +57,6 @@ class StreamConfig(BaseModel):
     id: str
     name: str
     order: int = Field(ge=0)
-    is_active: bool = Field(default=True)
     projects: list[ProjectConfig] = Field(default_factory=list)
 
 
@@ -71,8 +68,6 @@ class ProjectConfig(BaseModel):
     id: str
     name: str
     order: int = Field(ge=0)
-    aliases: list[str] = Field(default_factory=list)
-    is_active: bool = Field(default=True)
     jira_sources: list[JiraProjectSourceConfig] = Field(default_factory=list)
     jira_filters: JiraProjectFiltersConfig
     defect_leakage: DefectLeakageScopeConfig

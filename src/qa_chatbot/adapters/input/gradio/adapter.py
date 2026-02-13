@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import gradio as gr
+import gradio
 
 from .conversation_manager import ConversationManager, ConversationSession  # noqa: TC001
 from .rate_limiter import RateLimiter
@@ -27,19 +27,19 @@ class GradioAdapter:
         app = self._build_ui()
         app.launch(server_port=self._settings.server_port, share=self._settings.share, show_error=True)
 
-    def _build_ui(self) -> gr.Blocks:
+    def _build_ui(self) -> gradio.Blocks:
         """Build the Gradio UI blocks."""
-        with gr.Blocks() as app:
-            gr.Markdown("# XM QA Chatbot")
-            gr.Markdown("Share your QA metrics and project updates below.")
+        with gradio.Blocks() as app:
+            gradio.Markdown("# XM QA Chatbot")
+            gradio.Markdown("Share your QA metrics and project updates below.")
 
-            session_state = gr.State()
-            chat_history = gr.Chatbot(height=460)
-            user_input = gr.Textbox(
+            session_state = gradio.State()
+            chat_history = gradio.Chatbot(height=460)
+            user_input = gradio.Textbox(
                 placeholder="Type your update here...",
                 container=False,
             )
-            reset_button = gr.Button("Start Over")
+            reset_button = gradio.Button("Start Over")
 
             def initialize() -> tuple[ConversationSession, list[dict[str, str]]]:
                 session, welcome = self._manager.start_session(today())
