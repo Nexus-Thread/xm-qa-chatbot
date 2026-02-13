@@ -44,7 +44,7 @@ class TimeWindow:
         return cls(year=year, month=month)
 
     @classmethod
-    def default_for(cls, today: date, grace_period_days: int = 2) -> TimeWindow:
+    def default_for(cls, today: date, grace_period_days: int = 5) -> TimeWindow:
         """Select the default window based on a grace period into the next month."""
         if grace_period_days < 0:
             message = "Grace period must be non-negative"
