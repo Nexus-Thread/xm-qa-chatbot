@@ -11,7 +11,14 @@ import pytest
 from qa_chatbot.adapters.input.gradio.conversation_manager import ConversationManager, ConversationSession
 from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitTeamDataUseCase
 from qa_chatbot.application.dtos import ExtractionResult
-from qa_chatbot.domain import ExtractionConfidence, ProjectId, Submission, TestCoverageMetrics, TimeWindow
+from qa_chatbot.domain import (
+    ExtractionConfidence,
+    ProjectId,
+    Submission,
+    SubmissionMetrics,
+    TestCoverageMetrics,
+    TimeWindow,
+)
 
 if TYPE_CHECKING:
     from qa_chatbot.domain.registries import StreamRegistry
@@ -68,17 +75,19 @@ class FakeLLM:
         return ExtractionResult(
             project_id=ProjectId("qa-project"),
             time_window=TimeWindow.from_year_month(2026, 1),
-            test_coverage=TestCoverageMetrics(
-                manual_total=10,
-                automated_total=5,
-                manual_created_in_reporting_month=1,
-                manual_updated_in_reporting_month=1,
-                automated_created_in_reporting_month=1,
-                automated_updated_in_reporting_month=1,
-                percentage_automation=33.33,
+            metrics=SubmissionMetrics(
+                test_coverage=TestCoverageMetrics(
+                    manual_total=10,
+                    automated_total=5,
+                    manual_created_in_reporting_month=1,
+                    manual_updated_in_reporting_month=1,
+                    automated_created_in_reporting_month=1,
+                    automated_updated_in_reporting_month=1,
+                    percentage_automation=33.33,
+                ),
+                overall_test_cases=None,
+                supported_releases_count=2,
             ),
-            overall_test_cases=None,
-            supported_releases_count=2,
         )
 
 

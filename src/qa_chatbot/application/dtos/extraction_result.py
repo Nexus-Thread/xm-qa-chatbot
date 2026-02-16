@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from qa_chatbot.domain import ProjectId, TestCoverageMetrics, TimeWindow
+    from qa_chatbot.domain import ProjectId, SubmissionMetrics, TimeWindow
 
 
 @dataclass(frozen=True)
@@ -15,6 +15,4 @@ class ExtractionResult:
 
     project_id: ProjectId
     time_window: TimeWindow
-    test_coverage: TestCoverageMetrics | None
-    overall_test_cases: int | None
-    supported_releases_count: int | None = None
+    metrics: SubmissionMetrics

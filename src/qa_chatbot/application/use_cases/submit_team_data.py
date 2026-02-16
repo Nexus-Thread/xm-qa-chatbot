@@ -6,7 +6,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-from qa_chatbot.domain import Submission, TestCoverageMetrics
+from qa_chatbot.domain import Submission, SubmissionMetrics
 
 if TYPE_CHECKING:
     from qa_chatbot.application.dtos import SubmissionCommand
@@ -35,13 +35,11 @@ class SubmitTeamDataUseCase:
                 "time_window": str(command.time_window),
             },
         )
-        merged_coverage, merged_overall, merged_supported_releases = self._merge_with_existing(command)
+        merged_metrics = self._merge_with_existing(command)
         submission = Submission.create(
             project_id=command.project_id,
             month=command.time_window,
-            test_coverage=merged_coverage,
-            overall_test_cases=merged_overall,
-            supported_releases_count=merged_supported_releases,
+            metrics=merged_metrics,
             raw_conversation=command.raw_conversation,
             created_at=command.created_at,
         )
@@ -67,22 +65,14 @@ class SubmitTeamDataUseCase:
     def _merge_with_existing(
         self,
         command: SubmissionCommand,
-    ) -> tuple[TestCoverageMetrics | None, int | None, int | None]:
+    ) -> SubmissionMetrics:
         """Merge incoming data with any existing submission for the same project/month."""
         existing_submissions = self.storage_port.get_submissions_by_project(
             command.project_id,
             command.time_window,
         )
         if not existing_submissions:
-            return command.test_coverage, command.overall_test_cases, command.supported_releases_count
+            return command.metrics
 
         existing = max(existing_submissions, key=lambda s: s.created_at)
-
-        merged_coverage = command.test_coverage
-        merged_coverage = merged_coverage.merge_with(existing.test_coverage) if merged_coverage is not None else existing.test_coverage
-
-        merged_overall = command.overall_test_cases if command.overall_test_cases is not None else existing.overall_test_cases
-        merged_supported_releases = (
-            command.supported_releases_count if command.supported_releases_count is not None else existing.supported_releases_count
-        )
-        return merged_coverage, merged_overall, merged_supported_releases
+        return command.metrics.merge_with(existing.metrics)

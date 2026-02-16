@@ -25,6 +25,7 @@ from .value_objects import (
     ProjectId,
     QualityMetrics,
     StreamId,
+    SubmissionMetrics,
     TestCoverageMetrics,
     TimeWindow,
 )
@@ -50,6 +51,7 @@ __all__ = [
     "StreamId",
     "StreamRegistry",
     "Submission",
+    "SubmissionMetrics",
     "TestCoverageMetrics",
     "TimeWindow",
     "ValidationService",

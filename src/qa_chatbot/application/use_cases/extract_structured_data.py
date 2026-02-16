@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, TypeVar
 
 from qa_chatbot.application.dtos import ExtractionResult
+from qa_chatbot.domain import SubmissionMetrics
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -60,9 +61,11 @@ class ExtractStructuredDataUseCase:
         return ExtractionResult(
             project_id=project_id,
             time_window=time_window,
-            test_coverage=test_coverage,
-            overall_test_cases=None,
-            supported_releases_count=supported_releases_count,
+            metrics=SubmissionMetrics(
+                test_coverage=test_coverage,
+                overall_test_cases=None,
+                supported_releases_count=supported_releases_count,
+            ),
         )
 
     def execute_sections(
@@ -82,9 +85,11 @@ class ExtractStructuredDataUseCase:
         return ExtractionResult(
             project_id=project_id,
             time_window=time_window,
-            test_coverage=test_coverage,
-            overall_test_cases=None,
-            supported_releases_count=supported_releases_count,
+            metrics=SubmissionMetrics(
+                test_coverage=test_coverage,
+                overall_test_cases=None,
+                supported_releases_count=supported_releases_count,
+            ),
         )
 
     def execute_with_history(

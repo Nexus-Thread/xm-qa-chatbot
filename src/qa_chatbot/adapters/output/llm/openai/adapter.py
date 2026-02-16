@@ -13,7 +13,7 @@ from pydantic import BaseModel, ValidationError
 
 from qa_chatbot.application.dtos import ExtractionResult
 from qa_chatbot.application.ports.output import LLMPort
-from qa_chatbot.domain import ExtractionConfidence, ProjectId, TestCoverageMetrics, TimeWindow
+from qa_chatbot.domain import ExtractionConfidence, ProjectId, SubmissionMetrics, TestCoverageMetrics, TimeWindow
 from qa_chatbot.domain.exceptions import InvalidConfigurationError
 
 from .client import build_client
@@ -144,17 +144,19 @@ class OpenAIAdapter(LLMPort):
         return ExtractionResult(
             project_id=project_id,
             time_window=time_window,
-            test_coverage=TestCoverageMetrics(
-                manual_total=coverage_data.manual_total,
-                automated_total=coverage_data.automated_total,
-                manual_created_in_reporting_month=coverage_data.manual_created_in_reporting_month,
-                manual_updated_in_reporting_month=coverage_data.manual_updated_in_reporting_month,
-                automated_created_in_reporting_month=coverage_data.automated_created_in_reporting_month,
-                automated_updated_in_reporting_month=coverage_data.automated_updated_in_reporting_month,
-                percentage_automation=None,
+            metrics=SubmissionMetrics(
+                test_coverage=TestCoverageMetrics(
+                    manual_total=coverage_data.manual_total,
+                    automated_total=coverage_data.automated_total,
+                    manual_created_in_reporting_month=coverage_data.manual_created_in_reporting_month,
+                    manual_updated_in_reporting_month=coverage_data.manual_updated_in_reporting_month,
+                    automated_created_in_reporting_month=coverage_data.automated_created_in_reporting_month,
+                    automated_updated_in_reporting_month=coverage_data.automated_updated_in_reporting_month,
+                    percentage_automation=None,
+                ),
+                overall_test_cases=None,
+                supported_releases_count=coverage_data.supported_releases_count,
             ),
-            overall_test_cases=None,
-            supported_releases_count=coverage_data.supported_releases_count,
         )
 
     def _extract_json(

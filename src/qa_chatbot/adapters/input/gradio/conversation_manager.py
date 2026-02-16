@@ -12,6 +12,7 @@ from qa_chatbot.domain import (
     DomainError,
     MissingSubmissionDataError,
     ProjectId,
+    SubmissionMetrics,
     TimeWindow,
     build_default_registry,
 )
@@ -330,9 +331,11 @@ class ConversationManager:
         return SubmissionCommand(
             project_id=session.stream_project,
             time_window=session.time_window,
-            test_coverage=session.test_coverage,
-            overall_test_cases=None,
-            supported_releases_count=session.supported_releases_count,
+            metrics=SubmissionMetrics(
+                test_coverage=session.test_coverage,
+                overall_test_cases=None,
+                supported_releases_count=session.supported_releases_count,
+            ),
             raw_conversation=raw_conversation,
         )
 

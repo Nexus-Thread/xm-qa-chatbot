@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from qa_chatbot.application.dtos import ExtractionResult
 from qa_chatbot.domain import ProjectId, TestCoverageMetrics, TimeWindow
 
 if TYPE_CHECKING:
     from datetime import date
+
+    from qa_chatbot.application.dtos import ExtractionResult
 
 
 def welcome_message(today: date) -> str:
@@ -48,9 +49,9 @@ def prompt_for_confirmation(summary: str) -> str:
 def format_extraction_summary(result: ExtractionResult) -> str:
     """Format an extraction result into a readable summary."""
     lines = [f"Project: {result.project_id.value}", f"Month: {result.time_window.to_iso_month()}"]
-    lines.append(f"Supported releases count: {result.supported_releases_count}")
-    if result.test_coverage:
-        lines.append(_format_test_coverage(result.test_coverage))
+    lines.append(f"Supported releases count: {result.metrics.supported_releases_count}")
+    if result.metrics.test_coverage:
+        lines.append(_format_test_coverage(result.metrics.test_coverage))
     return "\n".join(lines)
 
 
@@ -62,14 +63,12 @@ def format_submission_summary(
     supported_releases_count: int | None,
 ) -> str:
     """Format the current conversation data into a summary."""
-    summary = ExtractionResult(
-        project_id=project_id,
-        time_window=time_window,
-        test_coverage=test_coverage,
-        overall_test_cases=overall_test_cases,
-        supported_releases_count=supported_releases_count,
-    )
-    return format_extraction_summary(summary)
+    lines = [f"Project: {project_id.value}", f"Month: {time_window.to_iso_month()}"]
+    lines.append(f"Supported releases count: {supported_releases_count}")
+    lines.append(f"Overall test cases: {overall_test_cases}")
+    if test_coverage:
+        lines.append(_format_test_coverage(test_coverage))
+    return "\n".join(lines)
 
 
 def format_error_message(message: str) -> str:

@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from datetime import datetime
 
-    from qa_chatbot.domain import ProjectId, TestCoverageMetrics, TimeWindow
+    from qa_chatbot.domain import ProjectId, SubmissionMetrics, TimeWindow
 
 
 @dataclass(frozen=True)
@@ -17,8 +17,6 @@ class SubmissionCommand:
 
     project_id: ProjectId
     time_window: TimeWindow
-    test_coverage: TestCoverageMetrics | None
-    overall_test_cases: int | None
-    supported_releases_count: int | None = None
+    metrics: SubmissionMetrics
     raw_conversation: str | None = None
     created_at: datetime | None = None
