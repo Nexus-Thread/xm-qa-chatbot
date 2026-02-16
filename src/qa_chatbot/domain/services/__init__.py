@@ -1,5 +1,3 @@
 """Domain services."""
 
-from .validation_service import ValidationService
-
-__all__ = ["ValidationService"]
+__all__: list[str] = []

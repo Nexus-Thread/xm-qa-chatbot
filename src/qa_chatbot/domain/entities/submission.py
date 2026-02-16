@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from qa_chatbot.domain.exceptions import InvalidConfigurationError
-from qa_chatbot.domain.services import ValidationService
 from qa_chatbot.domain.value_objects import SubmissionMetrics
 
 if TYPE_CHECKING:
@@ -29,11 +28,15 @@ class Submission:
     raw_conversation: str | None = None
 
     def __post_init__(self) -> None:
-        """Ensure submissions contain at least one data category."""
+        """Validate submission invariants."""
         if self.created_at.tzinfo is None or self.created_at.utcoffset() is None:
             msg = "Submission created_at must be timezone-aware"
             raise InvalidConfigurationError(msg)
-        ValidationService.ensure_submission_has_data(self.metrics)
+        SubmissionMetrics(
+            test_coverage=self.test_coverage,
+            overall_test_cases=self.overall_test_cases,
+            supported_releases_count=self.supported_releases_count,
+        )
 
     @property
     def metrics(self) -> SubmissionMetrics:

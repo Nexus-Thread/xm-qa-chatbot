@@ -11,7 +11,6 @@ from .exceptions import (
     MissingSubmissionDataError,
 )
 from .registries import StreamProjectRegistry, build_default_stream_project_registry
-from .services import ValidationService
 from .value_objects import (
     BucketCount,
     DefectLeakage,
@@ -50,6 +49,5 @@ __all__ = [
     "SubmissionMetrics",
     "TestCoverageMetrics",
     "TimeWindow",
-    "ValidationService",
     "build_default_stream_project_registry",
 ]
