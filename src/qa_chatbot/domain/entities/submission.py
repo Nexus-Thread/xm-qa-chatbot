@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
+from qa_chatbot.domain.exceptions import InvalidConfigurationError
 from qa_chatbot.domain.services import ValidationService
 
 if TYPE_CHECKING:
@@ -28,9 +29,23 @@ class Submission:
 
     def __post_init__(self) -> None:
         """Ensure submissions contain at least one data category."""
+        self._validate_non_negative_optional(self.overall_test_cases, "Overall test cases")
+        self._validate_non_negative_optional(self.supported_releases_count, "Supported releases count")
+        if self.created_at.tzinfo is None or self.created_at.utcoffset() is None:
+            msg = "Submission created_at must be timezone-aware"
+            raise InvalidConfigurationError(msg)
         ValidationService.ensure_submission_has_data(
             test_coverage=self.test_coverage,
+            overall_test_cases=self.overall_test_cases,
+            supported_releases_count=self.supported_releases_count,
         )
+
+    @staticmethod
+    def _validate_non_negative_optional(value: int | None, field_name: str) -> None:
+        """Validate optional integer fields are non-negative when provided."""
+        if value is not None and value < 0:
+            msg = f"{field_name} must be non-negative"
+            raise InvalidConfigurationError(msg)
 
     @classmethod
     def create(  # noqa: PLR0913

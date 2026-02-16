@@ -26,7 +26,10 @@ class ReportingPeriod:
 
     def __post_init__(self) -> None:
         """Validate period bounds and internal consistency."""
-        self._validate_month(self.month)
+        normalized_year = self._normalize_year(self.year)
+        normalized_month = self._normalize_month(self.month)
+        object.__setattr__(self, "year", normalized_year)
+        object.__setattr__(self, "month", normalized_month)
         zone = self._resolve_timezone(self.timezone)
 
         start_zone = getattr(self.start_datetime.tzinfo, "key", None)
@@ -52,13 +55,14 @@ class ReportingPeriod:
     @classmethod
     def for_month(cls, year: int, month: int, timezone: str) -> ReportingPeriod:
         """Construct a reporting period for a month."""
-        cls._validate_month(month)
+        normalized_year = cls._normalize_year(year)
+        normalized_month = cls._normalize_month(month)
         zone = cls._resolve_timezone(timezone)
-        start = datetime(year, month, 1, tzinfo=zone)
-        end = cls._next_month_start(year, month, zone)
+        start = datetime(normalized_year, normalized_month, 1, tzinfo=zone)
+        end = cls._next_month_start(normalized_year, normalized_month, zone)
         return cls(
-            year=year,
-            month=month,
+            year=normalized_year,
+            month=normalized_month,
             start_datetime=start,
             end_datetime=end,
             timezone=timezone,
@@ -86,11 +90,23 @@ class ReportingPeriod:
         return f"{self.year:04d}-{self.month:02d}"
 
     @staticmethod
-    def _validate_month(month: int) -> None:
-        """Validate month range."""
+    def _normalize_month(month: object) -> int:
+        """Validate month type and range."""
+        if not isinstance(month, int):
+            message = "Month must be an integer"
+            raise InvalidTimeWindowError(message)
         if month < MIN_MONTH or month > MAX_MONTH:
             message = f"Month must be between {MIN_MONTH} and {MAX_MONTH}"
             raise InvalidTimeWindowError(message)
+        return month
+
+    @staticmethod
+    def _normalize_year(year: object) -> int:
+        """Validate year type."""
+        if not isinstance(year, int):
+            message = "Year must be an integer"
+            raise InvalidTimeWindowError(message)
+        return year
 
     @staticmethod
     def _resolve_timezone(timezone: str) -> ZoneInfo:

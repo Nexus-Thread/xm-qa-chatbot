@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID
 
 from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWindow
@@ -29,6 +29,8 @@ def model_to_submission(model: SubmissionModel) -> Submission:
     created_at = model.created_at
     if isinstance(created_at, str):
         created_at = datetime.fromisoformat(created_at)
+    if created_at.tzinfo is None or created_at.utcoffset() is None:
+        created_at = created_at.replace(tzinfo=UTC)
 
     return Submission(
         id=UUID(model.id),
