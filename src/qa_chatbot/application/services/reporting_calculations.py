@@ -16,18 +16,18 @@ class EdgeCasePolicy:
 
     rounding_decimals = ROUNDING_DECIMALS
 
-    def _compute_percentage(self, numerator: int, denominator: int) -> float:
+    def _compute_percentage(self, numerator: int, denominator: int) -> float | None:
         """Compute percentage with zero-denominator handling."""
         if denominator == 0:
-            return float("nan")
-        return round((numerator / denominator) * 100, ROUNDING_DECIMALS)
+            return None
+        return round((numerator / denominator) * 100, self.rounding_decimals)
 
-    def compute_automation_percentage(self, manual_total: int, automated_total: int) -> float:
+    def compute_automation_percentage(self, manual_total: int, automated_total: int) -> float | None:
         """Compute automation percentage with edge-case handling."""
         total = manual_total + automated_total
         return self._compute_percentage(numerator=automated_total, denominator=total)
 
-    def compute_defect_leakage_rate(self, numerator: int, denominator: int) -> float:
+    def compute_defect_leakage_rate(self, numerator: int, denominator: int) -> float | None:
         """Compute defect leakage percentage with edge-case handling."""
         return self._compute_percentage(numerator=numerator, denominator=denominator)
 

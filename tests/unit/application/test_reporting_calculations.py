@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from math import isnan
-
 from qa_chatbot.application.services import EdgeCasePolicy, compute_portfolio_aggregates
 from qa_chatbot.domain import BucketCount, DefectLeakage
 
@@ -12,22 +10,22 @@ EXPECTED_SUPPORTED_RELEASES_TOTAL = 6
 EXPECTED_SUPPORTED_RELEASES_AVG = 3.0
 
 
-def test_compute_automation_percentage_returns_nan_for_zero_total() -> None:
-    """Return NaN when manual and automated totals are both zero."""
+def test_compute_automation_percentage_returns_none_for_zero_total() -> None:
+    """Return None when manual and automated totals are both zero."""
     policy = EdgeCasePolicy()
 
     result = policy.compute_automation_percentage(manual_total=0, automated_total=0)
 
-    assert isnan(result)
+    assert result is None
 
 
-def test_compute_defect_leakage_rate_returns_nan_for_zero_denominator() -> None:
-    """Return NaN when denominator is zero."""
+def test_compute_defect_leakage_rate_returns_none_for_zero_denominator() -> None:
+    """Return None when denominator is zero."""
     policy = EdgeCasePolicy()
 
     result = policy.compute_defect_leakage_rate(numerator=0, denominator=0)
 
-    assert isnan(result)
+    assert result is None
 
 
 def test_compute_automation_percentage_uses_two_decimal_rounding() -> None:

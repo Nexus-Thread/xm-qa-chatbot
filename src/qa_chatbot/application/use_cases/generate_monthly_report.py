@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
@@ -201,7 +202,7 @@ class GenerateMonthlyReportUseCase:
             rate_percent = self.edge_case_policy.compute_defect_leakage_rate(numerator, denominator)
         else:
             fallback_rate = self._safe_number(getattr(defect, "rate_percent", None))
-            rate_percent = float(fallback_rate) if isinstance(fallback_rate, (int, float)) else None
+            rate_percent = self._safe_percentage(fallback_rate)
         return DefectLeakageDTO(
             numerator=numerator,
             denominator=denominator,
@@ -232,7 +233,7 @@ class GenerateMonthlyReportUseCase:
             DefectLeakage(
                 numerator=int(row.defect_leakage.numerator or 0),
                 denominator=int(row.defect_leakage.denominator or 0),
-                rate_percent=float(row.defect_leakage.rate_percent or 0.0),
+                rate_percent=self._safe_percentage(row.defect_leakage.rate_percent) or 0.0,
             )
             for row in rows
             if not row.is_portfolio
@@ -296,3 +297,12 @@ class GenerateMonthlyReportUseCase:
         if isinstance(value, (int, float)):
             return value
         return None
+
+    @staticmethod
+    def _safe_percentage(value: object) -> float | None:
+        if not isinstance(value, (int, float)):
+            return None
+        as_float = float(value)
+        if not math.isfinite(as_float):
+            return None
+        return as_float
