@@ -2,17 +2,21 @@
 
 import math
 from datetime import date
+from typing import cast
 
 import pytest
 
 from qa_chatbot.domain import (
+    BucketCount,
     DefectLeakage,
     ExtractionConfidence,
     InvalidConfigurationError,
     InvalidProjectIdError,
     InvalidStreamIdError,
     InvalidTimeWindowError,
+    PortfolioAggregates,
     ProjectId,
+    QualityMetrics,
     StreamId,
     TestCoverageMetrics,
     TimeWindow,
@@ -28,6 +32,8 @@ EXISTING_AUTOMATED_UPDATED = 3
 EXISTING_PERCENTAGE = 33.33
 UPDATED_MANUAL_TOTAL = 1100
 PARTIAL_MANUAL_TOTAL = 100
+VALID_SUPPORTED_RELEASES_COUNT = 2
+VALID_PORTFOLIO_SUPPORTED_RELEASES_TOTAL = 10
 
 
 def test_project_id_normalizes_value() -> None:
@@ -107,6 +113,126 @@ def test_time_window_default_uses_current_month_after_grace() -> None:
     window = TimeWindow.default_for(date(2026, 2, 3), grace_period_days=2)
 
     assert window.to_iso_month() == "2026-02"
+
+
+def test_time_window_default_rolls_back_year_within_grace() -> None:
+    """Use previous year when grace period falls in January."""
+    window = TimeWindow.default_for(date(2026, 1, 2), grace_period_days=5)
+
+    assert window.to_iso_month() == "2025-12"
+
+
+def test_time_window_default_rejects_negative_grace_period() -> None:
+    """Reject negative grace period values."""
+    with pytest.raises(InvalidTimeWindowError, match="Grace period must be non-negative"):
+        TimeWindow.default_for(date(2026, 2, 2), grace_period_days=-1)
+
+
+def test_bucket_count_rejects_negative_values() -> None:
+    """Reject negative bucket values."""
+    with pytest.raises(InvalidConfigurationError, match="Bucketed counts must be non-negative"):
+        BucketCount(p1_p2=-1, p3_p4=0)
+
+
+def test_quality_metrics_accepts_valid_payload() -> None:
+    """Create quality metrics from validated nested value objects."""
+    metrics = QualityMetrics(
+        supported_releases_count=VALID_SUPPORTED_RELEASES_COUNT,
+        bugs_found=BucketCount(p1_p2=1, p3_p4=2),
+        production_incidents=BucketCount(p1_p2=0, p3_p4=1),
+        defect_leakage=DefectLeakage(numerator=1, denominator=5, rate_percent=20.0),
+    )
+
+    assert metrics.supported_releases_count == VALID_SUPPORTED_RELEASES_COUNT
+
+
+def test_quality_metrics_rejects_negative_supported_releases() -> None:
+    """Reject quality metrics with negative release counts."""
+    with pytest.raises(InvalidConfigurationError, match="Supported releases must be non-negative"):
+        QualityMetrics(
+            supported_releases_count=-1,
+            bugs_found=BucketCount(p1_p2=1, p3_p4=2),
+            production_incidents=BucketCount(p1_p2=0, p3_p4=1),
+            defect_leakage=DefectLeakage(numerator=1, denominator=5, rate_percent=20.0),
+        )
+
+
+def test_quality_metrics_rejects_wrong_nested_types() -> None:
+    """Reject quality metrics with invalid nested value object types."""
+    with pytest.raises(InvalidConfigurationError, match="bugs_found must be BucketCount"):
+        QualityMetrics(
+            supported_releases_count=1,
+            bugs_found=cast("BucketCount", "invalid"),
+            production_incidents=BucketCount(p1_p2=0, p3_p4=1),
+            defect_leakage=DefectLeakage(numerator=1, denominator=5, rate_percent=20.0),
+        )
+
+
+def test_portfolio_aggregates_accepts_valid_payload() -> None:
+    """Create portfolio aggregates from valid nested value objects."""
+    aggregates = PortfolioAggregates(
+        all_streams_supported_releases_total=VALID_PORTFOLIO_SUPPORTED_RELEASES_TOTAL,
+        all_streams_supported_releases_avg=2.5,
+        all_streams_bugs_avg=BucketCount(p1_p2=1, p3_p4=2),
+        all_streams_incidents_avg=BucketCount(p1_p2=0, p3_p4=1),
+        all_streams_defect_leakage=DefectLeakage(numerator=2, denominator=10, rate_percent=20.0),
+    )
+
+    assert aggregates.all_streams_supported_releases_total == VALID_PORTFOLIO_SUPPORTED_RELEASES_TOTAL
+
+
+def test_portfolio_aggregates_rejects_negative_total() -> None:
+    """Reject portfolio aggregates with negative totals."""
+    with pytest.raises(InvalidConfigurationError, match="Supported releases total must be non-negative"):
+        PortfolioAggregates(
+            all_streams_supported_releases_total=-1,
+            all_streams_supported_releases_avg=1.0,
+            all_streams_bugs_avg=BucketCount(p1_p2=1, p3_p4=2),
+            all_streams_incidents_avg=BucketCount(p1_p2=0, p3_p4=1),
+            all_streams_defect_leakage=DefectLeakage(numerator=2, denominator=10, rate_percent=20.0),
+        )
+
+
+def test_portfolio_aggregates_rejects_non_finite_average() -> None:
+    """Reject portfolio aggregates with non-finite averages."""
+    with pytest.raises(
+        InvalidConfigurationError,
+        match="Supported releases average must be a finite number",
+    ):
+        PortfolioAggregates(
+            all_streams_supported_releases_total=1,
+            all_streams_supported_releases_avg=math.nan,
+            all_streams_bugs_avg=BucketCount(p1_p2=1, p3_p4=2),
+            all_streams_incidents_avg=BucketCount(p1_p2=0, p3_p4=1),
+            all_streams_defect_leakage=DefectLeakage(numerator=2, denominator=10, rate_percent=20.0),
+        )
+
+
+def test_portfolio_aggregates_rejects_negative_average() -> None:
+    """Reject portfolio aggregates with negative averages."""
+    with pytest.raises(
+        InvalidConfigurationError,
+        match="Supported releases average must be non-negative",
+    ):
+        PortfolioAggregates(
+            all_streams_supported_releases_total=1,
+            all_streams_supported_releases_avg=-0.1,
+            all_streams_bugs_avg=BucketCount(p1_p2=1, p3_p4=2),
+            all_streams_incidents_avg=BucketCount(p1_p2=0, p3_p4=1),
+            all_streams_defect_leakage=DefectLeakage(numerator=2, denominator=10, rate_percent=20.0),
+        )
+
+
+def test_portfolio_aggregates_rejects_wrong_nested_types() -> None:
+    """Reject portfolio aggregates with invalid nested value object types."""
+    with pytest.raises(InvalidConfigurationError, match="all_streams_bugs_avg must be BucketCount"):
+        PortfolioAggregates(
+            all_streams_supported_releases_total=1,
+            all_streams_supported_releases_avg=1.0,
+            all_streams_bugs_avg=cast("BucketCount", "invalid"),
+            all_streams_incidents_avg=BucketCount(p1_p2=0, p3_p4=1),
+            all_streams_defect_leakage=DefectLeakage(numerator=2, denominator=10, rate_percent=20.0),
+        )
 
 
 def test_test_coverage_rejects_negative_counts() -> None:

@@ -62,6 +62,16 @@ class QualityMetrics:
         if self.supported_releases_count < 0:
             msg = "Supported releases must be non-negative"
             raise InvalidConfigurationError(msg)
+        self._ensure_type(self.bugs_found, BucketCount, "bugs_found")
+        self._ensure_type(self.production_incidents, BucketCount, "production_incidents")
+        self._ensure_type(self.defect_leakage, DefectLeakage, "defect_leakage")
+
+    @staticmethod
+    def _ensure_type(value: object, expected_type: type[object], label: str) -> None:
+        """Validate runtime type for nested metric value objects."""
+        if not isinstance(value, expected_type):
+            msg = f"{label} must be {expected_type.__name__}"
+            raise InvalidConfigurationError(msg)
 
 
 @dataclass(frozen=True)
