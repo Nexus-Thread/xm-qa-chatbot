@@ -1,6 +1,6 @@
 """Domain layer for XM QA chatbot."""
 
-from .entities import BusinessStream, Project, ReportingPeriod, Submission
+from .entities import BusinessStream, JiraPriorityFilterGroup, JiraProjectFilters, Project, ReportingPeriod, Submission
 from .exceptions import (
     DomainError,
     InvalidConfigurationError,
@@ -10,12 +10,7 @@ from .exceptions import (
     InvalidTimeWindowError,
     MissingSubmissionDataError,
 )
-from .registries import (
-    ReportingRegistry,
-    StreamRegistry,
-    build_default_registry,
-    build_default_reporting_registry,
-)
+from .registries import StreamProjectRegistry, build_default_stream_project_registry
 from .services import ValidationService
 from .value_objects import (
     BucketCount,
@@ -41,20 +36,20 @@ __all__ = [
     "InvalidStreamIdError",
     "InvalidSubmissionTeamError",
     "InvalidTimeWindowError",
+    "JiraPriorityFilterGroup",
+    "JiraProjectFilters",
     "MissingSubmissionDataError",
     "PortfolioAggregates",
     "Project",
     "ProjectId",
     "QualityMetrics",
     "ReportingPeriod",
-    "ReportingRegistry",
     "StreamId",
-    "StreamRegistry",
+    "StreamProjectRegistry",
     "Submission",
     "SubmissionMetrics",
     "TestCoverageMetrics",
     "TimeWindow",
     "ValidationService",
-    "build_default_registry",
-    "build_default_reporting_registry",
+    "build_default_stream_project_registry",
 ]

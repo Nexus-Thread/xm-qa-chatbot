@@ -13,7 +13,7 @@ from qa_chatbot.adapters.output.jira_mock import MockJiraAdapter
 from qa_chatbot.application.ports import DashboardPort, StoragePort
 from qa_chatbot.application.services.reporting_calculations import EdgeCasePolicy
 from qa_chatbot.application.use_cases import GenerateMonthlyReportUseCase, GetDashboardDataUseCase
-from qa_chatbot.domain import build_default_registry, build_default_reporting_registry
+from qa_chatbot.domain import build_default_stream_project_registry
 
 if TYPE_CHECKING:
     from qa_chatbot.application.dtos import TeamDetailDashboardData, TrendsDashboardData, TrendSeries
@@ -41,13 +41,12 @@ class HtmlDashboardAdapter(DashboardPort):
             autoescape=select_autoescape(["html"]),
         )
         self._use_case = GetDashboardDataUseCase(self.storage_port)
-        registry = build_default_registry()
-        reporting_registry = build_default_reporting_registry()
+        registry = build_default_stream_project_registry()
         edge_case_policy = EdgeCasePolicy()
         self._report_use_case = GenerateMonthlyReportUseCase(
             storage_port=self.storage_port,
             jira_port=MockJiraAdapter(
-                reporting_registry=reporting_registry,
+                registry=registry,
                 jira_base_url=self.jira_base_url,
                 jira_username=self.jira_username,
                 jira_api_token=self.jira_api_token,

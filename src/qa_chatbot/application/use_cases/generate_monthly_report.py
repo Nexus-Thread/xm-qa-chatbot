@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from qa_chatbot.application.ports.output import JiraMetricsPort, StoragePort
-    from qa_chatbot.domain import Project, StreamRegistry
+    from qa_chatbot.domain import Project, StreamProjectRegistry
 
 
 @dataclass(frozen=True)
@@ -42,7 +42,7 @@ class GenerateMonthlyReportUseCase:
 
     storage_port: StoragePort
     jira_port: JiraMetricsPort
-    registry: StreamRegistry
+    registry: StreamProjectRegistry
     timezone: str
     edge_case_policy: EdgeCasePolicy
     completeness_mode: str = "partial"

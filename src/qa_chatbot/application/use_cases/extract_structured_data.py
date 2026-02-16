@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
     from qa_chatbot.application.ports.output import LLMPort, MetricsPort
     from qa_chatbot.domain import ExtractionConfidence, ProjectId, TestCoverageMetrics, TimeWindow
-    from qa_chatbot.domain.registries import StreamRegistry
+    from qa_chatbot.domain.registries import StreamProjectRegistry
 
 ExtractedT = TypeVar("ExtractedT")
 
@@ -30,7 +30,7 @@ class ExtractStructuredDataUseCase:
     def extract_project_id(
         self,
         conversation: str,
-        registry: StreamRegistry,
+        registry: StreamProjectRegistry,
     ) -> tuple[ProjectId, ExtractionConfidence]:
         """Extract the project identifier from a conversation with confidence level."""
         return self._timed_extract("project_id", self.llm_port.extract_project_id, conversation, registry)
@@ -51,7 +51,7 @@ class ExtractStructuredDataUseCase:
             conversation,
         )
 
-    def execute(self, conversation: str, current_date: date, registry: StreamRegistry) -> ExtractionResult:
+    def execute(self, conversation: str, current_date: date, registry: StreamProjectRegistry) -> ExtractionResult:
         """Extract structured data from a conversation."""
         project_id, _ = self.extract_project_id(conversation, registry)
         time_window = self.extract_time_window(conversation, current_date)
@@ -72,7 +72,7 @@ class ExtractStructuredDataUseCase:
         self,
         conversation: str,
         current_date: date,
-        registry: StreamRegistry,
+        registry: StreamProjectRegistry,
         *,
         include_test_coverage: bool,
     ) -> ExtractionResult:

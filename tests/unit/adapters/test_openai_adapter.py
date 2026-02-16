@@ -19,7 +19,7 @@ from qa_chatbot.domain import (
     ProjectId,
     TimeWindow,
 )
-from qa_chatbot.domain.registries import build_default_registry
+from qa_chatbot.domain.registries import build_default_stream_project_registry
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -94,7 +94,7 @@ def test_extract_project_id_parses_response() -> None:
         client=FakeClient(responses),
     )
 
-    registry = build_default_registry()
+    registry = build_default_stream_project_registry()
     project_id, confidence = adapter.extract_project_id("We are Project A", registry)
 
     assert project_id == ProjectId("Project A")
@@ -109,7 +109,7 @@ def test_extract_project_id_falls_back_to_low_on_invalid_confidence() -> None:
         client=FakeClient(responses),
     )
 
-    registry = build_default_registry()
+    registry = build_default_stream_project_registry()
     _, confidence = adapter.extract_project_id("We are Project A", registry)
 
     assert confidence == ExtractionConfidence.low()
@@ -161,7 +161,7 @@ def test_extract_project_id_raises_for_blank_response() -> None:
         client=FakeClient(responses),
     )
 
-    registry = build_default_registry()
+    registry = build_default_stream_project_registry()
     with pytest.raises(AmbiguousExtractionError):
         adapter.extract_project_id("Unknown", registry)
 

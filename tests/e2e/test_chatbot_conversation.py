@@ -21,7 +21,7 @@ from qa_chatbot.domain import (
 )
 
 if TYPE_CHECKING:
-    from qa_chatbot.domain.registries import StreamRegistry
+    from qa_chatbot.domain.registries import StreamProjectRegistry
 
 
 @dataclass
@@ -31,7 +31,7 @@ class FakeLLM:
     def extract_project_id(
         self,
         conversation: str,
-        registry: StreamRegistry,
+        registry: StreamProjectRegistry,
     ) -> tuple[ProjectId, ExtractionConfidence]:
         """Return a fixed project ID."""
         _ = conversation

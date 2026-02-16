@@ -5,12 +5,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from qa_chatbot.domain.registries import StreamRegistry
+    from qa_chatbot.domain.registries import StreamProjectRegistry
 
 SYSTEM_PROMPT = "You are a careful data extraction assistant for qQuality assurance teams. Return structured JSON that matches the provided schema, without commentary."
 
 
-def build_project_id_prompt(registry: StreamRegistry) -> str:
+def build_project_id_prompt(registry: StreamProjectRegistry) -> str:
     """Build project identification prompt with valid project list."""
     projects = registry.active_projects()
     project_list = "\n".join([f"- {p.id}: {p.name}" for p in sorted(projects, key=lambda x: x.id)])

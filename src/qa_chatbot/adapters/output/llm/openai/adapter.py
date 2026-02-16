@@ -27,7 +27,7 @@ SchemaT = TypeVar("SchemaT", bound=BaseModel)
 if TYPE_CHECKING:
     from datetime import date
 
-    from qa_chatbot.domain.registries import StreamRegistry
+    from qa_chatbot.domain.registries import StreamProjectRegistry
 
 
 @dataclass(frozen=True)
@@ -72,7 +72,7 @@ class OpenAIAdapter(LLMPort):
     def extract_project_id(
         self,
         conversation: str,
-        registry: StreamRegistry,
+        registry: StreamProjectRegistry,
     ) -> tuple[ProjectId, ExtractionConfidence]:
         """Extract a project identifier from a conversation."""
         prompt = build_project_id_prompt(registry)
@@ -119,13 +119,13 @@ class OpenAIAdapter(LLMPort):
         conversation: str,
         history: list[dict[str, str]] | None,
         current_date: date,
-        registry: StreamRegistry | None = None,
+        registry: StreamProjectRegistry | None = None,
     ) -> ExtractionResult:
         """Extract structured data using conversation history."""
-        from qa_chatbot.domain.registries import build_default_registry  # noqa: PLC0415
+        from qa_chatbot.domain.registries import build_default_stream_project_registry  # noqa: PLC0415
 
         if registry is None:
-            registry = build_default_registry()
+            registry = build_default_stream_project_registry()
 
         project_prompt = build_project_id_prompt(registry)
         team_payload = self._extract_json(conversation, project_prompt, history)

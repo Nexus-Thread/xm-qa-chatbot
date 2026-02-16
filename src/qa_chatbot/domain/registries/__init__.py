@@ -1,11 +1,8 @@
 """Domain registries."""
 
-from .reporting_registry import ReportingRegistry, build_default_reporting_registry
-from .stream_registry import StreamRegistry, build_default_registry
+from .stream_project_registry import StreamProjectRegistry, build_default_stream_project_registry
 
 __all__ = [
-    "ReportingRegistry",
-    "StreamRegistry",
-    "build_default_registry",
-    "build_default_reporting_registry",
+    "StreamProjectRegistry",
+    "build_default_stream_project_registry",
 ]

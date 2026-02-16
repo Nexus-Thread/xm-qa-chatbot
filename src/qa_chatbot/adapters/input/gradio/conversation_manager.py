@@ -14,7 +14,7 @@ from qa_chatbot.domain import (
     ProjectId,
     SubmissionMetrics,
     TimeWindow,
-    build_default_registry,
+    build_default_stream_project_registry,
 )
 
 if TYPE_CHECKING:
@@ -114,7 +114,7 @@ class ConversationManager:
 
     def _handle_project_id(self, message: str, session: ConversationSession, today: date) -> str:
         """Handle project identification."""
-        registry = build_default_registry()
+        registry = build_default_stream_project_registry()
 
         try:
             project_id, confidence = self._extractor.extract_project_id(message, registry)

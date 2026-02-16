@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
     from qa_chatbot.application.dtos import ExtractionResult
     from qa_chatbot.domain import ExtractionConfidence, ProjectId, TestCoverageMetrics, TimeWindow
-    from qa_chatbot.domain.registries import StreamRegistry
+    from qa_chatbot.domain.registries import StreamProjectRegistry
 
 
 class LLMPort(Protocol):
@@ -18,7 +18,7 @@ class LLMPort(Protocol):
     def extract_project_id(
         self,
         conversation: str,
-        registry: StreamRegistry,
+        registry: StreamProjectRegistry,
     ) -> tuple[ProjectId, ExtractionConfidence]:
         """Extract a project identifier from a conversation with confidence level."""
 

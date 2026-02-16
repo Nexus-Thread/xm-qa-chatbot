@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from urllib.parse import quote_plus
 
 from qa_chatbot.application.ports.output import JiraMetricsPort
 from qa_chatbot.domain import (
     BucketCount,
     DefectLeakage,
+    Project,
     ProjectId,
     ReportingPeriod,
-    ReportingRegistry,
+    StreamProjectRegistry,
 )
 from qa_chatbot.domain.exceptions import InvalidConfigurationError
 
@@ -19,7 +21,7 @@ from qa_chatbot.domain.exceptions import InvalidConfigurationError
 class MockJiraAdapter(JiraMetricsPort):
     """Return canned Jira metrics for report generation."""
 
-    reporting_registry: ReportingRegistry
+    registry: StreamProjectRegistry
     jira_base_url: str
     jira_username: str
     jira_api_token: str
@@ -51,23 +53,24 @@ class MockJiraAdapter(JiraMetricsPort):
 
     def build_issue_link(self, project_id: ProjectId, period: ReportingPeriod, label: str) -> str:
         """Return a Jira filter link for a metric label."""
-        template = self._resolve_template(label)
-        project_keys = self.reporting_registry.project_config(project_id.value).jira_project_key
-        query = template.format(project_keys=project_keys, start=period.start_datetime, end=period.end_datetime)
-        return f"{self.jira_base_url}/issues/?jql={query}"
+        project = self._project(project_id)
+        if project.jira_filters is None:
+            msg = f"Project {project.id} does not have jira_filters configured"
+            raise InvalidConfigurationError(msg)
+        query = project.jira_filters.replace_time_window(
+            label=label,
+            start=period.start_datetime.isoformat(),
+            end=period.end_datetime.isoformat(),
+        )
+        encoded_query = quote_plus(query)
+        return f"{self.jira_base_url}/issues/?jql={encoded_query}"
 
     def _ensure_project_exists(self, project_id: ProjectId) -> None:
-        _ = self.reporting_registry.project_config(project_id.value)
+        _ = self._project(project_id)
 
-    def _resolve_template(self, label: str) -> str:
-        templates = self.reporting_registry.query_templates
-        mapping = {
-            "bugs_found": templates.bugs_found,
-            "production_incidents": templates.production_incidents,
-            "defect_leakage_numerator": templates.defect_leakage_numerator,
-            "defect_leakage_denominator": templates.defect_leakage_denominator,
-        }
-        if label not in mapping:
-            msg = f"Unknown Jira query label: {label}"
+    def _project(self, project_id: ProjectId) -> Project:
+        project = self.registry.find_project(project_id.value)
+        if project is None:
+            msg = f"Project {project_id.value} not found in stream-project registry"
             raise InvalidConfigurationError(msg)
-        return mapping[label]
+        return project
