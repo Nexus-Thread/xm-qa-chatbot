@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, NoReturn, TypeVar
 from openai import APIError
 from pydantic import BaseModel, ValidationError
 
-from qa_chatbot.adapters.output.llm.openai.client import (
+from qa_chatbot.adapters.output.llm.openai import (
     DEFAULT_TIMEOUT_SECONDS,
     DEFAULT_VERIFY_SSL,
     OpenAIClientProtocol,

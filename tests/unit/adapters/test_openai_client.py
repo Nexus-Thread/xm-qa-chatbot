@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import httpx
 
-from qa_chatbot.adapters.output.llm.openai.client import OpenAIClient, build_http_client
+from qa_chatbot.adapters.output.llm.openai import OpenAIClient, build_http_client
 
 if TYPE_CHECKING:
     import pytest
@@ -53,7 +53,7 @@ def test_build_http_client_applies_verify_and_timeout(monkeypatch: pytest.Monkey
         captured_args["timeout"] = timeout
         return sentinel_client
 
-    monkeypatch.setattr("qa_chatbot.adapters.output.llm.openai.client.httpx.Client", fake_httpx_client)
+    monkeypatch.setattr("qa_chatbot.adapters.output.llm.openai.factory.httpx.Client", fake_httpx_client)
     client = build_http_client(verify_ssl=False, timeout_seconds=EXPECTED_TIMEOUT_SECONDS)
 
     timeout = captured_args["timeout"]
