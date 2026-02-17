@@ -2,7 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Protocol, cast
+import time
+from typing import TYPE_CHECKING, Protocol, cast
+
+from openai import APIError
+
+from .constants import DEFAULT_BACKOFF_SECONDS, DEFAULT_MAX_RETRIES
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 class _ChatCompletionsProtocol(Protocol):
@@ -38,9 +46,19 @@ class _OpenAISDKClientProtocol(Protocol):
 class OpenAIClient:
     """Thin transport wrapper around the OpenAI SDK client."""
 
-    def __init__(self, sdk_client: object) -> None:
+    def __init__(
+        self,
+        sdk_client: object,
+        *,
+        max_retries: int = DEFAULT_MAX_RETRIES,
+        backoff_seconds: float = DEFAULT_BACKOFF_SECONDS,
+        sleep: Callable[[float], None] = time.sleep,
+    ) -> None:
         """Store the OpenAI SDK client."""
         self._sdk_client = cast("_OpenAISDKClientProtocol", sdk_client)
+        self._max_retries = max_retries
+        self._backoff_seconds = backoff_seconds
+        self._sleep = sleep
 
     def create_json_completion(
         self,
@@ -50,9 +68,19 @@ class OpenAIClient:
         temperature: float = 0,
     ) -> object:
         """Create a JSON-formatted chat completion."""
-        return self._sdk_client.chat.completions.create(
-            model=model,
-            messages=messages,
-            response_format={"type": "json_object"},
-            temperature=temperature,
-        )
+        for attempt in range(self._max_retries):
+            try:
+                return self._sdk_client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    response_format={"type": "json_object"},
+                    temperature=temperature,
+                )
+            except APIError:
+                if attempt >= self._max_retries - 1:
+                    raise
+                delay = self._backoff_seconds * (2**attempt)
+                self._sleep(delay)
+
+        message = "Unreachable retry state"
+        raise RuntimeError(message)

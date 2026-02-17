@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import httpx
+import pytest
+from openai import APIError
 
 from qa_chatbot.adapters.output.llm.openai import OpenAIClient, build_http_client
 
-if TYPE_CHECKING:
-    import pytest
-
 EXPECTED_TIMEOUT_SECONDS = 12.5
+EXPECTED_CALLS_AFTER_RETRY_SUCCESS = 2
+EXPECTED_CALLS_AFTER_RETRY_FAILURE = 3
 
 
 class FakeCompletions:
@@ -80,3 +79,92 @@ def test_openai_client_creates_json_completion_with_expected_args() -> None:
         "response_format": {"type": "json_object"},
         "temperature": 0.2,
     }
+
+
+def test_openai_client_retries_on_api_error() -> None:
+    """Retry transport call with exponential backoff on APIError."""
+    request = httpx.Request("POST", "https://example.com/v1/chat/completions")
+    transient_error = APIError("temporary failure", request=request, body=None)
+    sentinel_response = object()
+    calls: list[object] = [transient_error, sentinel_response]
+    sleep_calls: list[float] = []
+
+    class FakeRetryCompletions:
+        """Fake completions API that fails once then succeeds."""
+
+        def __init__(self) -> None:
+            """Track call count for retries."""
+            self.calls = 0
+
+        def create(self, **_: object) -> object:
+            """Return next fake result for retry flow."""
+            self.calls += 1
+            result = calls[self.calls - 1]
+            if isinstance(result, Exception):
+                raise result
+            return result
+
+    class FakeRetryChat:
+        """Fake chat namespace for retry test."""
+
+        def __init__(self) -> None:
+            """Attach retry completions."""
+            self.completions = FakeRetryCompletions()
+
+    class FakeRetrySDKClient:
+        """Fake SDK client for retry test."""
+
+        def __init__(self) -> None:
+            """Attach chat namespace."""
+            self.chat = FakeRetryChat()
+
+    sdk_client = FakeRetrySDKClient()
+    client = OpenAIClient(sdk_client=sdk_client, max_retries=3, backoff_seconds=0.5, sleep=sleep_calls.append)
+
+    response = client.create_json_completion(model="llama2", messages=[{"role": "user", "content": "hello"}])
+
+    assert response is sentinel_response
+    assert sdk_client.chat.completions.calls == EXPECTED_CALLS_AFTER_RETRY_SUCCESS
+    assert sleep_calls == [0.5]
+
+
+def test_openai_client_raises_after_max_retries() -> None:
+    """Raise APIError after exhausting retry attempts."""
+    request = httpx.Request("POST", "https://example.com/v1/chat/completions")
+    transient_error = APIError("temporary failure", request=request, body=None)
+    sleep_calls: list[float] = []
+
+    class AlwaysFailCompletions:
+        """Fake completions API that always raises APIError."""
+
+        def __init__(self) -> None:
+            """Track call count for retries."""
+            self.calls = 0
+
+        def create(self, **_: object) -> object:
+            """Raise transient API error."""
+            self.calls += 1
+            raise transient_error
+
+    class AlwaysFailChat:
+        """Fake chat namespace with failing completions."""
+
+        def __init__(self) -> None:
+            """Attach failing completions API."""
+            self.completions = AlwaysFailCompletions()
+
+    class AlwaysFailSDKClient:
+        """Fake SDK client that always fails."""
+
+        def __init__(self) -> None:
+            """Attach chat namespace."""
+            self.chat = AlwaysFailChat()
+
+    sdk_client = AlwaysFailSDKClient()
+    client = OpenAIClient(sdk_client=sdk_client, max_retries=3, backoff_seconds=0.5, sleep=sleep_calls.append)
+
+    with pytest.raises(APIError):
+        client.create_json_completion(model="llama2", messages=[{"role": "user", "content": "hello"}])
+
+    assert sdk_client.chat.completions.calls == EXPECTED_CALLS_AFTER_RETRY_FAILURE
+    assert sleep_calls == [0.5, 1.0]

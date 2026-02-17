@@ -296,16 +296,12 @@ def test_extract_supported_releases_performs_independent_extraction_calls() -> N
     assert client.calls == EXPECTED_INDEPENDENT_COVERAGE_CALLS
 
 
-def test_extract_time_window_retries_on_api_error(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Retry on APIError and eventually return a parsed time window."""
-    sleep_calls: list[float] = []
-    monkeypatch.setattr("qa_chatbot.adapters.output.llm.structured_extraction.adapter.time.sleep", sleep_calls.append)
-
+def test_extract_time_window_raises_extraction_error_on_api_error() -> None:
+    """Translate APIError from transport client into LLMExtractionError."""
     request = httpx.Request("POST", "https://example.com/v1/chat/completions")
     responses: Iterator[FakeResponse | Exception] = iter(
         [
             APIError("temporary failure", request=request, body=None),
-            FakeResponse([FakeChoice(FakeMessage('{"month": "2026-01"}'))]),
         ]
     )
     adapter = OpenAIAdapter(
@@ -313,16 +309,12 @@ def test_extract_time_window_retries_on_api_error(monkeypatch: pytest.MonkeyPatc
             base_url="http://localhost",
             api_key="test",
             model="llama2",
-            max_retries=3,
-            backoff_seconds=0.5,
         ),
         client=FakeOpenAITransportClient(responses),
     )
 
-    result = adapter.extract_time_window("January 2026", date(2026, 2, 2))
-
-    assert result == TimeWindow.from_year_month(2026, 1)
-    assert sleep_calls == [0.5]
+    with pytest.raises(LLMExtractionError):
+        adapter.extract_time_window("January 2026", date(2026, 2, 2))
 
 
 def test_extract_with_history_raises_on_invalid_role() -> None:

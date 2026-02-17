@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import logging
-import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, NoReturn, TypeVar
 
@@ -12,6 +11,8 @@ from openai import APIError
 from pydantic import BaseModel, ValidationError
 
 from qa_chatbot.adapters.output.llm.openai import (
+    DEFAULT_BACKOFF_SECONDS,
+    DEFAULT_MAX_RETRIES,
     DEFAULT_TIMEOUT_SECONDS,
     DEFAULT_VERIFY_SSL,
     OpenAIClientProtocol,
@@ -24,7 +25,6 @@ from qa_chatbot.domain.exceptions import InvalidConfigurationError
 
 from .exceptions import AmbiguousExtractionError, InvalidHistoryError, LLMExtractionError
 from .prompts import SYSTEM_PROMPT, TEST_COVERAGE_PROMPT, TIME_WINDOW_PROMPT, build_project_id_prompt
-from .retry_logic import DEFAULT_BACKOFF_SECONDS, DEFAULT_MAX_RETRIES
 from .schemas import ProjectIdSchema, TestCoverageSchema, TimeWindowSchema
 
 SchemaT = TypeVar("SchemaT", bound=BaseModel)
@@ -72,6 +72,7 @@ class OpenAIAdapter(LLMPort):
         self._client = client or build_client(
             base_url=settings.base_url,
             api_key=settings.api_key,
+            retry_policy=(settings.max_retries, settings.backoff_seconds),
             verify_ssl=settings.verify_ssl,
             timeout_seconds=settings.timeout_seconds,
         )
@@ -181,62 +182,49 @@ class OpenAIAdapter(LLMPort):
         """Call the OpenAI API and extract JSON content."""
         client = self._client
         normalized_history = self._normalize_history(history)
-
-        for attempt in range(self._settings.max_retries):
-            try:
-                started_at = time.perf_counter()
-                messages = [
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    *normalized_history,
-                    {"role": "user", "content": f"{prompt}\n\nConversation:\n{conversation}"},
-                ]
-                response = client.create_json_completion(
-                    model=self._settings.model,
-                    messages=messages,
-                    temperature=0,
-                )
-                elapsed_ms = (time.perf_counter() - started_at) * 1000
-                self._last_usage = self._extract_usage(response)
-                self._logger.info(
-                    "LLM extraction completed",
-                    extra={
-                        "model": self._settings.model,
-                        "prompt_name": prompt.split("\n", maxsplit=1)[0],
-                        "elapsed_ms": round(elapsed_ms, 2),
-                        "prompt_tokens": self._last_usage.prompt_tokens if self._last_usage else None,
-                        "completion_tokens": self._last_usage.completion_tokens if self._last_usage else None,
-                        "total_tokens": self._last_usage.total_tokens if self._last_usage else None,
-                    },
-                )
-                choices = getattr(response, "choices", None)
-                if not choices:
-                    msg = "LLM response did not include choices"
-                    raise LLMExtractionError(msg)
-                message = getattr(choices[0], "message", None)
-                if message is None:
-                    msg = "LLM response did not include a message"
-                    raise LLMExtractionError(msg)
-                if message.content is None:
-                    msg = "LLM response did not include content"
-                    raise LLMExtractionError(msg)
-                payload = self._parse_json(message.content)
-            except APIError as err:
-                self._logger.exception(
-                    "LLM extraction failed",
-                    extra={
-                        "model": self._settings.model,
-                        "attempt": attempt + 1,
-                    },
-                )
-                if attempt >= self._settings.max_retries - 1:
-                    msg = "LLM request failed after retries"
-                    raise LLMExtractionError(msg) from err
-                self._sleep_backoff(attempt)
-            else:
-                return payload
-
-        msg = "LLM request failed after retries"
-        raise LLMExtractionError(msg)
+        try:
+            messages = [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                *normalized_history,
+                {"role": "user", "content": f"{prompt}\n\nConversation:\n{conversation}"},
+            ]
+            response = client.create_json_completion(
+                model=self._settings.model,
+                messages=messages,
+                temperature=0,
+            )
+            self._last_usage = self._extract_usage(response)
+            self._logger.info(
+                "LLM extraction completed",
+                extra={
+                    "model": self._settings.model,
+                    "prompt_name": prompt.split("\n", maxsplit=1)[0],
+                    "prompt_tokens": self._last_usage.prompt_tokens if self._last_usage else None,
+                    "completion_tokens": self._last_usage.completion_tokens if self._last_usage else None,
+                    "total_tokens": self._last_usage.total_tokens if self._last_usage else None,
+                },
+            )
+            choices = getattr(response, "choices", None)
+            if not choices:
+                msg = "LLM response did not include choices"
+                raise LLMExtractionError(msg)
+            message = getattr(choices[0], "message", None)
+            if message is None:
+                msg = "LLM response did not include a message"
+                raise LLMExtractionError(msg)
+            if message.content is None:
+                msg = "LLM response did not include content"
+                raise LLMExtractionError(msg)
+            return self._parse_json(message.content)
+        except APIError as err:
+            self._logger.exception(
+                "LLM extraction failed",
+                extra={
+                    "model": self._settings.model,
+                },
+            )
+            msg = "LLM request failed after retries"
+            raise LLMExtractionError(msg) from err
 
     @staticmethod
     def _parse_json(payload: str) -> dict[str, Any]:
@@ -285,11 +273,6 @@ class OpenAIAdapter(LLMPort):
         except ValueError as err:
             message = "Time window must be in YYYY-MM format"
             raise LLMExtractionError(message) from err
-
-    def _sleep_backoff(self, attempt: int) -> None:
-        """Sleep with exponential backoff between retries."""
-        delay = self._settings.backoff_seconds * (2**attempt)
-        time.sleep(delay)
 
     @staticmethod
     def _raise_if_blank(value: str, label: str) -> None:

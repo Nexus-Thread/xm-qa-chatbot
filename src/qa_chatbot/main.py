@@ -62,6 +62,7 @@ def main() -> None:
     openai_client = build_client(
         base_url=openai_settings.base_url,
         api_key=openai_settings.api_key,
+        retry_policy=(openai_settings.max_retries, openai_settings.backoff_seconds),
         verify_ssl=openai_settings.verify_ssl,
         timeout_seconds=openai_settings.timeout_seconds,
     )
