@@ -4,6 +4,7 @@ from .entities import BusinessStream, JiraPriorityFilterGroup, JiraProjectFilter
 from .exceptions import (
     DomainError,
     InvalidConfigurationError,
+    InvalidMetricInputError,
     InvalidProjectIdError,
     InvalidStreamIdError,
     InvalidSubmissionTeamError,
@@ -32,6 +33,7 @@ __all__ = [
     "DomainError",
     "ExtractionConfidence",
     "InvalidConfigurationError",
+    "InvalidMetricInputError",
     "InvalidProjectIdError",
     "InvalidStreamIdError",
     "InvalidSubmissionTeamError",

@@ -29,5 +29,9 @@ class InvalidConfigurationError(DomainError):
     """Raised when application configuration is invalid."""
 
 
+class InvalidMetricInputError(DomainError):
+    """Raised when metric input data is invalid."""
+
+
 class StorageOperationError(DomainError):
     """Raised when a persistence operation fails."""
