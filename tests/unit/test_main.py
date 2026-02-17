@@ -44,7 +44,6 @@ def test_main_wires_components(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(qa_chatbot.main, "HtmlDashboardAdapter", lambda **_: html_adapter)
     monkeypatch.setattr(qa_chatbot.main, "ConfluenceDashboardAdapter", lambda **_: confluence_adapter)
     monkeypatch.setattr(qa_chatbot.main, "CompositeDashboardAdapter", lambda **_: composite_adapter)
-    monkeypatch.setattr(qa_chatbot.main, "build_client", lambda **_: MagicMock())
     monkeypatch.setattr(qa_chatbot.main, "OpenAIAdapter", lambda **_: MagicMock())
     metrics_adapter = MagicMock()
     monkeypatch.setattr(qa_chatbot.main, "InMemoryMetricsAdapter", lambda: metrics_adapter)

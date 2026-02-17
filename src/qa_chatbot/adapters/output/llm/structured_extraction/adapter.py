@@ -17,7 +17,6 @@ from qa_chatbot.adapters.output.llm.openai import (
     DEFAULT_VERIFY_SSL,
     OpenAIClientProtocol,
     build_client,
-    build_http_client,
 )
 from qa_chatbot.application.dtos import ExtractionResult
 from qa_chatbot.application.ports.output import LLMPort
@@ -73,17 +72,7 @@ class OpenAIAdapter(LLMPort):
         if client is not None:
             self._client = client
         else:
-            transport = build_http_client(
-                verify_ssl=settings.verify_ssl,
-                timeout_seconds=settings.timeout_seconds,
-            )
-            self._client = build_client(
-                base_url=settings.base_url,
-                api_key=settings.api_key,
-                transport=transport,
-                max_retries=settings.max_retries,
-                backoff_seconds=settings.backoff_seconds,
-            )
+            self._client = build_client(settings)
         self._last_usage: TokenUsage | None = None
         self._logger = logging.getLogger(self.__class__.__name__)
 

@@ -6,7 +6,7 @@ import httpx
 import pytest
 from openai import APIError
 
-from qa_chatbot.adapters.output.llm.openai import OpenAIClient, build_http_client
+from qa_chatbot.adapters.output.llm.openai import OpenAIClient, OpenAIClientSettings, build_client
 
 EXPECTED_TIMEOUT_SECONDS = 12.5
 EXPECTED_CALLS_AFTER_RETRY_SUCCESS = 2
@@ -42,27 +42,64 @@ class FakeSDKClient:
         self.chat = FakeChat()
 
 
-def test_build_http_client_applies_verify_and_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Build http client with explicit SSL verify and timeout settings."""
-    captured_args: dict[str, object] = {}
-    sentinel_client = object()
+def test_build_client_applies_transport_and_retry_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Build SDK transport client from dynamic settings."""
+    captured_httpx_args: dict[str, object] = {}
+    captured_openai_args: dict[str, object] = {}
+    captured_transport_args: dict[str, object] = {}
+    sentinel_httpx_client = object()
+    sentinel_sdk_client = object()
+    sentinel_transport_client = object()
 
     def fake_httpx_client(*, verify: bool, timeout: httpx.Timeout) -> object:
-        captured_args["verify"] = verify
-        captured_args["timeout"] = timeout
-        return sentinel_client
+        captured_httpx_args["verify"] = verify
+        captured_httpx_args["timeout"] = timeout
+        return sentinel_httpx_client
+
+    def fake_openai(*, base_url: str, api_key: str, http_client: object) -> object:
+        captured_openai_args["base_url"] = base_url
+        captured_openai_args["api_key"] = api_key
+        captured_openai_args["http_client"] = http_client
+        return sentinel_sdk_client
+
+    def fake_transport_client(*, sdk_client: object, max_retries: int, backoff_seconds: float) -> object:
+        captured_transport_args["sdk_client"] = sdk_client
+        captured_transport_args["max_retries"] = max_retries
+        captured_transport_args["backoff_seconds"] = backoff_seconds
+        return sentinel_transport_client
 
     monkeypatch.setattr("qa_chatbot.adapters.output.llm.openai.factory.httpx.Client", fake_httpx_client)
-    client = build_http_client(verify_ssl=False, timeout_seconds=EXPECTED_TIMEOUT_SECONDS)
+    monkeypatch.setattr("qa_chatbot.adapters.output.llm.openai.factory.OpenAI", fake_openai)
+    monkeypatch.setattr("qa_chatbot.adapters.output.llm.openai.factory.OpenAIClient", fake_transport_client)
 
-    timeout = captured_args["timeout"]
+    settings = OpenAIClientSettings(
+        base_url="http://localhost:11434/v1",
+        api_key="test",
+        max_retries=5,
+        backoff_seconds=2.5,
+        verify_ssl=False,
+        timeout_seconds=EXPECTED_TIMEOUT_SECONDS,
+    )
+    client = build_client(settings)
+
+    timeout = captured_httpx_args["timeout"]
     assert isinstance(timeout, httpx.Timeout)
-    assert captured_args["verify"] is False
+    assert captured_httpx_args["verify"] is False
     assert timeout.connect == EXPECTED_TIMEOUT_SECONDS
     assert timeout.read == EXPECTED_TIMEOUT_SECONDS
     assert timeout.write == EXPECTED_TIMEOUT_SECONDS
     assert timeout.pool == EXPECTED_TIMEOUT_SECONDS
-    assert client is sentinel_client
+    assert captured_openai_args == {
+        "base_url": settings.base_url,
+        "api_key": settings.api_key,
+        "http_client": sentinel_httpx_client,
+    }
+    assert captured_transport_args == {
+        "sdk_client": sentinel_sdk_client,
+        "max_retries": settings.max_retries,
+        "backoff_seconds": settings.backoff_seconds,
+    }
+    assert client is sentinel_transport_client
 
 
 def test_openai_client_creates_json_completion_with_expected_args() -> None:

@@ -69,12 +69,7 @@ class OpenAIClient:
         """Create a JSON-formatted chat completion."""
         for attempt in range(self._max_retries):
             try:
-                return self._sdk_client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    response_format={"type": "json_object"},
-                    temperature=0,
-                )
+                return self._chat_completions_create(model, messages)
             except APIError:
                 if attempt >= self._max_retries - 1:
                     raise
@@ -83,3 +78,15 @@ class OpenAIClient:
 
         message = "Unreachable retry state"
         raise RuntimeError(message)
+
+    def _chat_completions_create(
+        self,
+        model: str,
+        messages: list[dict[str, str]],
+    ) -> object:
+        return self._sdk_client.chat.completions.create(
+            model=model,
+            messages=messages,
+            response_format={"type": "json_object"},
+            temperature=0,
+        )
