@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from qa_chatbot.domain.registries import StreamProjectRegistry
 
-SYSTEM_PROMPT = "You are a careful data extraction assistant for qQuality assurance projects. Return structured JSON that matches the provided schema, without commentary."
+SYSTEM_PROMPT = "You are a careful data extraction assistant for quality assurance projects. Return structured JSON that matches the provided schema, without commentary."
 
 
 def build_project_id_prompt(registry: StreamProjectRegistry) -> str:

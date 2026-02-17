@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
 EXPECTED_MANUAL_TOTAL = 100
+EXPECTED_SUPPORTED_RELEASES_COUNT = 4
 
 
 @dataclass
@@ -38,7 +39,7 @@ class FakeMessage:
 class FakeChoice:
     """Fake choice structure for OpenAI responses."""
 
-    message: FakeMessage
+    message: FakeMessage | None
 
 
 @dataclass
@@ -64,9 +65,11 @@ class FakeCompletions:
     def __init__(self, responses: Iterator[FakeResponse]) -> None:
         """Store the iterator of fake responses."""
         self._responses = responses
+        self.calls = 0
 
     def create(self, **_: object) -> FakeResponse:
         """Return the next fake response."""
+        self.calls += 1
         return next(self._responses)
 
 
@@ -88,31 +91,44 @@ class FakeClient:
 
 def test_extract_project_id_parses_response() -> None:
     """Parse a project identifier from JSON response."""
-    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": "Project A", "confidence": "high"}'))])])
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": "Bridge", "confidence": "high"}'))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeClient(responses),
     )
 
     registry = build_default_stream_project_registry()
-    project_id, confidence = adapter.extract_project_id("We are Project A", registry)
+    project_id, confidence = adapter.extract_project_id("We are Bridge", registry)
 
-    assert project_id == ProjectId("Project A")
+    assert project_id == ProjectId("bridge")
     assert confidence == ExtractionConfidence.from_raw("high")
 
 
 def test_extract_project_id_falls_back_to_low_on_invalid_confidence() -> None:
     """Fallback to low confidence when the model returns unsupported value."""
-    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": "Project A", "confidence": "very sure"}'))])])
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": "Bridge", "confidence": "very sure"}'))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeClient(responses),
     )
 
     registry = build_default_stream_project_registry()
-    _, confidence = adapter.extract_project_id("We are Project A", registry)
+    _, confidence = adapter.extract_project_id("We are Bridge", registry)
 
     assert confidence == ExtractionConfidence.low()
+
+
+def test_extract_project_id_raises_on_unmatched_registry_project() -> None:
+    """Raise when extracted project does not exist in registry."""
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": "Unknown Team", "confidence": "low"}'))])])
+    adapter = OpenAIAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeClient(responses),
+    )
+
+    registry = build_default_stream_project_registry()
+    with pytest.raises(AmbiguousExtractionError):
+        adapter.extract_project_id("We are Unknown Team", registry)
 
 
 def test_extract_time_window_parses_month() -> None:
@@ -193,3 +209,58 @@ def test_extract_test_coverage_accepts_all_null() -> None:
 
     assert result.manual_total is None
     assert result.automated_total is None
+
+
+def test_extract_time_window_raises_when_response_has_no_choices() -> None:
+    """Raise when provider response has no choices."""
+    responses = iter([FakeResponse(choices=[])])
+    adapter = OpenAIAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeClient(responses),
+    )
+
+    with pytest.raises(LLMExtractionError):
+        adapter.extract_time_window("January 2026", date(2026, 2, 2))
+
+
+def test_extract_time_window_raises_when_message_is_missing() -> None:
+    """Raise when provider choice does not include a message."""
+    responses = iter([FakeResponse([FakeChoice(message=None)])])
+    adapter = OpenAIAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeClient(responses),
+    )
+
+    with pytest.raises(LLMExtractionError):
+        adapter.extract_time_window("January 2026", date(2026, 2, 2))
+
+
+def test_extract_time_window_raises_on_invalid_json() -> None:
+    """Raise when the model response is not valid JSON."""
+    responses = iter([FakeResponse([FakeChoice(FakeMessage("not-json"))])])
+    adapter = OpenAIAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeClient(responses),
+    )
+
+    with pytest.raises(LLMExtractionError):
+        adapter.extract_time_window("January 2026", date(2026, 2, 2))
+
+
+def test_extract_supported_releases_reuses_cached_coverage_payload() -> None:
+    """Reuse cached payload for repeated coverage prompt extraction."""
+    responses = iter(
+        [FakeResponse([FakeChoice(FakeMessage('{"manual_total": 100, "automated_total": 20, "supported_releases_count": 4}'))])]
+    )
+    client = FakeClient(responses)
+    adapter = OpenAIAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=client,
+    )
+
+    coverage = adapter.extract_test_coverage("Coverage update")
+    supported_releases = adapter.extract_supported_releases_count("Coverage update")
+
+    assert coverage.manual_total == EXPECTED_MANUAL_TOTAL
+    assert supported_releases == EXPECTED_SUPPORTED_RELEASES_COUNT
+    assert client.chat.completions.calls == 1

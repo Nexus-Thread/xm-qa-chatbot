@@ -6,7 +6,7 @@ import json
 import logging
 import time
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, NoReturn, TypeVar
 
 from openai import APIError
 from pydantic import BaseModel, ValidationError
@@ -40,6 +40,15 @@ class TokenUsage:
 
 
 @dataclass(frozen=True)
+class ExtractionCacheKey:
+    """Cache key for repeated extraction calls."""
+
+    conversation: str
+    prompt: str
+    history: tuple[tuple[str, str], ...]
+
+
+@dataclass(frozen=True)
 class OpenAISettings:
     """Configuration settings for the OpenAI adapter."""
 
@@ -56,12 +65,14 @@ class OpenAIAdapter(LLMPort):
     def __init__(
         self,
         settings: OpenAISettings,
-        client: Any | None = None,  # noqa: ANN401
+        client: object | None = None,
     ) -> None:
         """Initialize the adapter configuration."""
         self._settings = settings
         self._client = client or build_client(base_url=settings.base_url, api_key=settings.api_key)
         self._last_usage: TokenUsage | None = None
+        self._last_extraction_key: ExtractionCacheKey | None = None
+        self._last_extraction_payload: dict[str, Any] | None = None
         self._logger = logging.getLogger(self.__class__.__name__)
 
     @property
@@ -79,13 +90,16 @@ class OpenAIAdapter(LLMPort):
         payload = self._extract_json(conversation, prompt)
         data = self._parse_schema(payload, ProjectIdSchema)
         self._raise_if_blank(data.project_id, "project identifier")
+        matched_project = registry.find_project(data.project_id)
+        if matched_project is None:
+            self._raise_if_ambiguous("project identifier")
 
         try:
             confidence = ExtractionConfidence.from_raw(data.confidence)
         except InvalidConfigurationError:
             confidence = ExtractionConfidence.low()
 
-        return ProjectId.from_raw(data.project_id), confidence
+        return ProjectId.from_raw(matched_project.id), confidence
 
     def extract_time_window(self, conversation: str, current_date: date) -> TimeWindow:
         """Extract the reporting time window."""
@@ -132,8 +146,11 @@ class OpenAIAdapter(LLMPort):
         coverage_data = self._parse_schema(coverage_payload, TestCoverageSchema)
         self._raise_if_blank(team_data.project_id, "project identifier")
         self._raise_if_blank(time_data.month, "time window")
+        matched_project = registry.find_project(team_data.project_id)
+        if matched_project is None:
+            self._raise_if_ambiguous("project identifier")
 
-        project_id = ProjectId.from_raw(team_data.project_id)
+        project_id = ProjectId.from_raw(matched_project.id)
         time_window = self._resolve_time_window(time_data.month, current_date)
 
         return ExtractionResult(
@@ -162,12 +179,21 @@ class OpenAIAdapter(LLMPort):
     ) -> dict[str, Any]:
         """Call the OpenAI API and extract JSON content."""
         client: Any = self._client
+        normalized_history = self._normalize_history(history)
+        cache_key = ExtractionCacheKey(
+            conversation=conversation,
+            prompt=prompt,
+            history=tuple((entry["role"], entry["content"]) for entry in normalized_history),
+        )
+        if self._last_extraction_key == cache_key and self._last_extraction_payload is not None:
+            return self._last_extraction_payload
+
         for attempt in range(self._settings.max_retries):
             try:
                 started_at = time.perf_counter()
                 messages = [
                     {"role": "system", "content": SYSTEM_PROMPT},
-                    *self._normalize_history(history),
+                    *normalized_history,
                     {"role": "user", "content": f"{prompt}\n\nConversation:\n{conversation}"},
                 ]
                 response = client.chat.completions.create(
@@ -189,13 +215,20 @@ class OpenAIAdapter(LLMPort):
                         "total_tokens": self._last_usage.total_tokens if self._last_usage else None,
                     },
                 )
-                message = response.choices[0].message
+                choices = getattr(response, "choices", None)
+                if not choices:
+                    msg = "LLM response did not include choices"
+                    raise LLMExtractionError(msg)
+                message = getattr(choices[0], "message", None)
+                if message is None:
+                    msg = "LLM response did not include a message"
+                    raise LLMExtractionError(msg)
                 if message.content is None:
                     msg = "LLM response did not include content"
                     raise LLMExtractionError(msg)
-                return self._parse_json(message.content)
+                payload = self._parse_json(message.content)
             except APIError as err:
-                self._logger.warning(
+                self._logger.exception(
                     "LLM extraction failed",
                     extra={
                         "model": self._settings.model,
@@ -206,6 +239,10 @@ class OpenAIAdapter(LLMPort):
                     msg = "LLM request failed after retries"
                     raise LLMExtractionError(msg) from err
                 self._sleep_backoff(attempt)
+            else:
+                self._last_extraction_key = cache_key
+                self._last_extraction_payload = payload
+                return payload
 
         msg = "LLM request failed after retries"
         raise LLMExtractionError(msg)
@@ -215,7 +252,7 @@ class OpenAIAdapter(LLMPort):
         """Parse JSON payload into a dictionary."""
         try:
             return json.loads(payload)
-        except json.JSONDecodeError as err:
+        except (json.JSONDecodeError, TypeError) as err:
             msg = "LLM response contained invalid JSON"
             raise LLMExtractionError(msg) from err
 
@@ -258,13 +295,7 @@ class OpenAIAdapter(LLMPort):
             raise AmbiguousExtractionError(label, is_missing=True)
 
     @staticmethod
-    def _raise_if_missing_int(value: int | None, label: str) -> None:
-        """Raise when a required integer is missing."""
-        if value is None:
-            raise AmbiguousExtractionError(label, is_missing=True)
-
-    @staticmethod
-    def _raise_if_ambiguous(label: str) -> None:
+    def _raise_if_ambiguous(label: str) -> NoReturn:
         """Raise when LLM response lacks required detail."""
         raise AmbiguousExtractionError(label, is_missing=False)
 
