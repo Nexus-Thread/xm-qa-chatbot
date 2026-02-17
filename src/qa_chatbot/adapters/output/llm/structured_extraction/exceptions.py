@@ -1,4 +1,4 @@
-"""OpenAI adapter-specific errors."""
+"""Structured extraction adapter-specific errors."""
 
 from qa_chatbot.domain.exceptions import DomainError
 

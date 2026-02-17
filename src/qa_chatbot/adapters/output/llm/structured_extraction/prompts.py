@@ -1,4 +1,4 @@
-"""Prompt templates for OpenAI extraction."""
+"""Prompt templates for LLM extraction."""
 
 from __future__ import annotations
 

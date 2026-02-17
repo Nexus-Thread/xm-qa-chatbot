@@ -7,7 +7,7 @@ from datetime import date
 
 import pytest
 
-from qa_chatbot.adapters.output.llm.openai import OpenAIAdapter, OpenAISettings
+from qa_chatbot.adapters.output.llm.structured_extraction import OpenAIAdapter, OpenAISettings
 from qa_chatbot.domain import ExtractionConfidence, ProjectId, TimeWindow
 from qa_chatbot.domain.registries import build_default_stream_project_registry
 

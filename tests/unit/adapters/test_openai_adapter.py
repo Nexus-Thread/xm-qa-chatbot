@@ -10,7 +10,7 @@ import httpx
 import pytest
 from openai import APIError
 
-from qa_chatbot.adapters.output.llm.openai import (
+from qa_chatbot.adapters.output.llm.structured_extraction import (
     AmbiguousExtractionError,
     InvalidHistoryError,
     LLMExtractionError,
@@ -299,7 +299,7 @@ def test_extract_supported_releases_performs_independent_extraction_calls() -> N
 def test_extract_time_window_retries_on_api_error(monkeypatch: pytest.MonkeyPatch) -> None:
     """Retry on APIError and eventually return a parsed time window."""
     sleep_calls: list[float] = []
-    monkeypatch.setattr("qa_chatbot.adapters.output.llm.openai.adapter.time.sleep", sleep_calls.append)
+    monkeypatch.setattr("qa_chatbot.adapters.output.llm.structured_extraction.adapter.time.sleep", sleep_calls.append)
 
     request = httpx.Request("POST", "https://example.com/v1/chat/completions")
     responses: Iterator[FakeResponse | Exception] = iter(

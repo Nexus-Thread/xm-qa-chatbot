@@ -1,4 +1,4 @@
-"""OpenAI adapter implementation."""
+"""LLM structured extraction adapter implementation."""
 
 from __future__ import annotations
 
@@ -11,12 +11,17 @@ from typing import TYPE_CHECKING, Any, NoReturn, TypeVar
 from openai import APIError
 from pydantic import BaseModel, ValidationError
 
+from qa_chatbot.adapters.output.llm.openai.client import (
+    DEFAULT_TIMEOUT_SECONDS,
+    DEFAULT_VERIFY_SSL,
+    OpenAIClientProtocol,
+    build_client,
+)
 from qa_chatbot.application.dtos import ExtractionResult
 from qa_chatbot.application.ports.output import LLMPort
 from qa_chatbot.domain import ExtractionConfidence, ProjectId, SubmissionMetrics, TestCoverageMetrics, TimeWindow
 from qa_chatbot.domain.exceptions import InvalidConfigurationError
 
-from .client import DEFAULT_TIMEOUT_SECONDS, DEFAULT_VERIFY_SSL, OpenAIClientProtocol, build_client
 from .exceptions import AmbiguousExtractionError, InvalidHistoryError, LLMExtractionError
 from .prompts import SYSTEM_PROMPT, TEST_COVERAGE_PROMPT, TIME_WINDOW_PROMPT, build_project_id_prompt
 from .retry_logic import DEFAULT_BACKOFF_SECONDS, DEFAULT_MAX_RETRIES

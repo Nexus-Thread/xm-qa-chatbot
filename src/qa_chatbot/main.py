@@ -14,7 +14,8 @@ from qa_chatbot.adapters.output import (
     OpenAIAdapter,
     SQLiteAdapter,
 )
-from qa_chatbot.adapters.output.llm.openai import OpenAISettings, build_client
+from qa_chatbot.adapters.output.llm.openai import build_client
+from qa_chatbot.adapters.output.llm.structured_extraction import OpenAISettings
 from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitProjectDataUseCase
 from qa_chatbot.config import LoggingSettings, configure_logging
 
