@@ -6,12 +6,15 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, cast
 
+import pytest
+
 from qa_chatbot.application.services import EdgeCasePolicy
 from qa_chatbot.application.use_cases import GenerateMonthlyReportUseCase
 from qa_chatbot.domain import (
     BucketCount,
     BusinessStream,
     DefectLeakage,
+    InvalidConfigurationError,
     Project,
     ProjectId,
     StreamId,
@@ -136,3 +139,18 @@ def test_execute_sanitizes_non_finite_fallback_leakage_rate() -> None:
 
     assert report.quality_metrics_rows[1].defect_leakage.rate_percent is None
     assert report.quality_metrics_rows[0].defect_leakage.rate_percent == 0.0
+
+
+def test_init_raises_for_invalid_completeness_mode() -> None:
+    """Reject unsupported completeness mode configuration."""
+    month = TimeWindow.from_year_month(2026, 1)
+
+    with pytest.raises(InvalidConfigurationError):
+        GenerateMonthlyReportUseCase(
+            storage_port=_FakeStoragePort(submissions=[_submission(month)]),
+            jira_port=_FakeJiraPort(),
+            registry=_build_registry(),
+            timezone="UTC",
+            edge_case_policy=EdgeCasePolicy(),
+            completeness_mode="unknown",
+        )

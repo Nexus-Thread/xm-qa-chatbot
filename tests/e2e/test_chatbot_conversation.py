@@ -67,11 +67,13 @@ class FakeLLM:
         conversation: str,
         history: list[dict[str, str]] | None,
         current_date: date,
+        registry: StreamProjectRegistry,
     ) -> ExtractionResult:
         """Return a fixed extraction result."""
         _ = conversation
         _ = history
         _ = current_date
+        _ = registry
         return ExtractionResult(
             project_id=ProjectId("qa-project"),
             time_window=TimeWindow.from_year_month(2026, 1),

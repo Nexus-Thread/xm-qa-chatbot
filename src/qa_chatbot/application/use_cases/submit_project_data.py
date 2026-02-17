@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING
 from qa_chatbot.domain import Submission, SubmissionMetrics
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from qa_chatbot.application.dtos import SubmissionCommand
     from qa_chatbot.application.ports.output import DashboardPort, MetricsPort, StoragePort
 
@@ -47,11 +49,7 @@ class SubmitProjectDataUseCase:
         if self.metrics_port is not None:
             self.metrics_port.record_submission(submission.project_id, submission.month)
         if self.dashboard_port is not None:
-            recent_months = self.storage_port.get_recent_months(limit=6)
-            projects = self.storage_port.get_all_projects()
-            self.dashboard_port.generate_overview(submission.month)
-            self.dashboard_port.generate_project_detail(submission.project_id, recent_months)
-            self.dashboard_port.generate_trends(projects, recent_months)
+            self._generate_dashboards(submission)
         self._logger.info(
             "Submission saved",
             extra={
@@ -76,3 +74,38 @@ class SubmitProjectDataUseCase:
 
         existing = max(existing_submissions, key=lambda s: s.created_at)
         return command.metrics.merge_with(existing.metrics)
+
+    def _generate_dashboards(self, submission: Submission) -> None:
+        """Generate dashboards without failing the submission flow on render errors."""
+        if self.dashboard_port is None:
+            return
+        dashboard_port = self.dashboard_port
+
+        recent_months = self.storage_port.get_recent_months(limit=6)
+        projects = self.storage_port.get_all_projects()
+        operations: tuple[tuple[str, Callable[[], object]], ...] = (
+            (
+                "overview",
+                lambda: dashboard_port.generate_overview(submission.month),
+            ),
+            (
+                "project_detail",
+                lambda: dashboard_port.generate_project_detail(submission.project_id, recent_months),
+            ),
+            (
+                "trends",
+                lambda: dashboard_port.generate_trends(projects, recent_months),
+            ),
+        )
+        for view, operation in operations:
+            try:
+                operation()
+            except Exception:
+                self._logger.exception(
+                    "Dashboard generation failed",
+                    extra={
+                        "view": view,
+                        "project_id": str(submission.project_id),
+                        "time_window": str(submission.month),
+                    },
+                )

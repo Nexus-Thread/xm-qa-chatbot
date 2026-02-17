@@ -28,8 +28,13 @@ class GetDashboardDataUseCase:
     def build_overview(self, month: TimeWindow) -> OverviewDashboardData:
         """Build overview data for a reporting month."""
         submissions = self.storage_port.get_submissions_by_month(month)
-        projects = [self._to_overview_card(submission) for submission in submissions]
-        projects.sort(key=lambda card: card.project_id.value)
+        latest_by_project: dict[str, Submission] = {}
+        for submission in submissions:
+            existing = latest_by_project.get(submission.project_id.value)
+            if existing is None or submission.created_at > existing.created_at:
+                latest_by_project[submission.project_id.value] = submission
+
+        projects = [self._to_overview_card(submission) for _, submission in sorted(latest_by_project.items(), key=lambda item: item[0])]
         return OverviewDashboardData(month=month, projects=projects)
 
     def build_project_detail(self, project_id: ProjectId, months: list[TimeWindow]) -> ProjectDetailDashboardData:

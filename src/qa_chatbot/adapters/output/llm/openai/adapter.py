@@ -119,14 +119,9 @@ class OpenAIAdapter(LLMPort):
         conversation: str,
         history: list[dict[str, str]] | None,
         current_date: date,
-        registry: StreamProjectRegistry | None = None,
+        registry: StreamProjectRegistry,
     ) -> ExtractionResult:
         """Extract structured data using conversation history."""
-        from qa_chatbot.domain.registries import build_default_stream_project_registry  # noqa: PLC0415
-
-        if registry is None:
-            registry = build_default_stream_project_registry()
-
         project_prompt = build_project_id_prompt(registry)
         team_payload = self._extract_json(conversation, project_prompt, history)
         time_payload = self._extract_json(conversation, TIME_WINDOW_PROMPT, history)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import math
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -24,6 +25,7 @@ from qa_chatbot.application.services.reporting_calculations import (
 from qa_chatbot.domain import (
     BucketCount,
     DefectLeakage,
+    InvalidConfigurationError,
     ProjectId,
     ReportingPeriod,
     TestCoverageMetrics,
@@ -35,6 +37,8 @@ if TYPE_CHECKING:
 
     from qa_chatbot.application.ports.output import JiraMetricsPort, StoragePort
     from qa_chatbot.domain import Project, StreamProjectRegistry
+
+VALID_COMPLETENESS_MODES = frozenset(("partial", "fail"))
 
 
 @dataclass(frozen=True)
@@ -48,6 +52,14 @@ class GenerateMonthlyReportUseCase:
     edge_case_policy: EdgeCasePolicy
     completeness_mode: str = "partial"
     now_provider: Callable[[], datetime] = field(default_factory=lambda: lambda: datetime.now(tz=UTC))
+    _logger: logging.Logger = field(init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        """Initialize logger and validate use case configuration."""
+        object.__setattr__(self, "_logger", logging.getLogger(self.__class__.__name__))
+        if self.completeness_mode not in VALID_COMPLETENESS_MODES:
+            msg = f"Completeness mode must be one of: {', '.join(sorted(VALID_COMPLETENESS_MODES))}"
+            raise InvalidConfigurationError(msg)
 
     def execute(self, month: TimeWindow) -> MonthlyReport:
         """Generate a monthly report payload."""
@@ -270,8 +282,8 @@ class GenerateMonthlyReportUseCase:
     def _with_portfolio_coverage_row(rows: list[TestCoverageRow]) -> list[TestCoverageRow]:
         return rows
 
-    @staticmethod
     def _safe_fetch(
+        self,
         missing: list[str],
         label: str,
         func: Callable[[], object],
@@ -280,10 +292,18 @@ class GenerateMonthlyReportUseCase:
     ) -> object:
         try:
             return func()
-        except Exception:  # noqa: BLE001
+        except Exception as err:
             # Intentionally broad: mark data as missing rather than failing entire report
             missing.append(label)
             missing_by_project.setdefault(project_id, []).append(label.split(":", maxsplit=1)[0])
+            self._logger.exception(
+                "Jira metric fetch failed for monthly report",
+                extra={
+                    "project_id": project_id,
+                    "metric": label.split(":", maxsplit=1)[0],
+                    "error_type": type(err).__name__,
+                },
+            )
             return None
 
     @staticmethod

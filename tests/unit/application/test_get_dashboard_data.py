@@ -9,6 +9,7 @@ from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWi
 
 # Test data constants
 EXPECTED_MANUAL_TOTAL = 8
+EXPECTED_LATEST_MANUAL_TOTAL = 9
 
 
 class FakeStoragePort:
@@ -79,6 +80,22 @@ def test_build_overview_sorts_by_project() -> None:
     overview = use_case.build_overview(month)
 
     assert [card.project_id.value for card in overview.projects] == ["Alpha", "Beta"]
+
+
+def test_build_overview_keeps_latest_submission_per_project() -> None:
+    """Ensure overview keeps only the latest card per project."""
+    project = ProjectId("Alpha")
+    month = TimeWindow.from_year_month(2026, 1)
+    submissions = [
+        _submission(project, month, manual_total=2, created_at=datetime(2026, 1, 1, tzinfo=UTC)),
+        _submission(project, month, manual_total=9, created_at=datetime(2026, 1, 20, tzinfo=UTC)),
+    ]
+    use_case = GetDashboardDataUseCase(storage_port=FakeStoragePort(submissions))
+
+    overview = use_case.build_overview(month)
+
+    assert len(overview.projects) == 1
+    assert overview.projects[0].qa_metrics["manual_total"] == EXPECTED_LATEST_MANUAL_TOTAL
 
 
 def test_build_project_detail_prefers_latest_submission() -> None:

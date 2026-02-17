@@ -97,13 +97,14 @@ class ExtractStructuredDataUseCase:
         conversation: str,
         history: list[dict[str, str]] | None,
         current_date: date,
+        registry: StreamProjectRegistry,
     ) -> ExtractionResult:
         """Extract structured data using conversation history."""
         if self.metrics_port is None:
-            return self.llm_port.extract_with_history(conversation, history, current_date)
+            return self.llm_port.extract_with_history(conversation, history, current_date, registry)
 
         started_at = time.perf_counter()
-        result = self.llm_port.extract_with_history(conversation, history, current_date)
+        result = self.llm_port.extract_with_history(conversation, history, current_date, registry)
         elapsed_ms = (time.perf_counter() - started_at) * 1000
         self.metrics_port.record_llm_latency("history", elapsed_ms)
         return result

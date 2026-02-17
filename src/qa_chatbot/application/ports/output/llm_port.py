@@ -36,5 +36,6 @@ class LLMPort(Protocol):
         conversation: str,
         history: list[dict[str, str]] | None,
         current_date: date,
+        registry: StreamProjectRegistry,
     ) -> ExtractionResult:
         """Extract structured data using conversation history."""
