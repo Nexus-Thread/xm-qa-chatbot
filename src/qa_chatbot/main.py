@@ -14,7 +14,7 @@ from qa_chatbot.adapters.output import (
     OpenAIAdapter,
     SQLiteAdapter,
 )
-from qa_chatbot.adapters.output.llm.openai import OpenAISettings
+from qa_chatbot.adapters.output.llm.openai import OpenAISettings, build_client
 from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitProjectDataUseCase
 from qa_chatbot.config import LoggingSettings, configure_logging
 
@@ -49,15 +49,22 @@ def main() -> None:
         adapters=(html_dashboard_adapter, confluence_dashboard_adapter),
     )
 
-    llm_adapter = OpenAIAdapter(
-        settings=OpenAISettings(
-            base_url=settings.openai_base_url,
-            api_key=settings.openai_api_key,
-            model=settings.openai_model,
-            max_retries=settings.openai_max_retries,
-            backoff_seconds=settings.openai_backoff_seconds,
-        )
+    openai_settings = OpenAISettings(
+        base_url=settings.openai_base_url,
+        api_key=settings.openai_api_key,
+        model=settings.openai_model,
+        max_retries=settings.openai_max_retries,
+        backoff_seconds=settings.openai_backoff_seconds,
+        verify_ssl=settings.openai_verify_ssl,
+        timeout_seconds=settings.openai_timeout_seconds,
     )
+    openai_client = build_client(
+        base_url=openai_settings.base_url,
+        api_key=openai_settings.api_key,
+        verify_ssl=openai_settings.verify_ssl,
+        timeout_seconds=openai_settings.timeout_seconds,
+    )
+    llm_adapter = OpenAIAdapter(settings=openai_settings, client=openai_client)
     metrics_adapter = InMemoryMetricsAdapter()
     extractor = ExtractStructuredDataUseCase(llm_port=llm_adapter, metrics_port=metrics_adapter)
     submitter = SubmitProjectDataUseCase(

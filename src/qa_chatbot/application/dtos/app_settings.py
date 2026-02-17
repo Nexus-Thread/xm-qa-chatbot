@@ -18,6 +18,8 @@ class AppSettings:
     openai_model: str
     openai_max_retries: int
     openai_backoff_seconds: float
+    openai_verify_ssl: bool
+    openai_timeout_seconds: float
     database_url: str
     database_echo: bool
     dashboard_output_dir: Path

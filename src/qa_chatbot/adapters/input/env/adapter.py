@@ -26,6 +26,8 @@ class EnvSettingsAdapter:
             openai_model=settings.openai_model,
             openai_max_retries=settings.openai_max_retries,
             openai_backoff_seconds=settings.openai_backoff_seconds,
+            openai_verify_ssl=settings.openai_verify_ssl,
+            openai_timeout_seconds=settings.openai_timeout_seconds,
             database_url=settings.database_url,
             database_echo=settings.database_echo,
             dashboard_output_dir=settings.dashboard_output_dir,

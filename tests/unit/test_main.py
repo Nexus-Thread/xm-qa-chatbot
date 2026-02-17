@@ -26,6 +26,8 @@ def test_main_wires_components(monkeypatch: pytest.MonkeyPatch) -> None:
         openai_model="gpt-test",
         openai_max_retries=3,
         openai_backoff_seconds=1.0,
+        openai_verify_ssl=False,
+        openai_timeout_seconds=15.0,
         server_port=7860,
         share=False,
         input_max_chars=2000,
@@ -42,6 +44,7 @@ def test_main_wires_components(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(qa_chatbot.main, "HtmlDashboardAdapter", lambda **_: html_adapter)
     monkeypatch.setattr(qa_chatbot.main, "ConfluenceDashboardAdapter", lambda **_: confluence_adapter)
     monkeypatch.setattr(qa_chatbot.main, "CompositeDashboardAdapter", lambda **_: composite_adapter)
+    monkeypatch.setattr(qa_chatbot.main, "build_client", lambda **_: MagicMock())
     monkeypatch.setattr(qa_chatbot.main, "OpenAIAdapter", lambda **_: MagicMock())
     metrics_adapter = MagicMock()
     monkeypatch.setattr(qa_chatbot.main, "InMemoryMetricsAdapter", lambda: metrics_adapter)

@@ -80,20 +80,28 @@ class FakeCompletions:
         return result
 
 
-class FakeChat:
-    """Fake chat client."""
+class FakeOpenAITransportClient:
+    """Fake transport client matching the OpenAI client protocol."""
 
     def __init__(self, responses: Iterator[FakeResponse | Exception]) -> None:
-        """Attach fake completion responses."""
-        self.completions = FakeCompletions(responses)
+        """Store fake completion responses."""
+        self._completions = FakeCompletions(responses)
 
+    @property
+    def calls(self) -> int:
+        """Return how many completion calls were made."""
+        return self._completions.calls
 
-class FakeClient:
-    """Fake OpenAI client."""
-
-    def __init__(self, responses: Iterator[FakeResponse | Exception]) -> None:
-        """Attach fake chat responses."""
-        self.chat = FakeChat(responses)
+    def create_json_completion(
+        self,
+        *,
+        model: str,
+        messages: list[dict[str, str]],
+        temperature: float = 0,
+    ) -> FakeResponse:
+        """Create a fake JSON completion response."""
+        _ = model, messages, temperature
+        return self._completions.create()
 
 
 def test_extract_project_id_parses_response() -> None:
@@ -101,7 +109,7 @@ def test_extract_project_id_parses_response() -> None:
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": "Bridge", "confidence": "high"}'))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
-        client=FakeClient(responses),
+        client=FakeOpenAITransportClient(responses),
     )
 
     registry = build_default_stream_project_registry()
@@ -116,7 +124,7 @@ def test_extract_project_id_falls_back_to_low_on_invalid_confidence() -> None:
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": "Bridge", "confidence": "very sure"}'))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
-        client=FakeClient(responses),
+        client=FakeOpenAITransportClient(responses),
     )
 
     registry = build_default_stream_project_registry()
@@ -130,7 +138,7 @@ def test_extract_project_id_raises_on_unmatched_registry_project() -> None:
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": "Unknown Team", "confidence": "low"}'))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
-        client=FakeClient(responses),
+        client=FakeOpenAITransportClient(responses),
     )
 
     registry = build_default_stream_project_registry()
@@ -143,7 +151,7 @@ def test_extract_time_window_parses_month() -> None:
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"month": "2026-01"}'))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
-        client=FakeClient(responses),
+        client=FakeOpenAITransportClient(responses),
     )
 
     result = adapter.extract_time_window("January 2026", date(2026, 2, 2))
@@ -156,7 +164,7 @@ def test_extract_time_window_raises_on_invalid_format() -> None:
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"month": "Jan"}'))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
-        client=FakeClient(responses),
+        client=FakeOpenAITransportClient(responses),
     )
 
     with pytest.raises(LLMExtractionError):
@@ -168,7 +176,7 @@ def test_extract_time_window_supports_current_keyword() -> None:
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"month": "current"}'))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
-        client=FakeClient(responses),
+        client=FakeOpenAITransportClient(responses),
     )
 
     result = adapter.extract_time_window("current", date(2026, 2, 10))
@@ -181,7 +189,7 @@ def test_extract_project_id_raises_for_blank_response() -> None:
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": "", "confidence": "low"}'))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
-        client=FakeClient(responses),
+        client=FakeOpenAITransportClient(responses),
     )
 
     registry = build_default_stream_project_registry()
@@ -194,7 +202,7 @@ def test_extract_test_coverage_accepts_partial_data() -> None:
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"manual_total": 100, "automated_total": null}'))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
-        client=FakeClient(responses),
+        client=FakeOpenAITransportClient(responses),
     )
 
     result = adapter.extract_test_coverage("Manual total is 100")
@@ -209,7 +217,7 @@ def test_extract_test_coverage_accepts_all_null() -> None:
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"manual_total": null}'))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
-        client=FakeClient(responses),
+        client=FakeOpenAITransportClient(responses),
     )
 
     result = adapter.extract_test_coverage("No metrics provided")
@@ -223,7 +231,7 @@ def test_extract_time_window_raises_when_response_has_no_choices() -> None:
     responses = iter([FakeResponse(choices=[])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
-        client=FakeClient(responses),
+        client=FakeOpenAITransportClient(responses),
     )
 
     with pytest.raises(LLMExtractionError):
@@ -235,7 +243,7 @@ def test_extract_time_window_raises_when_message_is_missing() -> None:
     responses = iter([FakeResponse([FakeChoice(message=None)])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
-        client=FakeClient(responses),
+        client=FakeOpenAITransportClient(responses),
     )
 
     with pytest.raises(LLMExtractionError):
@@ -247,7 +255,7 @@ def test_extract_time_window_raises_on_invalid_json() -> None:
     responses = iter([FakeResponse([FakeChoice(FakeMessage("not-json"))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
-        client=FakeClient(responses),
+        client=FakeOpenAITransportClient(responses),
     )
 
     with pytest.raises(LLMExtractionError):
@@ -259,7 +267,7 @@ def test_extract_time_window_raises_when_message_content_is_missing() -> None:
     responses = iter([FakeResponse([FakeChoice(FakeMessage(content=None))])])
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
-        client=FakeClient(responses),
+        client=FakeOpenAITransportClient(responses),
     )
 
     with pytest.raises(LLMExtractionError):
@@ -274,7 +282,7 @@ def test_extract_supported_releases_performs_independent_extraction_calls() -> N
             FakeResponse([FakeChoice(FakeMessage('{"manual_total": 100, "automated_total": 20, "supported_releases_count": 4}'))]),
         ]
     )
-    client = FakeClient(responses)
+    client = FakeOpenAITransportClient(responses)
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=client,
@@ -285,7 +293,7 @@ def test_extract_supported_releases_performs_independent_extraction_calls() -> N
 
     assert coverage.manual_total == EXPECTED_MANUAL_TOTAL
     assert supported_releases == EXPECTED_SUPPORTED_RELEASES_COUNT
-    assert client.chat.completions.calls == EXPECTED_INDEPENDENT_COVERAGE_CALLS
+    assert client.calls == EXPECTED_INDEPENDENT_COVERAGE_CALLS
 
 
 def test_extract_time_window_retries_on_api_error(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -308,7 +316,7 @@ def test_extract_time_window_retries_on_api_error(monkeypatch: pytest.MonkeyPatc
             max_retries=3,
             backoff_seconds=0.5,
         ),
-        client=FakeClient(responses),
+        client=FakeOpenAITransportClient(responses),
     )
 
     result = adapter.extract_time_window("January 2026", date(2026, 2, 2))
@@ -322,7 +330,7 @@ def test_extract_with_history_raises_on_invalid_role() -> None:
     empty_responses: Iterator[FakeResponse | Exception] = iter(())
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
-        client=FakeClient(empty_responses),
+        client=FakeOpenAITransportClient(empty_responses),
     )
 
     with pytest.raises(InvalidHistoryError):
@@ -339,7 +347,7 @@ def test_extract_with_history_raises_on_blank_content() -> None:
     empty_responses: Iterator[FakeResponse | Exception] = iter(())
     adapter = OpenAIAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
-        client=FakeClient(empty_responses),
+        client=FakeOpenAITransportClient(empty_responses),
     )
 
     with pytest.raises(InvalidHistoryError):

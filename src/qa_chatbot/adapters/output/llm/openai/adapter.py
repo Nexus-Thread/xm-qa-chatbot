@@ -16,7 +16,7 @@ from qa_chatbot.application.ports.output import LLMPort
 from qa_chatbot.domain import ExtractionConfidence, ProjectId, SubmissionMetrics, TestCoverageMetrics, TimeWindow
 from qa_chatbot.domain.exceptions import InvalidConfigurationError
 
-from .client import build_client
+from .client import DEFAULT_TIMEOUT_SECONDS, DEFAULT_VERIFY_SSL, OpenAIClientProtocol, build_client
 from .exceptions import AmbiguousExtractionError, InvalidHistoryError, LLMExtractionError
 from .prompts import SYSTEM_PROMPT, TEST_COVERAGE_PROMPT, TIME_WINDOW_PROMPT, build_project_id_prompt
 from .retry_logic import DEFAULT_BACKOFF_SECONDS, DEFAULT_MAX_RETRIES
@@ -50,6 +50,8 @@ class OpenAISettings:
     model: str
     max_retries: int = DEFAULT_MAX_RETRIES
     backoff_seconds: float = DEFAULT_BACKOFF_SECONDS
+    verify_ssl: bool = DEFAULT_VERIFY_SSL
+    timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS
 
 
 class OpenAIAdapter(LLMPort):
@@ -58,11 +60,16 @@ class OpenAIAdapter(LLMPort):
     def __init__(
         self,
         settings: OpenAISettings,
-        client: object | None = None,
+        client: OpenAIClientProtocol | None = None,
     ) -> None:
         """Initialize the adapter configuration."""
         self._settings = settings
-        self._client = client or build_client(base_url=settings.base_url, api_key=settings.api_key)
+        self._client = client or build_client(
+            base_url=settings.base_url,
+            api_key=settings.api_key,
+            verify_ssl=settings.verify_ssl,
+            timeout_seconds=settings.timeout_seconds,
+        )
         self._last_usage: TokenUsage | None = None
         self._logger = logging.getLogger(self.__class__.__name__)
 
@@ -167,7 +174,7 @@ class OpenAIAdapter(LLMPort):
         history: list[dict[str, str]] | None = None,
     ) -> dict[str, Any]:
         """Call the OpenAI API and extract JSON content."""
-        client: Any = self._client
+        client = self._client
         normalized_history = self._normalize_history(history)
 
         for attempt in range(self._settings.max_retries):
@@ -178,10 +185,9 @@ class OpenAIAdapter(LLMPort):
                     *normalized_history,
                     {"role": "user", "content": f"{prompt}\n\nConversation:\n{conversation}"},
                 ]
-                response = client.chat.completions.create(
+                response = client.create_json_completion(
                     model=self._settings.model,
                     messages=messages,
-                    response_format={"type": "json_object"},
                     temperature=0,
                 )
                 elapsed_ms = (time.perf_counter() - started_at) * 1000
