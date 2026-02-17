@@ -1,5 +1,5 @@
 """LLM adapters."""
 
-from .structured_extraction import OpenAIAdapter
+from .structured_extraction import OpenAIStructuredExtractionAdapter
 
-__all__ = ["OpenAIAdapter"]
+__all__ = ["OpenAIStructuredExtractionAdapter"]

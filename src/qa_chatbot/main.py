@@ -11,7 +11,7 @@ from qa_chatbot.adapters.output import (
     ConfluenceDashboardAdapter,
     HtmlDashboardAdapter,
     InMemoryMetricsAdapter,
-    OpenAIAdapter,
+    OpenAIStructuredExtractionAdapter,
     SQLiteAdapter,
 )
 from qa_chatbot.adapters.output.llm.structured_extraction import OpenAISettings
@@ -58,7 +58,7 @@ def main() -> None:
         verify_ssl=settings.openai_verify_ssl,
         timeout_seconds=settings.openai_timeout_seconds,
     )
-    llm_adapter = OpenAIAdapter(settings=openai_settings)
+    llm_adapter = OpenAIStructuredExtractionAdapter(settings=openai_settings)
     metrics_adapter = InMemoryMetricsAdapter()
     extractor = ExtractStructuredDataUseCase(llm_port=llm_adapter, metrics_port=metrics_adapter)
     submitter = SubmitProjectDataUseCase(

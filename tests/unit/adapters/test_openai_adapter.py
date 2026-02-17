@@ -14,8 +14,8 @@ from qa_chatbot.adapters.output.llm.structured_extraction import (
     AmbiguousExtractionError,
     InvalidHistoryError,
     LLMExtractionError,
-    OpenAIAdapter,
     OpenAISettings,
+    OpenAIStructuredExtractionAdapter,
 )
 from qa_chatbot.domain import (
     ExtractionConfidence,
@@ -106,7 +106,7 @@ class FakeOpenAITransportClient:
 def test_extract_project_id_parses_response() -> None:
     """Parse a project identifier from JSON response."""
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": "Bridge", "confidence": "high"}'))])])
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(responses),
     )
@@ -121,7 +121,7 @@ def test_extract_project_id_parses_response() -> None:
 def test_extract_project_id_falls_back_to_low_on_invalid_confidence() -> None:
     """Fallback to low confidence when the model returns unsupported value."""
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": "Bridge", "confidence": "very sure"}'))])])
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(responses),
     )
@@ -135,7 +135,7 @@ def test_extract_project_id_falls_back_to_low_on_invalid_confidence() -> None:
 def test_extract_project_id_raises_on_unmatched_registry_project() -> None:
     """Raise when extracted project does not exist in registry."""
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": "Unknown Team", "confidence": "low"}'))])])
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(responses),
     )
@@ -148,7 +148,7 @@ def test_extract_project_id_raises_on_unmatched_registry_project() -> None:
 def test_extract_time_window_parses_month() -> None:
     """Parse a YYYY-MM time window response."""
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"month": "2026-01"}'))])])
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(responses),
     )
@@ -161,7 +161,7 @@ def test_extract_time_window_parses_month() -> None:
 def test_extract_time_window_raises_on_invalid_format() -> None:
     """Raise when time window format is invalid."""
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"month": "Jan"}'))])])
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(responses),
     )
@@ -173,7 +173,7 @@ def test_extract_time_window_raises_on_invalid_format() -> None:
 def test_extract_time_window_supports_current_keyword() -> None:
     """Resolve current month keyword into a TimeWindow."""
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"month": "current"}'))])])
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(responses),
     )
@@ -186,7 +186,7 @@ def test_extract_time_window_supports_current_keyword() -> None:
 def test_extract_project_id_raises_for_blank_response() -> None:
     """Raise when project id is missing."""
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"project_id": "", "confidence": "low"}'))])])
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(responses),
     )
@@ -199,7 +199,7 @@ def test_extract_project_id_raises_for_blank_response() -> None:
 def test_extract_test_coverage_accepts_partial_data() -> None:
     """Accept partial coverage data with null fields."""
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"manual_total": 100, "automated_total": null}'))])])
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(responses),
     )
@@ -214,7 +214,7 @@ def test_extract_test_coverage_accepts_partial_data() -> None:
 def test_extract_test_coverage_accepts_all_null() -> None:
     """Accept response with all null fields."""
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"manual_total": null}'))])])
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(responses),
     )
@@ -228,7 +228,7 @@ def test_extract_test_coverage_accepts_all_null() -> None:
 def test_extract_test_coverage_raises_on_negative_manual_total() -> None:
     """Raise when coverage payload contains a negative count."""
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"manual_total": -1}'))])])
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(responses),
     )
@@ -240,7 +240,7 @@ def test_extract_test_coverage_raises_on_negative_manual_total() -> None:
 def test_extract_supported_releases_raises_on_negative_value() -> None:
     """Raise when supported releases count is negative."""
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"supported_releases_count": -1}'))])])
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(responses),
     )
@@ -252,7 +252,7 @@ def test_extract_supported_releases_raises_on_negative_value() -> None:
 def test_extract_time_window_raises_when_response_has_no_choices() -> None:
     """Raise when provider response has no choices."""
     responses = iter([FakeResponse(choices=[])])
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(responses),
     )
@@ -264,7 +264,7 @@ def test_extract_time_window_raises_when_response_has_no_choices() -> None:
 def test_extract_time_window_raises_when_message_is_missing() -> None:
     """Raise when provider choice does not include a message."""
     responses = iter([FakeResponse([FakeChoice(message=None)])])
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(responses),
     )
@@ -276,7 +276,7 @@ def test_extract_time_window_raises_when_message_is_missing() -> None:
 def test_extract_time_window_raises_on_invalid_json() -> None:
     """Raise when the model response is not valid JSON."""
     responses = iter([FakeResponse([FakeChoice(FakeMessage("not-json"))])])
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(responses),
     )
@@ -288,7 +288,7 @@ def test_extract_time_window_raises_on_invalid_json() -> None:
 def test_extract_time_window_raises_when_message_content_is_missing() -> None:
     """Raise when provider message content is missing."""
     responses = iter([FakeResponse([FakeChoice(FakeMessage(content=None))])])
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(responses),
     )
@@ -306,7 +306,7 @@ def test_extract_supported_releases_performs_independent_extraction_calls() -> N
         ]
     )
     client = FakeOpenAITransportClient(responses)
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=client,
     )
@@ -327,7 +327,7 @@ def test_extract_time_window_raises_extraction_error_on_api_error() -> None:
             APIError("temporary failure", request=request, body=None),
         ]
     )
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(
             base_url="http://localhost",
             api_key="test",
@@ -343,7 +343,7 @@ def test_extract_time_window_raises_extraction_error_on_api_error() -> None:
 def test_extract_with_history_raises_on_invalid_role() -> None:
     """Raise when history contains an invalid role."""
     empty_responses: Iterator[FakeResponse | Exception] = iter(())
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(empty_responses),
     )
@@ -360,7 +360,7 @@ def test_extract_with_history_raises_on_invalid_role() -> None:
 def test_extract_with_history_raises_on_blank_content() -> None:
     """Raise when history contains blank content."""
     empty_responses: Iterator[FakeResponse | Exception] = iter(())
-    adapter = OpenAIAdapter(
+    adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(empty_responses),
     )

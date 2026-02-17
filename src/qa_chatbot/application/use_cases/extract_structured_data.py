@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from datetime import date
 
-    from qa_chatbot.application.ports.output import LLMPort, MetricsPort
+    from qa_chatbot.application.ports.output import MetricsPort, StructuredExtractionPort
     from qa_chatbot.domain import ExtractionConfidence, ProjectId, TestCoverageMetrics, TimeWindow
     from qa_chatbot.domain.registries import StreamProjectRegistry
 
@@ -24,7 +24,7 @@ ExtractedT = TypeVar("ExtractedT")
 class ExtractStructuredDataUseCase:
     """Orchestrate LLM extraction of structured data."""
 
-    llm_port: LLMPort
+    llm_port: StructuredExtractionPort
     metrics_port: MetricsPort | None = None
 
     def extract_project_id(

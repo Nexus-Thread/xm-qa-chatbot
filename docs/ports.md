@@ -8,35 +8,34 @@ Location: `src/qa_chatbot/application/ports/output/dashboard_port.py`
 
 - `generate_overview(month: TimeWindow) -> Path`
   - Generates the overview dashboard for the given reporting month.
-- `generate_team_detail(team_id: TeamId, months: list[TimeWindow]) -> Path`
-  - Generates a team detail dashboard for the given team across recent months.
-- `generate_trends(teams: list[TeamId], months: list[TimeWindow]) -> Path`
-  - Generates a cross-team trends dashboard.
+- `generate_project_detail(project_id: ProjectId, months: list[TimeWindow]) -> Path`
+  - Generates a project detail dashboard for the given project across recent months.
+- `generate_trends(projects: list[ProjectId], months: list[TimeWindow]) -> Path`
+  - Generates a cross-project trends dashboard.
 
-## LLMPort
-Location: `src/qa_chatbot/application/ports/output/llm_port.py`
+## StructuredExtractionPort
+Location: `src/qa_chatbot/application/ports/output/structured_extraction_port.py`
 
-- `extract_team_id(conversation: str) -> TeamId`
+- `extract_project_id(conversation: str, registry: StreamProjectRegistry) -> tuple[ProjectId, ExtractionConfidence]`
 - `extract_time_window(conversation: str, current_date: date) -> TimeWindow`
-- `extract_qa_metrics(conversation: str) -> QAMetrics`
-- `extract_project_status(conversation: str) -> ProjectStatus`
-- `extract_daily_update(conversation: str) -> DailyUpdate`
-- `extract_with_history(conversation: str, history: list[dict[str, str]] | None, current_date: date) -> ExtractionResult`
+- `extract_test_coverage(conversation: str) -> TestCoverageMetrics`
+- `extract_supported_releases_count(conversation: str) -> int | None`
+- `extract_with_history(conversation: str, history: list[dict[str, str]] | None, current_date: date, registry: StreamProjectRegistry) -> ExtractionResult`
 
 Expected errors: `LLMExtractionError`, `AmbiguousExtractionError`
 
 ## MetricsPort
 Location: `src/qa_chatbot/application/ports/output/metrics_port.py`
 
-- `record_submission(team_id: TeamId, time_window: TimeWindow) -> None`
+- `record_submission(project_id: ProjectId, time_window: TimeWindow) -> None`
 - `record_llm_latency(operation: str, elapsed_ms: float) -> None`
 
 ## StoragePort
 Location: `src/qa_chatbot/application/ports/output/storage_port.py`
 
 - `save_submission(submission: Submission) -> None`
-- `get_submissions_by_team(team_id: TeamId, month: TimeWindow) -> list[Submission]`
-- `get_all_teams() -> list[TeamId]`
+- `get_submissions_by_project(project_id: ProjectId, month: TimeWindow) -> list[Submission]`
+- `get_all_projects() -> list[ProjectId]`
 - `get_submissions_by_month(month: TimeWindow) -> list[Submission]`
 - `get_recent_months(limit: int) -> list[TimeWindow]`
 
@@ -46,14 +45,12 @@ Expected errors: `InvalidConfigurationError` (startup), storage adapter exceptio
 Location: `src/qa_chatbot/application/dtos/`
 
 ### SubmissionCommand
-Represents validated input used by `SubmitTeamDataUseCase`.
+Represents validated input used by `SubmitProjectDataUseCase`.
 
 Fields:
-- `team_id: TeamId`
+- `project_id: ProjectId`
 - `time_window: TimeWindow`
-- `qa_metrics: QAMetrics | None`
-- `project_status: ProjectStatus | None`
-- `daily_update: DailyUpdate | None`
+- `metrics: SubmissionMetrics`
 - `raw_conversation: str | None`
 - `created_at: datetime | None`
 
@@ -61,18 +58,16 @@ Fields:
 Represents extracted structured data from the LLM adapter.
 
 Fields:
-- `team_id: TeamId`
+- `project_id: ProjectId`
 - `time_window: TimeWindow`
-- `qa_metrics: QAMetrics | None`
-- `project_status: ProjectStatus | None`
-- `daily_update: DailyUpdate | None`
+- `metrics: SubmissionMetrics`
 
 ### Dashboard DTOs
 From `dashboard_data.py`:
 
-- `TeamOverviewCard`: summary per team for the overview page.
-- `OverviewDashboardData`: reporting month + list of `TeamOverviewCard`.
-- `TeamMonthlySnapshot`: per-month metrics for a team.
-- `TeamDetailDashboardData`: team ID + list of `TeamMonthlySnapshot`.
+- `ProjectOverviewCard`: summary per project for the overview page.
+- `OverviewDashboardData`: reporting month + list of `ProjectOverviewCard`.
+- `ProjectMonthlySnapshot`: per-month metrics for a project.
+- `ProjectDetailDashboardData`: project ID + list of `ProjectMonthlySnapshot`.
 - `TrendSeries`: label + list of values across months.
-- `TrendsDashboardData`: team list, months, QA metric series, project metric series.
+- `TrendsDashboardData`: project list, months, QA metric series, project metric series.

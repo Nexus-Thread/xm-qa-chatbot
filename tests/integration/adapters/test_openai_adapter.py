@@ -7,7 +7,7 @@ from datetime import date
 
 import pytest
 
-from qa_chatbot.adapters.output.llm.structured_extraction import OpenAIAdapter, OpenAISettings
+from qa_chatbot.adapters.output.llm.structured_extraction import OpenAISettings, OpenAIStructuredExtractionAdapter
 from qa_chatbot.domain import ExtractionConfidence, ProjectId, TimeWindow
 from qa_chatbot.domain.registries import build_default_stream_project_registry
 
@@ -23,7 +23,7 @@ def test_openai_adapter_with_ollama_extracts_project_id() -> None:
         api_key=os.getenv("OLLAMA_API_KEY", "ollama"),
         model=os.getenv("OLLAMA_MODEL", "llama2"),
     )
-    adapter = OpenAIAdapter(settings=settings)
+    adapter = OpenAIStructuredExtractionAdapter(settings=settings)
     registry = build_default_stream_project_registry()
 
     project_id, confidence = adapter.extract_project_id("We are the QA Automation project.", registry)
@@ -47,7 +47,7 @@ def test_openai_adapter_with_ollama_extracts_time_window() -> None:
         api_key=os.getenv("OLLAMA_API_KEY", "ollama"),
         model=os.getenv("OLLAMA_MODEL", "llama2"),
     )
-    adapter = OpenAIAdapter(settings=settings)
+    adapter = OpenAIStructuredExtractionAdapter(settings=settings)
 
     time_window = adapter.extract_time_window("Reporting for 2026-01", date(2026, 2, 1))
 

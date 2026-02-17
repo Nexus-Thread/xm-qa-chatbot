@@ -1,6 +1,6 @@
 """Adapters for external integrations."""
 
 from .input import GradioAdapter, GradioSettings
-from .output import OpenAIAdapter, SQLiteAdapter
+from .output import OpenAIStructuredExtractionAdapter, SQLiteAdapter
 
-__all__ = ["GradioAdapter", "GradioSettings", "OpenAIAdapter", "SQLiteAdapter"]
+__all__ = ["GradioAdapter", "GradioSettings", "OpenAIStructuredExtractionAdapter", "SQLiteAdapter"]

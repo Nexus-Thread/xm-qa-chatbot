@@ -1,6 +1,6 @@
 """Structured extraction adapter for LLM responses."""
 
-from .adapter import OpenAIAdapter, OpenAISettings
+from .adapter import OpenAISettings, OpenAIStructuredExtractionAdapter
 from .exceptions import AmbiguousExtractionError, InvalidHistoryError, LLMExtractionError
 from .schemas import ProjectIdSchema, TestCoverageSchema, TimeWindowSchema
 
@@ -8,8 +8,8 @@ __all__ = [
     "AmbiguousExtractionError",
     "InvalidHistoryError",
     "LLMExtractionError",
-    "OpenAIAdapter",
     "OpenAISettings",
+    "OpenAIStructuredExtractionAdapter",
     "ProjectIdSchema",
     "TestCoverageSchema",
     "TimeWindowSchema",

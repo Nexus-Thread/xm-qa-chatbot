@@ -1,4 +1,4 @@
-"""LLM extraction port contract."""
+"""Structured extraction port contract."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from qa_chatbot.domain.registries import StreamProjectRegistry
 
 
-class LLMPort(Protocol):
+class StructuredExtractionPort(Protocol):
     """Protocol for extracting structured data from conversations."""
 
     def extract_project_id(

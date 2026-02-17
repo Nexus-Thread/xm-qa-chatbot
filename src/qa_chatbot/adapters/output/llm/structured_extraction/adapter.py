@@ -19,7 +19,7 @@ from qa_chatbot.adapters.output.llm.openai import (
     build_client,
 )
 from qa_chatbot.application.dtos import ExtractionResult
-from qa_chatbot.application.ports.output import LLMPort
+from qa_chatbot.application.ports.output import StructuredExtractionPort
 from qa_chatbot.domain import ExtractionConfidence, ProjectId, SubmissionMetrics, TestCoverageMetrics, TimeWindow
 from qa_chatbot.domain.exceptions import InvalidConfigurationError
 
@@ -59,7 +59,7 @@ class OpenAISettings:
     timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS
 
 
-class OpenAIAdapter(LLMPort):
+class OpenAIStructuredExtractionAdapter(StructuredExtractionPort):
     """Extracts structured data using an OpenAI-compatible API."""
 
     def __init__(
@@ -136,16 +136,16 @@ class OpenAIAdapter(LLMPort):
     ) -> ExtractionResult:
         """Extract structured data using conversation history."""
         project_prompt = build_project_id_prompt(registry)
-        team_payload = self._extract_json(conversation, project_prompt, history)
+        project_payload = self._extract_json(conversation, project_prompt, history)
         time_payload = self._extract_json(conversation, TIME_WINDOW_PROMPT, history)
         coverage_payload = self._extract_json(conversation, TEST_COVERAGE_PROMPT, history)
 
-        team_data = self._parse_schema(team_payload, ProjectIdSchema)
+        project_data = self._parse_schema(project_payload, ProjectIdSchema)
         time_data = self._parse_schema(time_payload, TimeWindowSchema)
         coverage_data = self._parse_schema(coverage_payload, TestCoverageSchema)
-        self._raise_if_blank(team_data.project_id, "project identifier")
+        self._raise_if_blank(project_data.project_id, "project identifier")
         self._raise_if_blank(time_data.month, "time window")
-        matched_project = registry.find_project(team_data.project_id)
+        matched_project = registry.find_project(project_data.project_id)
         if matched_project is None:
             self._raise_if_ambiguous("project identifier")
 
