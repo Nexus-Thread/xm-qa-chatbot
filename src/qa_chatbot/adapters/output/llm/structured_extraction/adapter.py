@@ -86,8 +86,7 @@ class OpenAIStructuredExtractionAdapter(StructuredExtractionPort):
         """Extract the reporting time window."""
         payload = self._extract_json(conversation, TIME_WINDOW_PROMPT)
         data = self._parse_schema(payload, TimeWindowSchema)
-        self._raise_if_blank(data.month, "time window")
-        return resolve_time_window(data.month, current_date)
+        return resolve_time_window(data, current_date)
 
     def extract_test_coverage(self, conversation: str) -> TestCoverageMetrics:
         """Extract test coverage metrics from a conversation."""
@@ -116,13 +115,12 @@ class OpenAIStructuredExtractionAdapter(StructuredExtractionPort):
         time_data = self._parse_schema(time_payload, TimeWindowSchema)
         coverage_data = self._parse_schema(coverage_payload, TestCoverageSchema)
         self._raise_if_blank(project_data.project_id, "project identifier")
-        self._raise_if_blank(time_data.month, "time window")
         matched_project = registry.find_project(project_data.project_id)
         if matched_project is None:
             self._raise_if_ambiguous("project identifier")
 
         project_id = ProjectId.from_raw(matched_project.id)
-        time_window = resolve_time_window(time_data.month, current_date)
+        time_window = resolve_time_window(time_data, current_date)
 
         return ExtractionResult(
             project_id=project_id,

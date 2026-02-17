@@ -28,7 +28,15 @@ Return JSON with:
 If the user's input doesn't clearly match any project, return the closest match with "low" confidence."""
 
 
-TIME_WINDOW_PROMPT = "Extract the reporting month from the conversation. Return it in YYYY-MM format (e.g., 2026-01)."
+TIME_WINDOW_PROMPT = (
+    "Extract the reporting month from the conversation. "
+    "Return JSON with exactly these fields: kind and month. "
+    "Allowed values: "
+    "kind='iso_month' with month='YYYY-MM' (e.g., '2026-01'), "
+    "kind='current_month' with month=null, "
+    "kind='previous_month' with month=null. "
+    "Do not return any other kind values, aliases, or extra fields."
+)
 
 TEST_COVERAGE_PROMPT = (
     "Extract test coverage metrics from the conversation. "

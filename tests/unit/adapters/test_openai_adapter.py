@@ -147,7 +147,7 @@ def test_extract_project_id_raises_on_unmatched_registry_project() -> None:
 
 def test_extract_time_window_parses_month() -> None:
     """Parse a YYYY-MM time window response."""
-    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"month": "2026-01"}'))])])
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"kind": "iso_month", "month": "2026-01"}'))])])
     adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(responses),
@@ -160,7 +160,7 @@ def test_extract_time_window_parses_month() -> None:
 
 def test_extract_time_window_raises_on_invalid_format() -> None:
     """Raise when time window format is invalid."""
-    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"month": "Jan"}'))])])
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"kind": "iso_month", "month": "Jan"}'))])])
     adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(responses),
@@ -172,7 +172,7 @@ def test_extract_time_window_raises_on_invalid_format() -> None:
 
 def test_extract_time_window_supports_current_keyword() -> None:
     """Resolve current month keyword into a TimeWindow."""
-    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"month": "current"}'))])])
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"kind": "current_month", "month": null}'))])])
     adapter = OpenAIStructuredExtractionAdapter(
         settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
         client=FakeOpenAITransportClient(responses),
@@ -181,6 +181,55 @@ def test_extract_time_window_supports_current_keyword() -> None:
     result = adapter.extract_time_window("current", date(2026, 2, 10))
 
     assert result == TimeWindow.from_year_month(2026, 2)
+
+
+def test_extract_time_window_supports_previous_month_kind() -> None:
+    """Resolve previous month kind into a TimeWindow."""
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"kind": "previous_month", "month": null}'))])])
+    adapter = OpenAIStructuredExtractionAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeOpenAITransportClient(responses),
+    )
+
+    result = adapter.extract_time_window("previous month", date(2026, 2, 10))
+
+    assert result == TimeWindow.from_year_month(2026, 1)
+
+
+def test_extract_time_window_raises_when_iso_month_has_null_month() -> None:
+    """Raise when iso_month kind is returned without month."""
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"kind": "iso_month", "month": null}'))])])
+    adapter = OpenAIStructuredExtractionAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeOpenAITransportClient(responses),
+    )
+
+    with pytest.raises(LLMExtractionError):
+        adapter.extract_time_window("January 2026", date(2026, 2, 2))
+
+
+def test_extract_time_window_raises_when_current_month_has_non_null_month() -> None:
+    """Raise when current_month kind provides a non-null month."""
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"kind": "current_month", "month": "2026-02"}'))])])
+    adapter = OpenAIStructuredExtractionAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeOpenAITransportClient(responses),
+    )
+
+    with pytest.raises(LLMExtractionError):
+        adapter.extract_time_window("current month", date(2026, 2, 2))
+
+
+def test_extract_time_window_raises_on_legacy_month_only_shape() -> None:
+    """Raise when legacy month-only payload is returned."""
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"month": "2026-01"}'))])])
+    adapter = OpenAIStructuredExtractionAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeOpenAITransportClient(responses),
+    )
+
+    with pytest.raises(LLMExtractionError):
+        adapter.extract_time_window("January 2026", date(2026, 2, 2))
 
 
 def test_extract_project_id_raises_for_blank_response() -> None:

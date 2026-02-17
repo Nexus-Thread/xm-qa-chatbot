@@ -14,6 +14,7 @@ from qa_chatbot.adapters.output.llm.structured_extraction.history import normali
 from qa_chatbot.adapters.output.llm.structured_extraction.mappers import to_test_coverage_metrics
 from qa_chatbot.adapters.output.llm.structured_extraction.parsers import resolve_time_window
 from qa_chatbot.adapters.output.llm.structured_extraction.schemas import TestCoverageSchema as CoverageSchema
+from qa_chatbot.adapters.output.llm.structured_extraction.schemas import TimeWindowSchema
 from qa_chatbot.domain import TimeWindow
 
 EXPECTED_MANUAL_TOTAL = 10
@@ -52,7 +53,7 @@ def test_normalize_history_raises_for_invalid_role() -> None:
 
 def test_resolve_time_window_resolves_previous_keyword() -> None:
     """Resolve previous month keyword into default previous reporting month."""
-    result = resolve_time_window("previous", date(2026, 2, 10))
+    result = resolve_time_window(TimeWindowSchema(kind="previous_month", month=None), date(2026, 2, 10))
 
     assert result == TimeWindow.from_year_month(2026, 1)
 
@@ -60,7 +61,7 @@ def test_resolve_time_window_resolves_previous_keyword() -> None:
 def test_resolve_time_window_raises_for_invalid_value() -> None:
     """Raise when time window value does not match supported formats."""
     with pytest.raises(LLMExtractionError):
-        resolve_time_window("January", date(2026, 2, 10))
+        resolve_time_window(TimeWindowSchema(kind="iso_month", month="2026-13"), date(2026, 2, 10))
 
 
 def test_to_test_coverage_metrics_maps_schema_fields() -> None:
