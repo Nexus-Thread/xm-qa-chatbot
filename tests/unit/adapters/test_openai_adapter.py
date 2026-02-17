@@ -225,6 +225,30 @@ def test_extract_test_coverage_accepts_all_null() -> None:
     assert result.automated_total is None
 
 
+def test_extract_test_coverage_raises_on_negative_manual_total() -> None:
+    """Raise when coverage payload contains a negative count."""
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"manual_total": -1}'))])])
+    adapter = OpenAIAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeOpenAITransportClient(responses),
+    )
+
+    with pytest.raises(LLMExtractionError):
+        adapter.extract_test_coverage("Manual total is -1")
+
+
+def test_extract_supported_releases_raises_on_negative_value() -> None:
+    """Raise when supported releases count is negative."""
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"supported_releases_count": -1}'))])])
+    adapter = OpenAIAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeOpenAITransportClient(responses),
+    )
+
+    with pytest.raises(LLMExtractionError):
+        adapter.extract_supported_releases_count("Supported releases are -1")
+
+
 def test_extract_time_window_raises_when_response_has_no_choices() -> None:
     """Raise when provider response has no choices."""
     responses = iter([FakeResponse(choices=[])])

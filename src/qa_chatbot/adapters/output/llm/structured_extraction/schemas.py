@@ -21,10 +21,10 @@ class TimeWindowSchema(BaseModel):
 class TestCoverageSchema(BaseModel):
     """Schema for test coverage extraction."""
 
-    manual_total: int | None = None
-    automated_total: int | None = None
-    manual_created_in_reporting_month: int | None = None
-    manual_updated_in_reporting_month: int | None = None
-    automated_created_in_reporting_month: int | None = None
-    automated_updated_in_reporting_month: int | None = None
-    supported_releases_count: int | None = None
+    manual_total: int | None = Field(default=None, ge=0)
+    automated_total: int | None = Field(default=None, ge=0)
+    manual_created_in_reporting_month: int | None = Field(default=None, ge=0)
+    manual_updated_in_reporting_month: int | None = Field(default=None, ge=0)
+    automated_created_in_reporting_month: int | None = Field(default=None, ge=0)
+    automated_updated_in_reporting_month: int | None = Field(default=None, ge=0)
+    supported_releases_count: int | None = Field(default=None, ge=0)
