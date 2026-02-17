@@ -3,9 +3,9 @@
 from .app_settings import AppSettings
 from .dashboard_data import (
     OverviewDashboardData,
-    TeamDetailDashboardData,
-    TeamMonthlySnapshot,
-    TeamOverviewCard,
+    ProjectDetailDashboardData,
+    ProjectMonthlySnapshot,
+    ProjectOverviewCard,
     TrendsDashboardData,
     TrendSeries,
 )
@@ -29,12 +29,12 @@ __all__ = [
     "ExtractionResult",
     "MonthlyReport",
     "OverviewDashboardData",
+    "ProjectDetailDashboardData",
+    "ProjectMonthlySnapshot",
+    "ProjectOverviewCard",
     "QualityMetricsRow",
     "ReportMetadata",
     "SubmissionCommand",
-    "TeamDetailDashboardData",
-    "TeamMonthlySnapshot",
-    "TeamOverviewCard",
     "TestCoverageRow",
     "TrendSeries",
     "TrendsDashboardData",

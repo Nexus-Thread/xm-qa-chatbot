@@ -12,7 +12,7 @@
       <header class="mb-8 flex items-center justify-between">
         <div>
           <h1 class="text-3xl font-semibold">QA Trends</h1>
-          <p class="text-slate-600">Cross-team comparisons by month</p>
+          <p class="text-slate-600">Cross-project comparisons by month</p>
         </div>
         <a
           class="text-sm font-medium text-blue-600 hover:text-blue-800"
@@ -39,7 +39,7 @@
             Deselect All
           </button>
           <span class="text-xs text-slate-500 ml-auto">
-            💡 Click legend items to toggle individual teams | Double-click chart to reset zoom
+            💡 Click legend items to toggle individual projects | Double-click chart to reset zoom
           </span>
         </div>
       </section>
@@ -67,7 +67,7 @@
       const automatedSeries = {{ chart_payload.qa_metric_series.automated_total | tojson }};
       const automationSeries = {{ chart_payload.qa_metric_series.percentage_automation | tojson }};
 
-      // Color palette for up to 40+ teams (cycling through colors)
+      // Color palette for up to 40+ projects (cycling through colors)
       const colorPalette = [
         '#2563eb', '#dc2626', '#16a34a', '#f97316', '#7c3aed',
         '#0891b2', '#ea580c', '#84cc16', '#ec4899', '#6366f1',

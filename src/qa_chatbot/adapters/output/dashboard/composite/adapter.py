@@ -25,13 +25,13 @@ class CompositeDashboardAdapter(DashboardPort):
         """Generate the overview dashboard across all configured adapters."""
         return self._generate(lambda adapter: adapter.generate_overview(month))
 
-    def generate_team_detail(self, team_id: ProjectId, months: list[TimeWindow]) -> Path:
-        """Generate the team detail dashboard across all configured adapters."""
-        return self._generate(lambda adapter: adapter.generate_team_detail(team_id, months))
+    def generate_project_detail(self, project_id: ProjectId, months: list[TimeWindow]) -> Path:
+        """Generate the project detail dashboard across all configured adapters."""
+        return self._generate(lambda adapter: adapter.generate_project_detail(project_id, months))
 
-    def generate_trends(self, teams: list[ProjectId], months: list[TimeWindow]) -> Path:
+    def generate_trends(self, projects: list[ProjectId], months: list[TimeWindow]) -> Path:
         """Generate the trends dashboard across all configured adapters."""
-        return self._generate(lambda adapter: adapter.generate_trends(teams, months))
+        return self._generate(lambda adapter: adapter.generate_trends(projects, months))
 
     def _generate(self, generator: Callable[[DashboardPort], Path]) -> Path:
         if not self.adapters:

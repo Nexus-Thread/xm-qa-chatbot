@@ -3,16 +3,16 @@
 from __future__ import annotations
 
 import traceback
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from qa_chatbot.adapters.input import EnvSettingsAdapter
 from qa_chatbot.adapters.output import HtmlDashboardAdapter, InMemoryMetricsAdapter, SQLiteAdapter
-from qa_chatbot.application import SubmitTeamDataUseCase
+from qa_chatbot.application import SubmitProjectDataUseCase
 from qa_chatbot.application.dtos import SubmissionCommand
-from qa_chatbot.domain import ProjectId, TestCoverageMetrics, TimeWindow
+from qa_chatbot.domain import ProjectId, SubmissionMetrics, TestCoverageMetrics, TimeWindow
 
-# ruff: noqa: T201, DTZ005
+# ruff: noqa: T201
 
 
 def submit_test_coverage_data() -> None:
@@ -62,25 +62,28 @@ def submit_test_coverage_data() -> None:
     test_coverage = TestCoverageMetrics(
         manual_total=1000,
         automated_total=500,
-        manual_created_last_month=100,
-        manual_updated_last_month=120,
-        automated_created_last_month=50,
-        automated_updated_last_month=30,
+        manual_created_in_reporting_month=100,
+        manual_updated_in_reporting_month=120,
+        automated_created_in_reporting_month=50,
+        automated_updated_in_reporting_month=30,
         percentage_automation=33.33,
     )
 
     command = SubmissionCommand(
         project_id=project_id,
         time_window=time_window,
-        test_coverage=test_coverage,
-        overall_test_cases=None,
+        metrics=SubmissionMetrics(
+            test_coverage=test_coverage,
+            overall_test_cases=None,
+            supported_releases_count=None,
+        ),
         raw_conversation="Direct API submission via script",
-        created_at=datetime.now(),
+        created_at=datetime.now(UTC),
     )
     print("✅ Submission command created\n")
 
     print("Step 5: Submitting data...")
-    submitter = SubmitTeamDataUseCase(
+    submitter = SubmitProjectDataUseCase(
         storage_port=storage,
         dashboard_port=dashboard_adapter,
         metrics_port=metrics_adapter,

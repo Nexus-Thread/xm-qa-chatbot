@@ -32,25 +32,25 @@ class FakeDashboardAdapter(DashboardPort):
         self.generated.append(f"overview:{month.to_iso_month()}")
         return self.base_path / "overview.html"
 
-    def generate_team_detail(self, team_id: ProjectId, months: list[TimeWindow]) -> Path:
-        """Record team detail generation and return output path."""
-        self.generated.append(f"team:{team_id.value}:{len(months)}")
-        return self.base_path / f"team-{team_id.value}.html"
+    def generate_project_detail(self, project_id: ProjectId, months: list[TimeWindow]) -> Path:
+        """Record project detail generation and return output path."""
+        self.generated.append(f"team:{project_id.value}:{len(months)}")
+        return self.base_path / f"project-{project_id.value}.html"
 
-    def generate_trends(self, teams: list[ProjectId], months: list[TimeWindow]) -> Path:
+    def generate_trends(self, projects: list[ProjectId], months: list[TimeWindow]) -> Path:
         """Record trends generation and return output path."""
-        self.generated.append(f"trends:{len(teams)}:{len(months)}")
+        self.generated.append(f"trends:{len(projects)}:{len(months)}")
         return self.base_path / "trends.html"
 
 
 def _seed_submissions(sqlite_adapter: SQLiteAdapter) -> None:
-    team_a = ProjectId("project-a")
-    team_b = ProjectId("project-b")
+    project_a = ProjectId("project-a")
+    project_b = ProjectId("project-b")
     jan = TimeWindow.from_year_month(2026, 1)
     feb = TimeWindow.from_year_month(2026, 2)
 
     submission_a_jan = Submission.create(
-        project_id=team_a,
+        project_id=project_a,
         month=jan,
         test_coverage=TestCoverageMetrics(
             manual_total=120,
@@ -64,7 +64,7 @@ def _seed_submissions(sqlite_adapter: SQLiteAdapter) -> None:
         overall_test_cases=None,
     )
     submission_b_jan = Submission.create(
-        project_id=team_b,
+        project_id=project_b,
         month=jan,
         test_coverage=TestCoverageMetrics(
             manual_total=95,
@@ -78,7 +78,7 @@ def _seed_submissions(sqlite_adapter: SQLiteAdapter) -> None:
         overall_test_cases=None,
     )
     submission_a_feb = Submission.create(
-        project_id=team_a,
+        project_id=project_a,
         month=feb,
         test_coverage=TestCoverageMetrics(
             manual_total=140,
@@ -102,7 +102,7 @@ def test_composite_dashboard_adapter_fans_out(tmp_path: Path) -> None:
     """Composite adapter should invoke all child adapters."""
     month = TimeWindow.from_year_month(2026, 2)
     months = [TimeWindow.from_year_month(2026, 2), TimeWindow.from_year_month(2026, 1)]
-    teams = [ProjectId("project-a"), ProjectId("project-b")]
+    projects = [ProjectId("project-a"), ProjectId("project-b")]
 
     generated_a: list[str] = []
     generated_b: list[str] = []
@@ -111,11 +111,11 @@ def test_composite_dashboard_adapter_fans_out(tmp_path: Path) -> None:
     composite = CompositeDashboardAdapter(adapters=(adapter_a, adapter_b))
 
     overview_path = composite.generate_overview(month)
-    team_path = composite.generate_team_detail(ProjectId("project-a"), months)
-    trends_path = composite.generate_trends(teams, months)
+    project_path = composite.generate_project_detail(ProjectId("project-a"), months)
+    trends_path = composite.generate_trends(projects, months)
 
     assert overview_path == tmp_path / "a" / "overview.html"
-    assert team_path == tmp_path / "a" / "team-project-a.html"
+    assert project_path == tmp_path / "a" / "project-project-a.html"
     assert trends_path == tmp_path / "a" / "trends.html"
     assert generated_a == ["overview:2026-02", "team:project-a:2", "trends:2:2"]
     assert generated_b == ["overview:2026-02", "team:project-a:2", "trends:2:2"]
@@ -144,17 +144,17 @@ def test_confluence_dashboard_adapter_generates_local_artifacts(
 
     months = [TimeWindow.from_year_month(2026, 2), TimeWindow.from_year_month(2026, 1)]
     overview = adapter.generate_overview(TimeWindow.from_year_month(2026, 2))
-    team = adapter.generate_team_detail(ProjectId("project-a"), months)
+    project = adapter.generate_project_detail(ProjectId("project-a"), months)
     trends = adapter.generate_trends([ProjectId("project-a"), ProjectId("project-b")], months)
 
     overview_content = overview.read_text(encoding="utf-8")
-    team_content = team.read_text(encoding="utf-8")
+    project_content = project.read_text(encoding="utf-8")
     trends_content = trends.read_text(encoding="utf-8")
 
     assert overview.name == "overview.confluence.html"
-    assert team.name == "team-project-a.confluence.html"
+    assert project.name == "project-project-a.confluence.html"
     assert trends.name == "trends.confluence.html"
     assert "Monthly QA Summary" in overview_content
     assert "Section B — Test Coverage" in overview_content
-    assert "Team Detail — project-a" in team_content
+    assert "Project Detail — project-a" in project_content
     assert "<h1>Trends</h1>" in trends_content

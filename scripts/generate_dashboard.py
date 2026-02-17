@@ -150,11 +150,11 @@ def _generate_views(
     generated_files.append(overview_path)
     print(f"  ✅ {overview_path}")
 
-    print(f"\nGenerating team detail dashboards for {len(projects)} projects...")
+    print(f"\nGenerating project detail dashboards for {len(projects)} projects...")
     for project in projects:
-        team_path = dashboard.generate_team_detail(project, recent_months)
-        generated_files.append(team_path)
-        print(f"  ✅ {team_path}")
+        project_path = dashboard.generate_project_detail(project, recent_months)
+        generated_files.append(project_path)
+        print(f"  ✅ {project_path}")
 
     print("\nGenerating trends dashboard...")
     trends_path = dashboard.generate_trends(projects, recent_months)

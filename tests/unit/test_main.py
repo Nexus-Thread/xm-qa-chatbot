@@ -44,7 +44,7 @@ def test_main_wires_components(monkeypatch: pytest.MonkeyPatch) -> None:
     metrics_adapter = MagicMock()
     monkeypatch.setattr(qa_chatbot.main, "InMemoryMetricsAdapter", lambda: metrics_adapter)
     monkeypatch.setattr(qa_chatbot.main, "ExtractStructuredDataUseCase", lambda **_: MagicMock())
-    monkeypatch.setattr(qa_chatbot.main, "SubmitTeamDataUseCase", lambda **_: MagicMock())
+    monkeypatch.setattr(qa_chatbot.main, "SubmitProjectDataUseCase", lambda **_: MagicMock())
     monkeypatch.setattr(qa_chatbot.main, "ConversationManager", lambda **_: MagicMock())
     gradio_adapter = MagicMock()
     monkeypatch.setattr(qa_chatbot.main, "GradioAdapter", lambda **_: gradio_adapter)

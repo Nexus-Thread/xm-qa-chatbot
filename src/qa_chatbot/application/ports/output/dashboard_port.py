@@ -16,8 +16,8 @@ class DashboardPort(Protocol):
     def generate_overview(self, month: TimeWindow) -> Path:
         """Generate the overview dashboard for a month."""
 
-    def generate_team_detail(self, team_id: ProjectId, months: list[TimeWindow]) -> Path:
+    def generate_project_detail(self, project_id: ProjectId, months: list[TimeWindow]) -> Path:
         """Generate the project detail dashboard for a month."""
 
-    def generate_trends(self, teams: list[ProjectId], months: list[TimeWindow]) -> Path:
+    def generate_trends(self, projects: list[ProjectId], months: list[TimeWindow]) -> Path:
         """Generate the trends dashboard."""

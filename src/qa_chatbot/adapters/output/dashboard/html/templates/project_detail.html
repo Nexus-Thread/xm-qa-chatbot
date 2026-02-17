@@ -11,7 +11,7 @@
     <main class="max-w-7xl mx-auto px-6 py-8 flex flex-col">
       <header class="mb-8 flex items-center justify-between">
         <div>
-          <h1 class="text-3xl font-semibold">Project {{ data.team_id.value }}</h1>
+          <h1 class="text-3xl font-semibold">Project {{ data.project_id.value }}</h1>
           <p class="text-slate-600">Monthly test coverage trends</p>
         </div>
         <a
@@ -179,7 +179,7 @@
         modeBarButtonsToRemove: ['lasso2d', 'select2d'],
         toImageButtonOptions: {
           format: 'png',
-          filename: 'team_coverage_trend',
+          filename: 'project_coverage_trend',
           height: 800,
           width: 1400,
           scale: 2

@@ -10,10 +10,10 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
-class TeamOverviewCard:
+class ProjectOverviewCard:
     """Summary for a project on the overview dashboard."""
 
-    team_id: ProjectId
+    project_id: ProjectId
     month: TimeWindow
     qa_metrics: dict[str, float | int | bool | None]
     project_status: dict[str, float | list[str] | None]
@@ -25,11 +25,11 @@ class OverviewDashboardData:
     """Data needed for the overview dashboard."""
 
     month: TimeWindow
-    teams: list[TeamOverviewCard]
+    projects: list[ProjectOverviewCard]
 
 
 @dataclass(frozen=True)
-class TeamMonthlySnapshot:
+class ProjectMonthlySnapshot:
     """Per-month snapshot for a project."""
 
     month: TimeWindow
@@ -39,11 +39,11 @@ class TeamMonthlySnapshot:
 
 
 @dataclass(frozen=True)
-class TeamDetailDashboardData:
+class ProjectDetailDashboardData:
     """Data needed for a project detail dashboard."""
 
-    team_id: ProjectId
-    snapshots: list[TeamMonthlySnapshot]
+    project_id: ProjectId
+    snapshots: list[ProjectMonthlySnapshot]
 
 
 @dataclass(frozen=True)
@@ -58,7 +58,7 @@ class TrendSeries:
 class TrendsDashboardData:
     """Data needed for the trends dashboard."""
 
-    teams: list[ProjectId]
+    projects: list[ProjectId]
     months: list[TimeWindow]
     qa_metric_series: dict[str, list[TrendSeries]]
     project_metric_series: dict[str, list[TrendSeries]]

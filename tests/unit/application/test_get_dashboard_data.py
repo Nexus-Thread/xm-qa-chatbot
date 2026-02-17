@@ -22,13 +22,13 @@ class FakeStoragePort:
         """Persist a submission in memory."""
         self._submissions.append(submission)
 
-    def get_submissions_by_project(self, team_id: ProjectId, month: TimeWindow) -> list[Submission]:
+    def get_submissions_by_project(self, project_id: ProjectId, month: TimeWindow) -> list[Submission]:
         """Return submissions for a project and month."""
-        return [submission for submission in self._submissions if submission.project_id == team_id and submission.month == month]
+        return [submission for submission in self._submissions if submission.project_id == project_id and submission.month == month]
 
     def get_all_projects(self) -> list[ProjectId]:
         """Return all project IDs in sorted order."""
-        return sorted({submission.project_id for submission in self._submissions}, key=lambda team: team.value)
+        return sorted({submission.project_id for submission in self._submissions}, key=lambda project: project.value)
 
     def get_submissions_by_month(self, month: TimeWindow) -> list[Submission]:
         """Return submissions for a reporting month."""
@@ -65,49 +65,49 @@ def _submission(
     )
 
 
-def test_build_overview_sorts_by_team() -> None:
-    """Ensure overview cards are sorted by team ID."""
-    team_a = ProjectId("Alpha")
-    team_b = ProjectId("Beta")
+def test_build_overview_sorts_by_project() -> None:
+    """Ensure overview cards are sorted by project ID."""
+    project_a = ProjectId("Alpha")
+    project_b = ProjectId("Beta")
     month = TimeWindow.from_year_month(2026, 1)
     submissions = [
-        _submission(team_b, month, manual_total=10, created_at=datetime(2026, 1, 5, tzinfo=UTC)),
-        _submission(team_a, month, manual_total=5, created_at=datetime(2026, 1, 4, tzinfo=UTC)),
+        _submission(project_b, month, manual_total=10, created_at=datetime(2026, 1, 5, tzinfo=UTC)),
+        _submission(project_a, month, manual_total=5, created_at=datetime(2026, 1, 4, tzinfo=UTC)),
     ]
     use_case = GetDashboardDataUseCase(storage_port=FakeStoragePort(submissions))
 
     overview = use_case.build_overview(month)
 
-    assert [card.team_id.value for card in overview.teams] == ["Alpha", "Beta"]
+    assert [card.project_id.value for card in overview.projects] == ["Alpha", "Beta"]
 
 
-def test_build_team_detail_prefers_latest_submission() -> None:
-    """Ensure team detail chooses the most recent submission."""
-    team = ProjectId("Gamma")
+def test_build_project_detail_prefers_latest_submission() -> None:
+    """Ensure project detail chooses the most recent submission."""
+    project = ProjectId("Gamma")
     month = TimeWindow.from_year_month(2026, 1)
     submissions = [
-        _submission(team, month, manual_total=3, created_at=datetime(2026, 1, 3, tzinfo=UTC)),
-        _submission(team, month, manual_total=8, created_at=datetime(2026, 1, 10, tzinfo=UTC)),
+        _submission(project, month, manual_total=3, created_at=datetime(2026, 1, 3, tzinfo=UTC)),
+        _submission(project, month, manual_total=8, created_at=datetime(2026, 1, 10, tzinfo=UTC)),
     ]
     use_case = GetDashboardDataUseCase(storage_port=FakeStoragePort(submissions))
 
-    detail = use_case.build_team_detail(team, [month])
+    detail = use_case.build_project_detail(project, [month])
 
     assert detail.snapshots[0].qa_metrics["manual_total"] == EXPECTED_MANUAL_TOTAL
 
 
-def test_build_trends_returns_series_for_each_team() -> None:
-    """Ensure trend series includes each team."""
-    team_a = ProjectId("Alpha")
-    team_b = ProjectId("Beta")
+def test_build_trends_returns_series_for_each_project() -> None:
+    """Ensure trend series includes each project."""
+    project_a = ProjectId("Alpha")
+    project_b = ProjectId("Beta")
     month = TimeWindow.from_year_month(2026, 1)
     submissions = [
-        _submission(team_a, month, manual_total=4, created_at=datetime(2026, 1, 2, tzinfo=UTC)),
-        _submission(team_b, month, manual_total=9, created_at=datetime(2026, 1, 2, tzinfo=UTC)),
+        _submission(project_a, month, manual_total=4, created_at=datetime(2026, 1, 2, tzinfo=UTC)),
+        _submission(project_b, month, manual_total=9, created_at=datetime(2026, 1, 2, tzinfo=UTC)),
     ]
     use_case = GetDashboardDataUseCase(storage_port=FakeStoragePort(submissions))
 
-    trends = use_case.build_trends([team_a, team_b], [month])
+    trends = use_case.build_trends([project_a, project_b], [month])
 
     series_labels = [series.label for series in trends.qa_metric_series["manual_total"]]
     assert series_labels == ["Alpha", "Beta"]

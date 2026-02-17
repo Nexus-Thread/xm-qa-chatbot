@@ -56,13 +56,13 @@ def _normalize_html(content: str) -> str:
 
 
 def _seed_submissions(sqlite_adapter: SQLiteAdapter) -> None:
-    team_a = ProjectId("project-a")
-    team_b = ProjectId("project-b")
+    project_a = ProjectId("project-a")
+    project_b = ProjectId("project-b")
     jan = TimeWindow.from_year_month(2026, 1)
     feb = TimeWindow.from_year_month(2026, 2)
 
     submission_a_jan = Submission.create(
-        project_id=team_a,
+        project_id=project_a,
         month=jan,
         test_coverage=TestCoverageMetrics(
             manual_total=120,
@@ -76,7 +76,7 @@ def _seed_submissions(sqlite_adapter: SQLiteAdapter) -> None:
         overall_test_cases=None,
     )
     submission_b_jan = Submission.create(
-        project_id=team_b,
+        project_id=project_b,
         month=jan,
         test_coverage=TestCoverageMetrics(
             manual_total=95,
@@ -90,7 +90,7 @@ def _seed_submissions(sqlite_adapter: SQLiteAdapter) -> None:
         overall_test_cases=None,
     )
     submission_a_feb = Submission.create(
-        project_id=team_a,
+        project_id=project_a,
         month=feb,
         test_coverage=TestCoverageMetrics(
             manual_total=140,
@@ -149,16 +149,16 @@ def test_generate_overview_snapshot(
     assert "Section B — Test Coverage" in html
 
 
-def test_generate_team_detail_snapshot(
+def test_generate_project_detail_snapshot(
     dashboard_adapter: HtmlDashboardAdapter,
     project_id_a: ProjectId,
     request: pytest.FixtureRequest,
 ) -> None:
-    """Render and snapshot the team detail dashboard."""
+    """Render and snapshot the project detail dashboard."""
     months = [TimeWindow.from_year_month(2026, 2), TimeWindow.from_year_month(2026, 1)]
-    output_path = dashboard_adapter.generate_team_detail(project_id_a, months)
+    output_path = dashboard_adapter.generate_project_detail(project_id_a, months)
     html = _normalize_html(output_path.read_text(encoding="utf-8"))
-    _assert_snapshot(request, "team_detail", html)
+    _assert_snapshot(request, "project_detail", html)
 
 
 def test_generate_trends_snapshot(

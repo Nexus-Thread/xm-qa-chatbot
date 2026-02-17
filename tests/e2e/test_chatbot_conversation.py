@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from qa_chatbot.adapters.input.gradio.conversation_manager import ConversationManager, ConversationSession
-from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitTeamDataUseCase
+from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitProjectDataUseCase
 from qa_chatbot.application.dtos import ExtractionResult
 from qa_chatbot.domain import (
     ExtractionConfidence,
@@ -127,7 +127,7 @@ def conversation_manager() -> ConversationManager:
     """Provide a conversation manager with fakes."""
     extractor = ExtractStructuredDataUseCase(llm_port=FakeLLM())
     storage = FakeStorage(submissions=[])
-    submitter = SubmitTeamDataUseCase(storage_port=storage)
+    submitter = SubmitProjectDataUseCase(storage_port=storage)
     return ConversationManager(extractor=extractor, submitter=submitter)
 
 
@@ -155,7 +155,7 @@ def test_conversation_skip_section(conversation_manager: ConversationManager) ->
     """Skip a section and ensure the flow continues."""
     session, _ = conversation_manager.start_session(date(2026, 1, 15))
 
-    _, session = conversation_manager.handle_message("QA Team", session, date(2026, 1, 15))
+    _, session = conversation_manager.handle_message("QA Project", session, date(2026, 1, 15))
     _, session = conversation_manager.handle_message("2026-01", session, date(2026, 1, 15))
 
     response, session = conversation_manager.handle_message("skip", session, date(2026, 1, 15))

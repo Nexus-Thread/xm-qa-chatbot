@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 class MetricsPort(Protocol):
     """Observability interface for application metrics."""
 
-    def record_submission(self, team_id: ProjectId, time_window: TimeWindow) -> None:
+    def record_submission(self, project_id: ProjectId, time_window: TimeWindow) -> None:
         """Record a successful submission event."""
 
     def record_llm_latency(self, operation: str, elapsed_ms: float) -> None:

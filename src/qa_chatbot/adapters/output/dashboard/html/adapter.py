@@ -16,7 +16,7 @@ from qa_chatbot.application.use_cases import GenerateMonthlyReportUseCase, GetDa
 from qa_chatbot.domain import build_default_stream_project_registry
 
 if TYPE_CHECKING:
-    from qa_chatbot.application.dtos import TeamDetailDashboardData, TrendsDashboardData, TrendSeries
+    from qa_chatbot.application.dtos import ProjectDetailDashboardData, TrendsDashboardData, TrendSeries
     from qa_chatbot.domain import ProjectId, TimeWindow
 
 
@@ -65,20 +65,20 @@ class HtmlDashboardAdapter(DashboardPort):
             context={"report": report},
         )
 
-    def generate_team_detail(self, team_id: ProjectId, months: list[TimeWindow]) -> Path:
+    def generate_project_detail(self, project_id: ProjectId, months: list[TimeWindow]) -> Path:
         """Generate the project detail dashboard."""
-        data = self._use_case.build_team_detail(team_id, months)
-        chart_payload = self._build_team_detail_chart_payload(data)
-        file_name = f"team-{team_id.value.lower()}.html"
+        data = self._use_case.build_project_detail(project_id, months)
+        chart_payload = self._build_project_detail_chart_payload(data)
+        file_name = f"project-{project_id.value.lower()}.html"
         return self._render_template(
-            template_name="team_detail.html",
+            template_name="project_detail.html",
             output_name=file_name,
             context={"data": data, "chart_payload": chart_payload},
         )
 
-    def generate_trends(self, teams: list[ProjectId], months: list[TimeWindow]) -> Path:
+    def generate_trends(self, projects: list[ProjectId], months: list[TimeWindow]) -> Path:
         """Generate the trends dashboard."""
-        data = self._use_case.build_trends(teams, months)
+        data = self._use_case.build_trends(projects, months)
         chart_payload = self._build_chart_payload(data)
         return self._render_template(
             template_name="trends.html",
@@ -133,8 +133,8 @@ class HtmlDashboardAdapter(DashboardPort):
         return {"label": series.label, "values": list(reversed(series.values))}
 
     @staticmethod
-    def _build_team_detail_chart_payload(data: TeamDetailDashboardData) -> dict[str, object]:
-        """Build JSON payloads for the team detail charts (chronological order)."""
+    def _build_project_detail_chart_payload(data: ProjectDetailDashboardData) -> dict[str, object]:
+        """Build JSON payloads for the project detail charts (chronological order)."""
         chronological = list(reversed(data.snapshots))
         return {
             "labels": [snapshot.month.to_iso_month() for snapshot in chronological],

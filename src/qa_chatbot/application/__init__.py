@@ -2,7 +2,7 @@
 
 from .dtos import ExtractionResult, SubmissionCommand
 from .ports import DashboardPort, LLMPort, MetricsPort, StoragePort
-from .use_cases import ExtractStructuredDataUseCase, GetDashboardDataUseCase, SubmitTeamDataUseCase
+from .use_cases import ExtractStructuredDataUseCase, GetDashboardDataUseCase, SubmitProjectDataUseCase
 
 __all__ = [
     "DashboardPort",
@@ -13,5 +13,5 @@ __all__ = [
     "MetricsPort",
     "StoragePort",
     "SubmissionCommand",
-    "SubmitTeamDataUseCase",
+    "SubmitProjectDataUseCase",
 ]

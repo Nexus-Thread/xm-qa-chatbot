@@ -1,4 +1,4 @@
-"""Submit structured team data for persistence."""
+"""Submit structured project data for persistence."""
 
 from __future__ import annotations
 
@@ -14,8 +14,8 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
-class SubmitTeamDataUseCase:
-    """Validate and persist a team submission."""
+class SubmitProjectDataUseCase:
+    """Validate and persist a project submission."""
 
     storage_port: StoragePort
     dashboard_port: DashboardPort | None = None
@@ -27,7 +27,7 @@ class SubmitTeamDataUseCase:
         object.__setattr__(self, "_logger", logging.getLogger(self.__class__.__name__))
 
     def execute(self, command: SubmissionCommand) -> Submission:
-        """Persist a team submission, merging with existing data for the same project/month."""
+        """Persist a project submission, merging with existing data for the same project/month."""
         self._logger.info(
             "Submitting project data",
             extra={
@@ -50,7 +50,7 @@ class SubmitTeamDataUseCase:
             recent_months = self.storage_port.get_recent_months(limit=6)
             projects = self.storage_port.get_all_projects()
             self.dashboard_port.generate_overview(submission.month)
-            self.dashboard_port.generate_team_detail(submission.project_id, recent_months)
+            self.dashboard_port.generate_project_detail(submission.project_id, recent_months)
             self.dashboard_port.generate_trends(projects, recent_months)
         self._logger.info(
             "Submission saved",

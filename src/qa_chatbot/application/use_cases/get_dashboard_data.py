@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING
 
 from qa_chatbot.application.dtos import (
     OverviewDashboardData,
-    TeamDetailDashboardData,
-    TeamMonthlySnapshot,
-    TeamOverviewCard,
+    ProjectDetailDashboardData,
+    ProjectMonthlySnapshot,
+    ProjectOverviewCard,
     TrendsDashboardData,
     TrendSeries,
 )
@@ -28,31 +28,31 @@ class GetDashboardDataUseCase:
     def build_overview(self, month: TimeWindow) -> OverviewDashboardData:
         """Build overview data for a reporting month."""
         submissions = self.storage_port.get_submissions_by_month(month)
-        teams = [self._to_overview_card(submission) for submission in submissions]
-        teams.sort(key=lambda card: card.team_id.value)
-        return OverviewDashboardData(month=month, teams=teams)
+        projects = [self._to_overview_card(submission) for submission in submissions]
+        projects.sort(key=lambda card: card.project_id.value)
+        return OverviewDashboardData(month=month, projects=projects)
 
-    def build_team_detail(self, team_id: ProjectId, months: list[TimeWindow]) -> TeamDetailDashboardData:
+    def build_project_detail(self, project_id: ProjectId, months: list[TimeWindow]) -> ProjectDetailDashboardData:
         """Build detail data for a project across months."""
-        snapshots: list[TeamMonthlySnapshot] = []
+        snapshots: list[ProjectMonthlySnapshot] = []
         for month in months:
-            submissions = self.storage_port.get_submissions_by_project(team_id, month)
+            submissions = self.storage_port.get_submissions_by_project(project_id, month)
             if not submissions:
                 snapshots.append(self._empty_snapshot(month))
                 continue
             latest = self._latest_submission(submissions)
             snapshots.append(self._to_snapshot(latest))
-        return TeamDetailDashboardData(team_id=team_id, snapshots=snapshots)
+        return ProjectDetailDashboardData(project_id=project_id, snapshots=snapshots)
 
-    def build_trends(self, teams: list[ProjectId], months: list[TimeWindow]) -> TrendsDashboardData:
+    def build_trends(self, projects: list[ProjectId], months: list[TimeWindow]) -> TrendsDashboardData:
         """Build trends data for projects across months."""
         qa_metric_series = {
-            "manual_total": self._trend_series(teams, months, "test_coverage", "manual_total"),
-            "automated_total": self._trend_series(teams, months, "test_coverage", "automated_total"),
-            "percentage_automation": self._trend_series(teams, months, "test_coverage", "percentage_automation"),
+            "manual_total": self._trend_series(projects, months, "test_coverage", "manual_total"),
+            "automated_total": self._trend_series(projects, months, "test_coverage", "automated_total"),
+            "percentage_automation": self._trend_series(projects, months, "test_coverage", "percentage_automation"),
         }
         return TrendsDashboardData(
-            teams=teams,
+            projects=projects,
             months=months,
             qa_metric_series=qa_metric_series,
             project_metric_series={},
@@ -60,23 +60,23 @@ class GetDashboardDataUseCase:
 
     def _trend_series(
         self,
-        teams: list[ProjectId],
+        projects: list[ProjectId],
         months: list[TimeWindow],
         section: str,
         field: str,
     ) -> list[TrendSeries]:
         series: list[TrendSeries] = []
-        for team in teams:
+        for project in projects:
             values: list[float | int | None] = []
             for month in months:
-                submissions = self.storage_port.get_submissions_by_project(team, month)
+                submissions = self.storage_port.get_submissions_by_project(project, month)
                 if not submissions:
                     values.append(None)
                     continue
                 latest = self._latest_submission(submissions)
                 value = self._extract_section_value(latest, section, field)
                 values.append(value)
-            series.append(TrendSeries(label=team.value, values=values))
+            series.append(TrendSeries(label=project.value, values=values))
         return series
 
     def _extract_section_value(
@@ -93,25 +93,25 @@ class GetDashboardDataUseCase:
     def _latest_submission(self, submissions: list[Submission]) -> Submission:
         return max(submissions, key=lambda item: item.created_at)
 
-    def _to_overview_card(self, submission: Submission) -> TeamOverviewCard:
-        return TeamOverviewCard(
-            team_id=submission.project_id,
+    def _to_overview_card(self, submission: Submission) -> ProjectOverviewCard:
+        return ProjectOverviewCard(
+            project_id=submission.project_id,
             month=submission.month,
             qa_metrics=self._coverage_payload(submission.test_coverage),
             project_status={},
             daily_update={},
         )
 
-    def _to_snapshot(self, submission: Submission) -> TeamMonthlySnapshot:
-        return TeamMonthlySnapshot(
+    def _to_snapshot(self, submission: Submission) -> ProjectMonthlySnapshot:
+        return ProjectMonthlySnapshot(
             month=submission.month,
             qa_metrics=self._coverage_payload(submission.test_coverage),
             project_status={},
             daily_update={},
         )
 
-    def _empty_snapshot(self, month: TimeWindow) -> TeamMonthlySnapshot:
-        return TeamMonthlySnapshot(
+    def _empty_snapshot(self, month: TimeWindow) -> ProjectMonthlySnapshot:
+        return ProjectMonthlySnapshot(
             month=month,
             qa_metrics=self._coverage_payload(None),
             project_status={},

@@ -15,7 +15,7 @@ from qa_chatbot.adapters.output import (
     SQLiteAdapter,
 )
 from qa_chatbot.adapters.output.llm.openai import OpenAISettings
-from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitTeamDataUseCase
+from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitProjectDataUseCase
 from qa_chatbot.config import LoggingSettings, configure_logging
 
 
@@ -58,7 +58,7 @@ def main() -> None:
     )
     metrics_adapter = InMemoryMetricsAdapter()
     extractor = ExtractStructuredDataUseCase(llm_port=llm_adapter, metrics_port=metrics_adapter)
-    submitter = SubmitTeamDataUseCase(
+    submitter = SubmitProjectDataUseCase(
         storage_port=storage,
         dashboard_port=dashboard_adapter,
         metrics_port=metrics_adapter,

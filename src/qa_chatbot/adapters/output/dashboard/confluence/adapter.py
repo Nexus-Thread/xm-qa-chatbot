@@ -15,7 +15,7 @@ from qa_chatbot.domain import build_default_stream_project_registry
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from qa_chatbot.application.dtos import MonthlyReport, TeamDetailDashboardData, TrendsDashboardData
+    from qa_chatbot.application.dtos import MonthlyReport, ProjectDetailDashboardData, TrendsDashboardData
     from qa_chatbot.domain import ProjectId, TimeWindow
 
 
@@ -56,15 +56,15 @@ class ConfluenceDashboardAdapter(DashboardPort):
         rendered = self._render_overview(report)
         return self._write_page("overview.confluence.html", rendered)
 
-    def generate_team_detail(self, team_id: ProjectId, months: list[TimeWindow]) -> Path:
-        """Generate the team detail artifact."""
-        data = self._use_case.build_team_detail(team_id, months)
-        rendered = self._render_team_detail(data)
-        return self._write_page(f"team-{team_id.value.lower()}.confluence.html", rendered)
+    def generate_project_detail(self, project_id: ProjectId, months: list[TimeWindow]) -> Path:
+        """Generate the project detail artifact."""
+        data = self._use_case.build_project_detail(project_id, months)
+        rendered = self._render_project_detail(data)
+        return self._write_page(f"project-{project_id.value.lower()}.confluence.html", rendered)
 
-    def generate_trends(self, teams: list[ProjectId], months: list[TimeWindow]) -> Path:
+    def generate_trends(self, projects: list[ProjectId], months: list[TimeWindow]) -> Path:
         """Generate the trends artifact."""
-        data = self._use_case.build_trends(teams, months)
+        data = self._use_case.build_trends(projects, months)
         rendered = self._render_trends(data)
         return self._write_page("trends.confluence.html", rendered)
 
@@ -116,7 +116,7 @@ class ConfluenceDashboardAdapter(DashboardPort):
             "</ac:rich-text-body></ac:structured-macro>"
         )
 
-    def _render_team_detail(self, data: TeamDetailDashboardData) -> str:
+    def _render_project_detail(self, data: ProjectDetailDashboardData) -> str:
         rows = "".join(
             "<tr>"
             f"<td>{snapshot.month.to_iso_month()}</td>"
@@ -127,7 +127,7 @@ class ConfluenceDashboardAdapter(DashboardPort):
             for snapshot in data.snapshots
         )
         return (
-            f"<h1>Team Detail — {data.team_id.value}</h1>"
+            f"<h1>Project Detail — {data.project_id.value}</h1>"
             "<table><tbody>"
             "<tr><th>Month</th><th>Manual</th><th>Automated</th><th>Automation %</th></tr>"
             f"{rows}"
@@ -142,7 +142,7 @@ class ConfluenceDashboardAdapter(DashboardPort):
                 f"<tr><td>{series.label}</td><td>{', '.join(self._fmt(value) for value in series.values)}</td></tr>"
                 for series in series_list
             )
-            sections.append(f"<h2>{metric_name}</h2><table><tbody><tr><th>Team</th><th>Values</th></tr>{series_rows}</tbody></table>")
+            sections.append(f"<h2>{metric_name}</h2><table><tbody><tr><th>Project</th><th>Values</th></tr>{series_rows}</tbody></table>")
         return f"<h1>Trends</h1><p>Months: {months}</p>{''.join(sections)}"
 
     @staticmethod

@@ -35,14 +35,14 @@ class InMemoryMetricsAdapter(MetricsPort):
         """Initialize logging for metrics."""
         self._logger = logging.getLogger(self.__class__.__name__)
 
-    def record_submission(self, team_id: ProjectId, time_window: TimeWindow) -> None:
+    def record_submission(self, project_id: ProjectId, time_window: TimeWindow) -> None:
         """Record a successful submission event."""
         self.submissions += 1
         self.last_submission_at = datetime.now(tz=UTC)
         self._logger.info(
             "Submission recorded",
             extra={
-                "project_id": str(team_id),
+                "project_id": str(project_id),
                 "time_window": str(time_window),
                 "submission_count": self.submissions,
             },

@@ -8,9 +8,9 @@ from pathlib import Path
 
 from qa_chatbot.adapters.input import EnvSettingsAdapter
 from qa_chatbot.adapters.output import HtmlDashboardAdapter, InMemoryMetricsAdapter, SQLiteAdapter
-from qa_chatbot.application import SubmitTeamDataUseCase
+from qa_chatbot.application import SubmitProjectDataUseCase
 from qa_chatbot.application.dtos import SubmissionCommand
-from qa_chatbot.domain import ProjectId, TestCoverageMetrics, TimeWindow, build_default_registry
+from qa_chatbot.domain import ProjectId, SubmissionMetrics, TestCoverageMetrics, TimeWindow, build_default_registry
 
 # ruff: noqa: T201
 
@@ -80,10 +80,10 @@ def create_test_coverage_metrics(data: dict[str, int]) -> TestCoverageMetrics:
     return TestCoverageMetrics(
         manual_total=data["manual_total"],
         automated_total=data["automated_total"],
-        manual_created_last_month=data["manual_created"],
-        manual_updated_last_month=data["manual_updated"],
-        automated_created_last_month=data["automated_created"],
-        automated_updated_last_month=data["automated_updated"],
+        manual_created_in_reporting_month=data["manual_created"],
+        manual_updated_in_reporting_month=data["manual_updated"],
+        automated_created_in_reporting_month=data["automated_created"],
+        automated_updated_in_reporting_month=data["automated_updated"],
         percentage_automation=percentage,
     )
 
@@ -128,7 +128,7 @@ def seed_database() -> None:
     projects = load_active_projects()
 
     # Create use case
-    submitter = SubmitTeamDataUseCase(
+    submitter = SubmitProjectDataUseCase(
         storage_port=storage,
         dashboard_port=dashboard_adapter,
         metrics_port=metrics_adapter,
@@ -170,8 +170,11 @@ def seed_database() -> None:
             command = SubmissionCommand(
                 project_id=project_id,
                 time_window=time_window,
-                test_coverage=test_coverage,
-                overall_test_cases=None,
+                metrics=SubmissionMetrics(
+                    test_coverage=test_coverage,
+                    overall_test_cases=None,
+                    supported_releases_count=None,
+                ),
                 raw_conversation="Seeded data via seed_database.py script",
                 created_at=datetime.now(UTC),
             )

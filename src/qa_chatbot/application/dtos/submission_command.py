@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class SubmissionCommand:
-    """Input data for submitting team metrics."""
+    """Input data for submitting project metrics."""
 
     project_id: ProjectId
     time_window: TimeWindow

@@ -20,7 +20,7 @@ from qa_chatbot.domain import (
 if TYPE_CHECKING:
     from datetime import date
 
-    from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitTeamDataUseCase
+    from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitProjectDataUseCase
     from qa_chatbot.domain.value_objects import ExtractionConfidence, TestCoverageMetrics
 
 # Time window parsing constants
@@ -60,7 +60,7 @@ class ConversationManager:
     def __init__(
         self,
         extractor: ExtractStructuredDataUseCase,
-        submitter: SubmitTeamDataUseCase,
+        submitter: SubmitProjectDataUseCase,
     ) -> None:
         """Initialize the conversation manager."""
         self._extractor = extractor
