@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import uuid4
 
-from sqlalchemy import JSON, DateTime, String, UniqueConstraint
+from sqlalchemy import JSON, DateTime, Integer, String, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -24,6 +24,6 @@ class SubmissionModel(Base):
     month: Mapped[str] = mapped_column(String, nullable=False, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
     test_coverage: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    overall_test_cases: Mapped[int | None] = mapped_column(JSON, nullable=True)
-    supported_releases_count: Mapped[int | None] = mapped_column(JSON, nullable=True)
+    overall_test_cases: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    supported_releases_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
     raw_conversation: Mapped[str | None] = mapped_column(String, nullable=True)

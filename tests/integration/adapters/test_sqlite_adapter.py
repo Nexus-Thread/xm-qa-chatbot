@@ -4,6 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import pytest
+from sqlalchemy import text
+
+from qa_chatbot.domain import StorageOperationError
+
 if TYPE_CHECKING:
     from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter
     from qa_chatbot.domain import ProjectId, Submission, TimeWindow
@@ -80,3 +85,59 @@ def test_sqlite_adapter_resubmission_replaces_data(
     assert updated.test_coverage.manual_total == UPDATED_MANUAL_TOTAL, "Manual total should be updated"
     assert updated.test_coverage.automated_total == UPDATED_AUTOMATED_TOTAL, "Automated total should be updated"
     assert updated.raw_conversation == "Updated data"
+
+
+def test_sqlite_adapter_returns_recent_months_descending_with_limit(
+    sqlite_adapter: SQLiteAdapter,
+    submission_project_a_jan: Submission,
+    project_id_b: ProjectId,
+    time_window_feb: TimeWindow,
+) -> None:
+    """Return recent months in descending order and honor limit."""
+    from qa_chatbot.domain import Submission, TestCoverageMetrics  # noqa: PLC0415
+
+    sqlite_adapter.save_submission(submission_project_a_jan)
+    sqlite_adapter.save_submission(
+        Submission.create(
+            project_id=project_id_b,
+            month=time_window_feb,
+            test_coverage=TestCoverageMetrics(manual_total=1, automated_total=1),
+        )
+    )
+
+    recent_months = sqlite_adapter.get_recent_months(limit=1)
+
+    assert [month.to_iso_month() for month in recent_months] == [time_window_feb.to_iso_month()]
+
+
+def test_sqlite_adapter_clear_all_submissions_removes_data(
+    sqlite_adapter: SQLiteAdapter,
+    submission_project_a_jan: Submission,
+    time_window_jan: TimeWindow,
+) -> None:
+    """Clear submissions removes all rows from storage."""
+    sqlite_adapter.save_submission(submission_project_a_jan)
+
+    sqlite_adapter.clear_all_submissions()
+
+    assert sqlite_adapter.get_submissions_by_month(time_window_jan) == []
+    assert sqlite_adapter.get_all_projects() == []
+
+
+def test_sqlite_adapter_uses_integer_columns_for_scalar_metrics(sqlite_adapter: SQLiteAdapter) -> None:
+    """Store scalar metrics as INTEGER columns in SQLite schema."""
+    with sqlite_adapter.engine.connect() as connection:
+        rows = connection.execute(text("PRAGMA table_info(submissions)"))
+        table_info = {str(row[1]): str(row[2]) for row in rows}
+
+    assert table_info["overall_test_cases"].upper() == "INTEGER"
+    assert table_info["supported_releases_count"].upper() == "INTEGER"
+
+
+def test_sqlite_adapter_translates_sqlalchemy_error(sqlite_adapter: SQLiteAdapter, time_window_jan: TimeWindow) -> None:
+    """Translate SQLAlchemy read errors to domain storage errors."""
+    with sqlite_adapter.engine.begin() as connection:
+        connection.execute(text("DROP TABLE submissions"))
+
+    with pytest.raises(StorageOperationError, match="SQLite read operation failed"):
+        sqlite_adapter.get_submissions_by_month(time_window_jan)

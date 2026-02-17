@@ -27,3 +27,7 @@ class InvalidSubmissionTeamError(DomainError):
 
 class InvalidConfigurationError(DomainError):
     """Raised when application configuration is invalid."""
+
+
+class StorageOperationError(DomainError):
+    """Raised when a persistence operation fails."""

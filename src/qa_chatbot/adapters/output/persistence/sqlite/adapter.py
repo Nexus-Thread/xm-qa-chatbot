@@ -6,11 +6,13 @@ import logging
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, TypeVar
 
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, delete, select
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 
 from qa_chatbot.application.ports import StoragePort
-from qa_chatbot.domain import ProjectId, Submission, TimeWindow
+from qa_chatbot.domain import ProjectId, StorageOperationError, Submission, TimeWindow
 
 from .mappers import model_to_submission, submission_to_model, time_window_from_iso
 from .models import Base, SubmissionModel
@@ -39,15 +41,24 @@ class SQLiteAdapter(StoragePort):
 
     def save_submission(self, submission: Submission) -> None:
         """Persist a submission in SQLite, replacing any existing submission for the same project/month."""
-        with self._session_scope() as session:
-            # Delete existing submission for this project/month if present
-            session.query(SubmissionModel).filter_by(
-                project_id=submission.project_id.value,
-                month=submission.month.to_iso_month(),
-            ).delete()
-            # Insert new submission
-            model = submission_to_model(submission)
-            session.add(model)
+        model = submission_to_model(submission)
+        values = {
+            "id": model.id,
+            "project_id": model.project_id,
+            "month": model.month,
+            "created_at": model.created_at,
+            "test_coverage": model.test_coverage,
+            "overall_test_cases": model.overall_test_cases,
+            "supported_releases_count": model.supported_releases_count,
+            "raw_conversation": model.raw_conversation,
+        }
+        statement = sqlite_insert(SubmissionModel).values(**values)
+        upsert_statement = statement.on_conflict_do_update(
+            index_elements=["project_id", "month"],
+            set_=values,
+        )
+        with self._write_session_scope() as session:
+            session.execute(upsert_statement)
 
     def get_submissions_by_project(self, project_id: ProjectId, month: TimeWindow) -> list[Submission]:
         """Return submissions for a project and month."""
@@ -76,8 +87,8 @@ class SQLiteAdapter(StoragePort):
 
     def clear_all_submissions(self) -> None:
         """Delete all submissions from the database."""
-        with self._session_scope() as session:
-            session.query(SubmissionModel).delete()
+        with self._write_session_scope() as session:
+            session.execute(delete(SubmissionModel))
 
     @property
     def engine(self) -> Engine:
@@ -91,19 +102,33 @@ class SQLiteAdapter(StoragePort):
 
     def _execute_scalar(self, statement: Select[tuple[ScalarType]]) -> list[ScalarType]:
         """Execute a statement and return scalar rows."""
-        with self._session_scope() as session:
+        with self._read_session_scope() as session:
             return list(session.execute(statement).scalars().all())
 
     @contextmanager
-    def _session_scope(self) -> Iterator[Session]:
-        """Provide a transactional session scope."""
+    def _write_session_scope(self) -> Iterator[Session]:
+        """Provide a transactional session scope for write operations."""
         session = self._session_factory()
         try:
             yield session
             session.commit()
-        except Exception:
-            self._logger.exception("SQLite session error")
+        except SQLAlchemyError as err:
             session.rollback()
-            raise
+            self._logger.exception("SQLite write operation failed")
+            msg = "SQLite write operation failed"
+            raise StorageOperationError(msg) from err
+        finally:
+            session.close()
+
+    @contextmanager
+    def _read_session_scope(self) -> Iterator[Session]:
+        """Provide a session scope for read operations."""
+        session = self._session_factory()
+        try:
+            yield session
+        except SQLAlchemyError as err:
+            self._logger.exception("SQLite read operation failed")
+            msg = "SQLite read operation failed"
+            raise StorageOperationError(msg) from err
         finally:
             session.close()

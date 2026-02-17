@@ -9,6 +9,7 @@ from .exceptions import (
     InvalidSubmissionTeamError,
     InvalidTimeWindowError,
     MissingSubmissionDataError,
+    StorageOperationError,
 )
 from .registries import StreamProjectRegistry, build_default_stream_project_registry
 from .value_objects import (
@@ -43,6 +44,7 @@ __all__ = [
     "ProjectId",
     "QualityMetrics",
     "ReportingPeriod",
+    "StorageOperationError",
     "StreamId",
     "StreamProjectRegistry",
     "Submission",
