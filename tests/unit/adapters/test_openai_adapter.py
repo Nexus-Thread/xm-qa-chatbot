@@ -6,10 +6,13 @@ from dataclasses import dataclass
 from datetime import date
 from typing import TYPE_CHECKING
 
+import httpx
 import pytest
+from openai import APIError
 
 from qa_chatbot.adapters.output.llm.openai import (
     AmbiguousExtractionError,
+    InvalidHistoryError,
     LLMExtractionError,
     OpenAIAdapter,
     OpenAISettings,
@@ -26,6 +29,7 @@ if TYPE_CHECKING:
 
 EXPECTED_MANUAL_TOTAL = 100
 EXPECTED_SUPPORTED_RELEASES_COUNT = 4
+EXPECTED_INDEPENDENT_COVERAGE_CALLS = 2
 
 
 @dataclass
@@ -62,7 +66,7 @@ class FakeResponse:
 class FakeCompletions:
     """Fake completions client."""
 
-    def __init__(self, responses: Iterator[FakeResponse]) -> None:
+    def __init__(self, responses: Iterator[FakeResponse | Exception]) -> None:
         """Store the iterator of fake responses."""
         self._responses = responses
         self.calls = 0
@@ -70,13 +74,16 @@ class FakeCompletions:
     def create(self, **_: object) -> FakeResponse:
         """Return the next fake response."""
         self.calls += 1
-        return next(self._responses)
+        result = next(self._responses)
+        if isinstance(result, Exception):
+            raise result
+        return result
 
 
 class FakeChat:
     """Fake chat client."""
 
-    def __init__(self, responses: Iterator[FakeResponse]) -> None:
+    def __init__(self, responses: Iterator[FakeResponse | Exception]) -> None:
         """Attach fake completion responses."""
         self.completions = FakeCompletions(responses)
 
@@ -84,7 +91,7 @@ class FakeChat:
 class FakeClient:
     """Fake OpenAI client."""
 
-    def __init__(self, responses: Iterator[FakeResponse]) -> None:
+    def __init__(self, responses: Iterator[FakeResponse | Exception]) -> None:
         """Attach fake chat responses."""
         self.chat = FakeChat(responses)
 
@@ -247,10 +254,25 @@ def test_extract_time_window_raises_on_invalid_json() -> None:
         adapter.extract_time_window("January 2026", date(2026, 2, 2))
 
 
-def test_extract_supported_releases_reuses_cached_coverage_payload() -> None:
-    """Reuse cached payload for repeated coverage prompt extraction."""
+def test_extract_time_window_raises_when_message_content_is_missing() -> None:
+    """Raise when provider message content is missing."""
+    responses = iter([FakeResponse([FakeChoice(FakeMessage(content=None))])])
+    adapter = OpenAIAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeClient(responses),
+    )
+
+    with pytest.raises(LLMExtractionError):
+        adapter.extract_time_window("January 2026", date(2026, 2, 2))
+
+
+def test_extract_supported_releases_performs_independent_extraction_calls() -> None:
+    """Perform independent API calls for repeated coverage prompt extraction."""
     responses = iter(
-        [FakeResponse([FakeChoice(FakeMessage('{"manual_total": 100, "automated_total": 20, "supported_releases_count": 4}'))])]
+        [
+            FakeResponse([FakeChoice(FakeMessage('{"manual_total": 100, "automated_total": 20, "supported_releases_count": 4}'))]),
+            FakeResponse([FakeChoice(FakeMessage('{"manual_total": 100, "automated_total": 20, "supported_releases_count": 4}'))]),
+        ]
     )
     client = FakeClient(responses)
     adapter = OpenAIAdapter(
@@ -263,4 +285,67 @@ def test_extract_supported_releases_reuses_cached_coverage_payload() -> None:
 
     assert coverage.manual_total == EXPECTED_MANUAL_TOTAL
     assert supported_releases == EXPECTED_SUPPORTED_RELEASES_COUNT
-    assert client.chat.completions.calls == 1
+    assert client.chat.completions.calls == EXPECTED_INDEPENDENT_COVERAGE_CALLS
+
+
+def test_extract_time_window_retries_on_api_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Retry on APIError and eventually return a parsed time window."""
+    sleep_calls: list[float] = []
+    monkeypatch.setattr("qa_chatbot.adapters.output.llm.openai.adapter.time.sleep", sleep_calls.append)
+
+    request = httpx.Request("POST", "https://example.com/v1/chat/completions")
+    responses: Iterator[FakeResponse | Exception] = iter(
+        [
+            APIError("temporary failure", request=request, body=None),
+            FakeResponse([FakeChoice(FakeMessage('{"month": "2026-01"}'))]),
+        ]
+    )
+    adapter = OpenAIAdapter(
+        settings=OpenAISettings(
+            base_url="http://localhost",
+            api_key="test",
+            model="llama2",
+            max_retries=3,
+            backoff_seconds=0.5,
+        ),
+        client=FakeClient(responses),
+    )
+
+    result = adapter.extract_time_window("January 2026", date(2026, 2, 2))
+
+    assert result == TimeWindow.from_year_month(2026, 1)
+    assert sleep_calls == [0.5]
+
+
+def test_extract_with_history_raises_on_invalid_role() -> None:
+    """Raise when history contains an invalid role."""
+    empty_responses: Iterator[FakeResponse | Exception] = iter(())
+    adapter = OpenAIAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeClient(empty_responses),
+    )
+
+    with pytest.raises(InvalidHistoryError):
+        adapter.extract_with_history(
+            conversation="Conversation",
+            history=[{"role": "bot", "content": "Hello"}],
+            current_date=date(2026, 2, 2),
+            registry=build_default_stream_project_registry(),
+        )
+
+
+def test_extract_with_history_raises_on_blank_content() -> None:
+    """Raise when history contains blank content."""
+    empty_responses: Iterator[FakeResponse | Exception] = iter(())
+    adapter = OpenAIAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeClient(empty_responses),
+    )
+
+    with pytest.raises(InvalidHistoryError):
+        adapter.extract_with_history(
+            conversation="Conversation",
+            history=[{"role": "user", "content": "   "}],
+            current_date=date(2026, 2, 2),
+            registry=build_default_stream_project_registry(),
+        )

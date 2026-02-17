@@ -24,6 +24,8 @@ def test_main_wires_components(monkeypatch: pytest.MonkeyPatch) -> None:
         openai_base_url="http://localhost",
         openai_api_key="test",
         openai_model="gpt-test",
+        openai_max_retries=3,
+        openai_backoff_seconds=1.0,
         server_port=7860,
         share=False,
         input_max_chars=2000,

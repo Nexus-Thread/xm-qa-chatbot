@@ -16,6 +16,8 @@ class AppSettings:
     openai_base_url: str
     openai_api_key: str
     openai_model: str
+    openai_max_retries: int
+    openai_backoff_seconds: float
     database_url: str
     database_echo: bool
     dashboard_output_dir: Path

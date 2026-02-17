@@ -14,3 +14,7 @@ class AmbiguousExtractionError(LLMExtractionError):
         """Initialize error message for ambiguous extraction."""
         message = f"Missing {label} in LLM response" if is_missing else f"Ambiguous {label} in LLM response"
         super().__init__(message)
+
+
+class InvalidHistoryError(LLMExtractionError):
+    """Raised when conversation history payload is invalid."""

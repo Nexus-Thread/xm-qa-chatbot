@@ -18,6 +18,8 @@ class EnvSettings(BaseSettings):
     openai_base_url: str = Field(default="http://localhost:11434/v1", validation_alias="OPENAI_BASE_URL")
     openai_api_key: str = Field(default="ollama", validation_alias="OPENAI_API_KEY")
     openai_model: str = Field(default="llama2", validation_alias="OPENAI_MODEL")
+    openai_max_retries: int = Field(default=3, validation_alias="OPENAI_MAX_RETRIES", ge=1, le=10)
+    openai_backoff_seconds: float = Field(default=1.0, validation_alias="OPENAI_BACKOFF_SECONDS", ge=0.0, le=60.0)
     database_url: str = Field(default="sqlite:///./qa_chatbot.db", validation_alias="DATABASE_URL")
     database_echo: bool = Field(default=False, validation_alias="DATABASE_ECHO")
     dashboard_output_dir: Path = Field(default=Path("./dashboard_html"), validation_alias="DASHBOARD_OUTPUT_DIR")

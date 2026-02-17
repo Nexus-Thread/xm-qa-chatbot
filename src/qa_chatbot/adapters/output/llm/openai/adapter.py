@@ -17,12 +17,14 @@ from qa_chatbot.domain import ExtractionConfidence, ProjectId, SubmissionMetrics
 from qa_chatbot.domain.exceptions import InvalidConfigurationError
 
 from .client import build_client
-from .exceptions import AmbiguousExtractionError, LLMExtractionError
+from .exceptions import AmbiguousExtractionError, InvalidHistoryError, LLMExtractionError
 from .prompts import SYSTEM_PROMPT, TEST_COVERAGE_PROMPT, TIME_WINDOW_PROMPT, build_project_id_prompt
 from .retry_logic import DEFAULT_BACKOFF_SECONDS, DEFAULT_MAX_RETRIES
 from .schemas import ProjectIdSchema, TestCoverageSchema, TimeWindowSchema
 
 SchemaT = TypeVar("SchemaT", bound=BaseModel)
+MAX_LOGGED_PAYLOAD_CHARS = 512
+ALLOWED_HISTORY_ROLES = {"system", "user", "assistant"}
 
 if TYPE_CHECKING:
     from datetime import date
@@ -37,15 +39,6 @@ class TokenUsage:
     prompt_tokens: int | None
     completion_tokens: int | None
     total_tokens: int | None
-
-
-@dataclass(frozen=True)
-class ExtractionCacheKey:
-    """Cache key for repeated extraction calls."""
-
-    conversation: str
-    prompt: str
-    history: tuple[tuple[str, str], ...]
 
 
 @dataclass(frozen=True)
@@ -71,8 +64,6 @@ class OpenAIAdapter(LLMPort):
         self._settings = settings
         self._client = client or build_client(base_url=settings.base_url, api_key=settings.api_key)
         self._last_usage: TokenUsage | None = None
-        self._last_extraction_key: ExtractionCacheKey | None = None
-        self._last_extraction_payload: dict[str, Any] | None = None
         self._logger = logging.getLogger(self.__class__.__name__)
 
     @property
@@ -110,8 +101,7 @@ class OpenAIAdapter(LLMPort):
 
     def extract_test_coverage(self, conversation: str) -> TestCoverageMetrics:
         """Extract test coverage metrics from a conversation."""
-        payload = self._extract_json(conversation, TEST_COVERAGE_PROMPT)
-        data = self._parse_schema(payload, TestCoverageSchema)
+        data = self._extract_test_coverage_data(conversation)
         return TestCoverageMetrics(
             manual_total=data.manual_total,
             automated_total=data.automated_total,
@@ -124,8 +114,7 @@ class OpenAIAdapter(LLMPort):
 
     def extract_supported_releases_count(self, conversation: str) -> int | None:
         """Extract supported releases count from a conversation."""
-        payload = self._extract_json(conversation, TEST_COVERAGE_PROMPT)
-        data = self._parse_schema(payload, TestCoverageSchema)
+        data = self._extract_test_coverage_data(conversation)
         return data.supported_releases_count
 
     def extract_with_history(
@@ -180,13 +169,6 @@ class OpenAIAdapter(LLMPort):
         """Call the OpenAI API and extract JSON content."""
         client: Any = self._client
         normalized_history = self._normalize_history(history)
-        cache_key = ExtractionCacheKey(
-            conversation=conversation,
-            prompt=prompt,
-            history=tuple((entry["role"], entry["content"]) for entry in normalized_history),
-        )
-        if self._last_extraction_key == cache_key and self._last_extraction_payload is not None:
-            return self._last_extraction_payload
 
         for attempt in range(self._settings.max_retries):
             try:
@@ -240,8 +222,6 @@ class OpenAIAdapter(LLMPort):
                     raise LLMExtractionError(msg) from err
                 self._sleep_backoff(attempt)
             else:
-                self._last_extraction_key = cache_key
-                self._last_extraction_payload = payload
                 return payload
 
         msg = "LLM request failed after retries"
@@ -262,12 +242,24 @@ class OpenAIAdapter(LLMPort):
             return schema.model_validate(payload)
         except ValidationError as err:
             self._logger.exception(
-                "Schema validation failed for %s. Payload: %s",
-                schema.__name__,
-                payload,
+                "Schema validation failed",
+                extra={
+                    "schema": schema.__name__,
+                    "payload_keys": sorted(payload.keys()),
+                    "payload_preview": self._serialize_payload_preview(payload),
+                },
             )
             msg = "LLM response did not match expected schema"
             raise LLMExtractionError(msg) from err
+
+    def _extract_test_coverage_data(
+        self,
+        conversation: str,
+        history: list[dict[str, str]] | None = None,
+    ) -> TestCoverageSchema:
+        """Extract and validate coverage payload for reuse by coverage methods."""
+        payload = self._extract_json(conversation, TEST_COVERAGE_PROMPT, history)
+        return self._parse_schema(payload, TestCoverageSchema)
 
     def _resolve_time_window(self, value: str, current_date: date) -> TimeWindow:
         """Resolve time window values into TimeWindow objects."""
@@ -304,7 +296,38 @@ class OpenAIAdapter(LLMPort):
         """Normalize history into chat message dicts."""
         if not history:
             return []
-        return [{"role": entry.get("role", "user"), "content": entry.get("content", "")} for entry in history if entry.get("content")]
+        normalized: list[dict[str, str]] = []
+        for index, entry in enumerate(history):
+            role = entry.get("role")
+            content = entry.get("content")
+
+            if not isinstance(role, str) or role.strip() not in ALLOWED_HISTORY_ROLES:
+                msg = f"History entry at index {index} must contain a valid role"
+                raise InvalidHistoryError(msg)
+
+            if not isinstance(content, str) or not content.strip():
+                msg = f"History entry at index {index} must contain non-empty content"
+                raise InvalidHistoryError(msg)
+
+            normalized.append(
+                {
+                    "role": role.strip(),
+                    "content": content.strip(),
+                }
+            )
+
+        return normalized
+
+    @staticmethod
+    def _serialize_payload_preview(payload: dict[str, Any]) -> str:
+        """Serialize payload into a bounded preview string for logging."""
+        try:
+            raw_payload = json.dumps(payload, ensure_ascii=False, sort_keys=True)
+        except TypeError:
+            raw_payload = str(payload)
+        if len(raw_payload) <= MAX_LOGGED_PAYLOAD_CHARS:
+            return raw_payload
+        return f"{raw_payload[:MAX_LOGGED_PAYLOAD_CHARS]}..."
 
     @staticmethod
     def _extract_usage(response: Any) -> TokenUsage | None:  # noqa: ANN401

@@ -64,7 +64,7 @@ The LLM adapter uses an OpenAI-compatible API. To switch from a local provider (
 2. Set `OPENAI_API_KEY` to your OpenAI API key.
 3. Update `OPENAI_MODEL` to an OpenAI chat model (e.g., `gpt-4o-mini`).
 
-Retries use exponential backoff defined in `src/qa_chatbot/adapters/output/llm/openai/retry_logic.py`.
+Retries use exponential backoff and are configurable via `OPENAI_MAX_RETRIES` and `OPENAI_BACKOFF_SECONDS`.
 
 ## Environment variables
 
@@ -73,6 +73,8 @@ Retries use exponential backoff defined in `src/qa_chatbot/adapters/output/llm/o
 | `OPENAI_BASE_URL` | `http://localhost:11434/v1` | OpenAI-compatible API base URL (Ollama or OpenAI). |
 | `OPENAI_API_KEY` | `ollama` | API key (ignored by Ollama). |
 | `OPENAI_MODEL` | `llama2` | Model name to use. |
+| `OPENAI_MAX_RETRIES` | `3` | Max retry attempts for transient LLM API failures. |
+| `OPENAI_BACKOFF_SECONDS` | `1.0` | Base delay in seconds for exponential retry backoff. |
 | `DATABASE_URL` | `sqlite:///./qa_chatbot.db` | SQLite connection string. |
 | `DATABASE_ECHO` | `false` | SQLAlchemy logging toggle. |
 | `DASHBOARD_OUTPUT_DIR` | `./dashboard_html` | Output folder for generated dashboards. |

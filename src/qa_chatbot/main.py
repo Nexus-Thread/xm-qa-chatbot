@@ -54,6 +54,8 @@ def main() -> None:
             base_url=settings.openai_base_url,
             api_key=settings.openai_api_key,
             model=settings.openai_model,
+            max_retries=settings.openai_max_retries,
+            backoff_seconds=settings.openai_backoff_seconds,
         )
     )
     metrics_adapter = InMemoryMetricsAdapter()
