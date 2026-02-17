@@ -13,6 +13,5 @@ class OpenAIClientProtocol(Protocol):
         *,
         model: str,
         messages: list[dict[str, str]],
-        temperature: float = 0,
     ) -> object:
         """Create a chat completion response in JSON mode."""

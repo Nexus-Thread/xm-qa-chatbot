@@ -71,13 +71,13 @@ def test_openai_client_creates_json_completion_with_expected_args() -> None:
     client = OpenAIClient(sdk_client=sdk_client)
     messages = [{"role": "user", "content": "hello"}]
 
-    client.create_json_completion(model="llama2", messages=messages, temperature=0.2)
+    client.create_json_completion(model="llama2", messages=messages)
 
     assert sdk_client.chat.completions.last_call == {
         "model": "llama2",
         "messages": messages,
         "response_format": {"type": "json_object"},
-        "temperature": 0.2,
+        "temperature": 0,
     }
 
 

@@ -65,7 +65,6 @@ class OpenAIClient:
         *,
         model: str,
         messages: list[dict[str, str]],
-        temperature: float = 0,
     ) -> object:
         """Create a JSON-formatted chat completion."""
         for attempt in range(self._max_retries):
@@ -74,7 +73,7 @@ class OpenAIClient:
                     model=model,
                     messages=messages,
                     response_format={"type": "json_object"},
-                    temperature=temperature,
+                    temperature=0,
                 )
             except APIError:
                 if attempt >= self._max_retries - 1:

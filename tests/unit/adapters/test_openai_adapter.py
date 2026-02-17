@@ -97,10 +97,9 @@ class FakeOpenAITransportClient:
         *,
         model: str,
         messages: list[dict[str, str]],
-        temperature: float = 0,
     ) -> FakeResponse:
         """Create a fake JSON completion response."""
-        _ = model, messages, temperature
+        _ = model, messages
         return self._completions.create()
 
 

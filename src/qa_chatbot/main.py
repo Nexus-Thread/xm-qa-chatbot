@@ -14,7 +14,7 @@ from qa_chatbot.adapters.output import (
     OpenAIAdapter,
     SQLiteAdapter,
 )
-from qa_chatbot.adapters.output.llm.openai import build_client
+from qa_chatbot.adapters.output.llm.openai import build_client, build_http_client
 from qa_chatbot.adapters.output.llm.structured_extraction import OpenAISettings
 from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitProjectDataUseCase
 from qa_chatbot.config import LoggingSettings, configure_logging
@@ -59,12 +59,16 @@ def main() -> None:
         verify_ssl=settings.openai_verify_ssl,
         timeout_seconds=settings.openai_timeout_seconds,
     )
+    openai_transport = build_http_client(
+        verify_ssl=openai_settings.verify_ssl,
+        timeout_seconds=openai_settings.timeout_seconds,
+    )
     openai_client = build_client(
         base_url=openai_settings.base_url,
         api_key=openai_settings.api_key,
-        retry_policy=(openai_settings.max_retries, openai_settings.backoff_seconds),
-        verify_ssl=openai_settings.verify_ssl,
-        timeout_seconds=openai_settings.timeout_seconds,
+        transport=openai_transport,
+        max_retries=openai_settings.max_retries,
+        backoff_seconds=openai_settings.backoff_seconds,
     )
     llm_adapter = OpenAIAdapter(settings=openai_settings, client=openai_client)
     metrics_adapter = InMemoryMetricsAdapter()
