@@ -7,6 +7,7 @@ from .factory import (
     build_client,
 )
 from .protocols import OpenAIClientProtocol
+from .response import OpenAIResponseError, OpenAIResponseUsage, extract_message_content, extract_usage
 from .transport import OpenAIClient
 
 __all__ = [
@@ -18,5 +19,9 @@ __all__ = [
     "OpenAIClientProtocol",
     "OpenAIClientSettings",
     "OpenAIClientSettingsProtocol",
+    "OpenAIResponseError",
+    "OpenAIResponseUsage",
     "build_client",
+    "extract_message_content",
+    "extract_usage",
 ]

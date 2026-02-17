@@ -8,7 +8,13 @@ from typing import TYPE_CHECKING, Any, NoReturn, TypeVar
 from openai import APIError
 from pydantic import BaseModel
 
-from qa_chatbot.adapters.output.llm.openai import OpenAIClientProtocol, build_client
+from qa_chatbot.adapters.output.llm.openai import (
+    OpenAIClientProtocol,
+    OpenAIResponseError,
+    build_client,
+    extract_message_content,
+    extract_usage,
+)
 from qa_chatbot.application.dtos import ExtractionResult
 from qa_chatbot.application.ports.output import StructuredExtractionPort
 from qa_chatbot.domain import ExtractionConfidence, ProjectId, SubmissionMetrics, TestCoverageMetrics, TimeWindow
@@ -16,11 +22,12 @@ from qa_chatbot.domain.exceptions import InvalidConfigurationError
 
 from .exceptions import AmbiguousExtractionError, LLMExtractionError
 from .history import normalize_history
-from .json_response import extract_message_content, extract_usage, parse_json_payload, parse_schema_payload
+from .json_response import parse_json_payload, parse_schema_payload
 from .mappers import to_test_coverage_metrics
 from .parsers import resolve_time_window
 from .prompts import SYSTEM_PROMPT, TEST_COVERAGE_PROMPT, TIME_WINDOW_PROMPT, build_project_id_prompt
 from .schemas import ProjectIdSchema, TestCoverageSchema, TimeWindowSchema
+from .settings import TokenUsage
 
 SchemaT = TypeVar("SchemaT", bound=BaseModel)
 
@@ -29,7 +36,7 @@ if TYPE_CHECKING:
 
     from qa_chatbot.domain.registries import StreamProjectRegistry
 
-    from .settings import OpenAISettings, TokenUsage
+    from .settings import OpenAISettings
 
 
 class OpenAIStructuredExtractionAdapter(StructuredExtractionPort):
@@ -146,7 +153,14 @@ class OpenAIStructuredExtractionAdapter(StructuredExtractionPort):
                 model=self._settings.model,
                 messages=messages,
             )
-            self._last_usage = extract_usage(response)
+            usage = extract_usage(response)
+            self._last_usage = None
+            if usage is not None:
+                self._last_usage = TokenUsage(
+                    prompt_tokens=usage.prompt_tokens,
+                    completion_tokens=usage.completion_tokens,
+                    total_tokens=usage.total_tokens,
+                )
             self._logger.info(
                 "LLM extraction completed",
                 extra={
@@ -159,6 +173,9 @@ class OpenAIStructuredExtractionAdapter(StructuredExtractionPort):
             )
             content = extract_message_content(response)
             return parse_json_payload(content)
+        except OpenAIResponseError as err:
+            msg = str(err)
+            raise LLMExtractionError(msg) from err
         except APIError as err:
             self._logger.exception(
                 "LLM extraction failed",
@@ -168,11 +185,6 @@ class OpenAIStructuredExtractionAdapter(StructuredExtractionPort):
             )
             msg = "LLM request failed after retries"
             raise LLMExtractionError(msg) from err
-
-    @staticmethod
-    def _parse_json(payload: str) -> dict[str, Any]:
-        """Parse JSON payload into a dictionary."""
-        return parse_json_payload(payload)
 
     def _parse_schema(self, payload: dict[str, Any], schema: type[SchemaT]) -> SchemaT:
         """Validate payload against a Pydantic schema."""

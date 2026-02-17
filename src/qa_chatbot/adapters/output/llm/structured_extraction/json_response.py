@@ -1,4 +1,4 @@
-"""JSON and schema parsing utilities for structured extraction."""
+"""JSON payload and schema validation utilities for structured extraction."""
 
 from __future__ import annotations
 
@@ -8,33 +8,12 @@ from typing import TYPE_CHECKING, Any, TypeVar
 from pydantic import BaseModel, ValidationError
 
 from .exceptions import LLMExtractionError
-from .settings import TokenUsage
 
 SchemaT = TypeVar("SchemaT", bound=BaseModel)
 MAX_LOGGED_PAYLOAD_CHARS = 512
 
 if TYPE_CHECKING:
     import logging
-
-
-def extract_message_content(response: Any) -> str:  # noqa: ANN401
-    """Extract content from the first model response choice."""
-    choices = getattr(response, "choices", None)
-    if not choices:
-        msg = "LLM response did not include choices"
-        raise LLMExtractionError(msg)
-
-    message = getattr(choices[0], "message", None)
-    if message is None:
-        msg = "LLM response did not include a message"
-        raise LLMExtractionError(msg)
-
-    content = getattr(message, "content", None)
-    if content is None:
-        msg = "LLM response did not include content"
-        raise LLMExtractionError(msg)
-
-    return content
 
 
 def parse_json_payload(payload: str) -> dict[str, Any]:
@@ -77,16 +56,3 @@ def serialize_payload_preview(payload: dict[str, Any]) -> str:
     if len(raw_payload) <= MAX_LOGGED_PAYLOAD_CHARS:
         return raw_payload
     return f"{raw_payload[:MAX_LOGGED_PAYLOAD_CHARS]}..."
-
-
-def extract_usage(response: Any) -> TokenUsage | None:  # noqa: ANN401
-    """Extract token usage from model response metadata."""
-    usage = getattr(response, "usage", None)
-    if usage is None:
-        return None
-
-    return TokenUsage(
-        prompt_tokens=getattr(usage, "prompt_tokens", None),
-        completion_tokens=getattr(usage, "completion_tokens", None),
-        total_tokens=getattr(usage, "total_tokens", None),
-    )
