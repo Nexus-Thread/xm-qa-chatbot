@@ -126,6 +126,8 @@ def _build_dashboard_adapter(
         get_dashboard_data_use_case=dashboard_data_use_case,
         generate_monthly_report_use_case=report_use_case,
         output_dir=output_dir,
+        tailwind_script_src=settings.dashboard_tailwind_script_src,
+        plotly_script_src=settings.dashboard_plotly_script_src,
     )
     confluence_dashboard = ConfluenceDashboardAdapter(
         get_dashboard_data_use_case=dashboard_data_use_case,

@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
+from uuid import UUID
 
 import pytest
 
@@ -256,6 +257,114 @@ def test_write_atomic_wraps_write_errors(
         dashboard_adapter._write_atomic(tmp_path / "overview.html", "test")  # noqa: SLF001
 
     assert isinstance(exc_info.value.__cause__, OSError)
+
+
+def test_write_atomic_uses_unique_temp_file_suffix(
+    dashboard_adapter: HtmlDashboardAdapter,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Use a unique temp path for atomic writes."""
+    observed: dict[str, object] = {}
+
+    def _capture_write(self: Path, _content: str, *, encoding: str = "utf-8") -> int:
+        del encoding
+        observed["temp_path"] = self
+        return len(_content)
+
+    def _capture_replace(_self: Path, target: Path) -> Path:
+        observed["replace_target"] = target
+        return target
+
+    monkeypatch.setattr(Path, "write_text", _capture_write)
+    monkeypatch.setattr(Path, "replace", _capture_replace)
+
+    target = tmp_path / "overview.html"
+    dashboard_adapter._write_atomic(target, "html")  # noqa: SLF001
+
+    temp_path = observed["temp_path"]
+    assert isinstance(temp_path, Path)
+    assert temp_path.parent == target.parent
+    assert temp_path.name.startswith(".overview.html.")
+    assert temp_path.name.endswith(".tmp")
+    uuid_text = temp_path.name.removeprefix(".overview.html.").removesuffix(".tmp")
+    UUID(uuid_text)
+    assert observed["replace_target"] == target
+
+
+def test_generate_overview_smoke_check_reports_missing_markers(
+    dashboard_adapter: HtmlDashboardAdapter,
+    time_window_feb: TimeWindow,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Report missing required overview markers in smoke-check failures."""
+
+    class _ValidButUnexpectedTemplate:
+        def render(self, **_context: object) -> str:
+            return "<!DOCTYPE html><html><body>broken</body></html>"
+
+    environment = dashboard_adapter._environment  # noqa: SLF001
+    monkeypatch.setattr(environment, "get_template", lambda _template_name: _ValidButUnexpectedTemplate())
+
+    with pytest.raises(DashboardRenderError, match=r"failed smoke check") as exc_info:
+        dashboard_adapter.generate_overview(time_window_feb)
+
+    message = str(exc_info.value)
+    assert "Missing markers:" in message
+    assert "'Monthly QA Summary'" in message
+    assert "'Section B — Test Coverage'" in message
+
+
+def test_generate_overview_renders_configured_asset_script_urls(
+    sqlite_adapter: SQLiteAdapter,
+    time_window_feb: TimeWindow,
+    tmp_path: Path,
+) -> None:
+    """Render configured Tailwind and Plotly asset URLs into dashboard HTML."""
+    _seed_submissions(sqlite_adapter)
+    registry = build_default_stream_project_registry()
+    jira_adapter = MockJiraAdapter(
+        registry=registry,
+        jira_base_url="https://jira.example.com",
+        jira_username="jira-user@example.com",
+        jira_api_token="token",  # noqa: S106
+    )
+    report_use_case = GenerateMonthlyReportUseCase(
+        storage_port=sqlite_adapter,
+        jira_port=jira_adapter,
+        registry=registry,
+        timezone="UTC",
+        edge_case_policy=EdgeCasePolicy(),
+        now_provider=lambda: datetime(2026, 2, 4, 12, 0, 0, tzinfo=UTC),
+    )
+    dashboard_data_use_case = GetDashboardDataUseCase(storage_port=sqlite_adapter)
+    adapter = HtmlDashboardAdapter(
+        get_dashboard_data_use_case=dashboard_data_use_case,
+        generate_monthly_report_use_case=report_use_case,
+        output_dir=tmp_path / "dashboards-custom-assets",
+        tailwind_script_src="./assets/tailwind.min.js",
+        plotly_script_src="./assets/plotly.min.js",
+    )
+
+    overview_path = adapter.generate_overview(time_window_feb)
+    overview_html = overview_path.read_text(encoding="utf-8")
+    assert '<script src="./assets/tailwind.min.js"></script>' in overview_html
+
+    detail_path = adapter.generate_project_detail(
+        project_id=ProjectId("project-a"),
+        months=[TimeWindow.from_year_month(2026, 2), TimeWindow.from_year_month(2026, 1)],
+    )
+    detail_html = detail_path.read_text(encoding="utf-8")
+    assert '<script src="./assets/tailwind.min.js"></script>' in detail_html
+    assert '<script src="./assets/plotly.min.js"></script>' in detail_html
+
+    trends_path = adapter.generate_trends(
+        projects=[ProjectId("project-a"), ProjectId("project-b")],
+        months=[TimeWindow.from_year_month(2026, 2), TimeWindow.from_year_month(2026, 1)],
+    )
+    trends_html = trends_path.read_text(encoding="utf-8")
+    assert '<script src="./assets/tailwind.min.js"></script>' in trends_html
+    assert '<script src="./assets/plotly.min.js"></script>' in trends_html
 
 
 def test_generate_project_detail_snapshot(

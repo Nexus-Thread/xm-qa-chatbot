@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
+from uuid import uuid4
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
@@ -16,6 +17,28 @@ if TYPE_CHECKING:
     from qa_chatbot.application.use_cases import GenerateMonthlyReportUseCase, GetDashboardDataUseCase
     from qa_chatbot.domain import ProjectId, TimeWindow
 
+DEFAULT_TAILWIND_SCRIPT_SRC = "https://cdn.tailwindcss.com"
+DEFAULT_PLOTLY_SCRIPT_SRC = "https://cdn.plot.ly/plotly-2.27.0.min.js"
+
+SMOKE_CHECK_MARKERS_BY_TEMPLATE: dict[str, tuple[str, ...]] = {
+    "overview.html": (
+        "Monthly QA Summary",
+        "Section B — Test Coverage",
+        "<table",
+    ),
+    "project_detail.html": (
+        "Coverage Trend",
+        "qaTrendChart",
+        "Plotly.newPlot('qaTrendChart'",
+    ),
+    "trends.html": (
+        "QA Trends",
+        "manualChart",
+        "automationChart",
+        "Plotly.newPlot(",
+    ),
+}
+
 
 @dataclass
 class HtmlDashboardAdapter(DashboardPort):
@@ -24,11 +47,15 @@ class HtmlDashboardAdapter(DashboardPort):
     get_dashboard_data_use_case: GetDashboardDataUseCase
     generate_monthly_report_use_case: GenerateMonthlyReportUseCase
     output_dir: Path
+    tailwind_script_src: str = DEFAULT_TAILWIND_SCRIPT_SRC
+    plotly_script_src: str = DEFAULT_PLOTLY_SCRIPT_SRC
 
     def __post_init__(self) -> None:
         """Prepare template environment and output directory."""
         self._output_dir = self.output_dir
         self._output_dir.mkdir(parents=True, exist_ok=True)
+        self._tailwind_script_src = self.tailwind_script_src
+        self._plotly_script_src = self.plotly_script_src
         templates_dir = Path(__file__).parent / "templates"
         self._environment = Environment(
             loader=FileSystemLoader(templates_dir),
@@ -43,7 +70,7 @@ class HtmlDashboardAdapter(DashboardPort):
         return self._render_template(
             template_name="overview.html",
             output_name="overview.html",
-            context={"report": report},
+            context={"report": report, "assets": self._assets_context()},
         )
 
     def generate_project_detail(self, project_id: ProjectId, months: list[TimeWindow]) -> Path:
@@ -54,7 +81,11 @@ class HtmlDashboardAdapter(DashboardPort):
         return self._render_template(
             template_name="project_detail.html",
             output_name=file_name,
-            context={"data": data, "chart_payload": chart_payload},
+            context={
+                "data": data,
+                "chart_payload": chart_payload,
+                "assets": self._assets_context(),
+            },
         )
 
     def generate_trends(self, projects: list[ProjectId], months: list[TimeWindow]) -> Path:
@@ -64,8 +95,19 @@ class HtmlDashboardAdapter(DashboardPort):
         return self._render_template(
             template_name="trends.html",
             output_name="trends.html",
-            context={"data": data, "chart_payload": chart_payload},
+            context={
+                "data": data,
+                "chart_payload": chart_payload,
+                "assets": self._assets_context(),
+            },
         )
+
+    def _assets_context(self) -> dict[str, str]:
+        """Build asset URLs for HTML templates."""
+        return {
+            "tailwind_script_src": self._tailwind_script_src,
+            "plotly_script_src": self._plotly_script_src,
+        }
 
     def _render_template(
         self,
@@ -91,11 +133,13 @@ class HtmlDashboardAdapter(DashboardPort):
         return self._write_atomic(output_path, rendered)
 
     def _write_atomic(self, path: Path, content: str) -> Path:
-        temp_path = path.with_suffix(path.suffix + ".tmp")
+        temp_path = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
         try:
             temp_path.write_text(content, encoding="utf-8")
             temp_path.replace(path)
         except Exception as err:
+            if temp_path.exists():
+                temp_path.unlink(missing_ok=True)
             msg = f"Failed to write dashboard output: {path}"
             raise DashboardRenderError(msg) from err
         return path
@@ -140,9 +184,11 @@ class HtmlDashboardAdapter(DashboardPort):
 
     @staticmethod
     def _smoke_check(rendered: str, template_name: str) -> None:
-        """Ensure rendered HTML includes basic expected markers."""
+        """Ensure rendered HTML includes expected template markers."""
         markers = ["<!DOCTYPE html>", "</html>"]
+        markers.extend(SMOKE_CHECK_MARKERS_BY_TEMPLATE.get(template_name, ()))
         missing = [marker for marker in markers if marker not in rendered]
         if missing:
-            message = f"Dashboard template {template_name} failed smoke check"
+            missing_text = ", ".join(repr(marker) for marker in missing)
+            message = f"Dashboard template {template_name} failed smoke check. Missing markers: {missing_text}"
             raise DashboardRenderError(message)

@@ -77,3 +77,23 @@ def test_settings_rejects_invalid_openai_timeout_seconds(monkeypatch: pytest.Mon
 
     with pytest.raises(InvalidConfigurationError):
         EnvSettingsAdapter().load()
+
+
+def test_settings_loads_dashboard_asset_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Load default dashboard asset URLs when not explicitly provided."""
+    monkeypatch.setenv("OPENAI_BASE_URL", "http://localhost:11434/v1")
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setenv("OPENAI_MODEL", "llama2")
+
+    settings = EnvSettingsAdapter().load()
+
+    assert settings.dashboard_tailwind_script_src == "https://cdn.tailwindcss.com"
+    assert settings.dashboard_plotly_script_src == "https://cdn.plot.ly/plotly-2.27.0.min.js"
+
+
+def test_settings_rejects_blank_dashboard_asset_values(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Raise when dashboard asset URL values are blank."""
+    monkeypatch.setenv("DASHBOARD_TAILWIND_SCRIPT_SRC", " ")
+
+    with pytest.raises(InvalidConfigurationError):
+        EnvSettingsAdapter().load()

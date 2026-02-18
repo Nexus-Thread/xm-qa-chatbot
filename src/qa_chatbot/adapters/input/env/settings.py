@@ -25,6 +25,14 @@ class EnvSettings(BaseSettings):
     database_url: str = Field(default="sqlite:///./qa_chatbot.db", validation_alias="DATABASE_URL")
     database_echo: bool = Field(default=False, validation_alias="DATABASE_ECHO")
     dashboard_output_dir: Path = Field(default=Path("./dashboard_html"), validation_alias="DASHBOARD_OUTPUT_DIR")
+    dashboard_tailwind_script_src: str = Field(
+        default="https://cdn.tailwindcss.com",
+        validation_alias="DASHBOARD_TAILWIND_SCRIPT_SRC",
+    )
+    dashboard_plotly_script_src: str = Field(
+        default="https://cdn.plot.ly/plotly-2.27.0.min.js",
+        validation_alias="DASHBOARD_PLOTLY_SCRIPT_SRC",
+    )
     jira_base_url: str = Field(default="https://jira.example.com", validation_alias="JIRA_BASE_URL")
     jira_username: str = Field(default="jira-user@example.com", validation_alias="JIRA_USERNAME")
     jira_api_token: str = Field(default="replace-with-jira-api-token", validation_alias="JIRA_API_TOKEN")
@@ -41,6 +49,8 @@ class EnvSettings(BaseSettings):
         self._validate_non_empty("OPENAI_API_KEY", self.openai_api_key)
         self._validate_non_empty("OPENAI_MODEL", self.openai_model)
         self._validate_non_empty("DATABASE_URL", self.database_url)
+        self._validate_non_empty("DASHBOARD_TAILWIND_SCRIPT_SRC", self.dashboard_tailwind_script_src)
+        self._validate_non_empty("DASHBOARD_PLOTLY_SCRIPT_SRC", self.dashboard_plotly_script_src)
         self._validate_non_empty("JIRA_BASE_URL", self.jira_base_url)
         self._validate_non_empty("JIRA_USERNAME", self.jira_username)
         self._validate_non_empty("JIRA_API_TOKEN", self.jira_api_token)

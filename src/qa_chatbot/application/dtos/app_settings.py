@@ -23,6 +23,8 @@ class AppSettings:
     database_url: str
     database_echo: bool
     dashboard_output_dir: Path
+    dashboard_tailwind_script_src: str
+    dashboard_plotly_script_src: str
     jira_base_url: str
     jira_username: str
     jira_api_token: str

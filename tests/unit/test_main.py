@@ -18,6 +18,8 @@ def test_main_wires_components(monkeypatch: pytest.MonkeyPatch) -> None:
         database_url="sqlite:///./qa_chatbot.db",
         database_echo=False,
         dashboard_output_dir="./dashboard_html",
+        dashboard_tailwind_script_src="https://cdn.tailwindcss.com",
+        dashboard_plotly_script_src="https://cdn.plot.ly/plotly-2.27.0.min.js",
         jira_base_url="https://jira.example.com",
         jira_username="jira-user@example.com",
         jira_api_token="token",  # noqa: S106
@@ -41,7 +43,13 @@ def test_main_wires_components(monkeypatch: pytest.MonkeyPatch) -> None:
     html_adapter = MagicMock()
     confluence_adapter = MagicMock()
     composite_adapter = MagicMock()
-    monkeypatch.setattr(qa_chatbot.main, "HtmlDashboardAdapter", lambda **_: html_adapter)
+    html_adapter_kwargs: dict[str, object] = {}
+
+    def _build_html_dashboard_adapter(**kwargs: object) -> MagicMock:
+        html_adapter_kwargs.update(kwargs)
+        return html_adapter
+
+    monkeypatch.setattr(qa_chatbot.main, "HtmlDashboardAdapter", _build_html_dashboard_adapter)
     monkeypatch.setattr(qa_chatbot.main, "ConfluenceDashboardAdapter", lambda **_: confluence_adapter)
     monkeypatch.setattr(qa_chatbot.main, "CompositeDashboardAdapter", lambda **_: composite_adapter)
     monkeypatch.setattr(qa_chatbot.main, "OpenAIStructuredExtractionAdapter", lambda **_: MagicMock())
@@ -57,3 +65,5 @@ def test_main_wires_components(monkeypatch: pytest.MonkeyPatch) -> None:
 
     fake_storage.initialize_schema.assert_called_once()
     gradio_adapter.launch.assert_called_once()
+    assert html_adapter_kwargs["tailwind_script_src"] == settings.dashboard_tailwind_script_src
+    assert html_adapter_kwargs["plotly_script_src"] == settings.dashboard_plotly_script_src

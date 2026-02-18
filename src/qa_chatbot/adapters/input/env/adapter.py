@@ -31,6 +31,8 @@ class EnvSettingsAdapter:
             database_url=settings.database_url,
             database_echo=settings.database_echo,
             dashboard_output_dir=settings.dashboard_output_dir,
+            dashboard_tailwind_script_src=settings.dashboard_tailwind_script_src,
+            dashboard_plotly_script_src=settings.dashboard_plotly_script_src,
             jira_base_url=settings.jira_base_url,
             jira_username=settings.jira_username,
             jira_api_token=settings.jira_api_token,

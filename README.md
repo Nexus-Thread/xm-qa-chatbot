@@ -18,6 +18,9 @@ Project navigation map: [docs/project-navigation.md](docs/project-navigation.md)
 
 Each submission refreshes static dashboard files under `DASHBOARD_OUTPUT_DIR` (default: `./dashboard_html`).
 
+For offline or self-hosted environments, dashboard JS asset URLs are configurable via
+`DASHBOARD_TAILWIND_SCRIPT_SRC` and `DASHBOARD_PLOTLY_SCRIPT_SRC`.
+
 Generated outputs include:
 - Browser-ready HTML pages: `overview.html`, `team-*.html`, `trends.html`
 - Confluence-ready local artifacts: `overview.confluence.html`, `team-*.confluence.html`, `trends.confluence.html`
@@ -81,6 +84,8 @@ Transport behavior is configurable via `OPENAI_VERIFY_SSL` and `OPENAI_TIMEOUT_S
 | `DATABASE_URL` | `sqlite:///./qa_chatbot.db` | SQLite connection string. |
 | `DATABASE_ECHO` | `false` | SQLAlchemy logging toggle. |
 | `DASHBOARD_OUTPUT_DIR` | `./dashboard_html` | Output folder for generated dashboards. |
+| `DASHBOARD_TAILWIND_SCRIPT_SRC` | `https://cdn.tailwindcss.com` | Script URL for Tailwind in browser dashboard templates. |
+| `DASHBOARD_PLOTLY_SCRIPT_SRC` | `https://cdn.plot.ly/plotly-2.27.0.min.js` | Script URL for Plotly in browser dashboard templates. |
 | `JIRA_BASE_URL` | `https://jira.example.com` | Jira base URL for generated issue links. |
 | `JIRA_USERNAME` | `jira-user@example.com` | Jira username stored in app settings for adapter wiring. |
 | `JIRA_API_TOKEN` | `replace-with-jira-api-token` | Jira API token stored in app settings for adapter wiring. |
