@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, TypeVar
 
-from qa_chatbot.application.dtos import ExtractionResult
+from qa_chatbot.application.dtos import CoverageExtractionResult, ExtractionResult, HistoryExtractionRequest
 from qa_chatbot.domain import SubmissionMetrics
 
 if TYPE_CHECKING:
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from datetime import date
 
     from qa_chatbot.application.ports.output import MetricsPort, StructuredExtractionPort
-    from qa_chatbot.domain import ExtractionConfidence, ProjectId, TestCoverageMetrics, TimeWindow
+    from qa_chatbot.domain import ExtractionConfidence, ProjectId, TimeWindow
     from qa_chatbot.domain.registries import StreamProjectRegistry
 
 ExtractedT = TypeVar("ExtractedT")
@@ -39,32 +39,23 @@ class ExtractStructuredDataUseCase:
         """Extract the reporting time window."""
         return self._timed_extract("time_window", self.llm_port.extract_time_window, conversation, current_date)
 
-    def extract_test_coverage(self, conversation: str) -> TestCoverageMetrics:
-        """Extract test coverage metrics from a conversation."""
-        return self._timed_extract("test_coverage", self.llm_port.extract_test_coverage, conversation)
-
-    def extract_supported_releases_count(self, conversation: str) -> int | None:
-        """Extract supported releases count from a conversation."""
-        return self._timed_extract(
-            "supported_releases_count",
-            self.llm_port.extract_supported_releases_count,
-            conversation,
-        )
+    def extract_coverage(self, conversation: str) -> CoverageExtractionResult:
+        """Extract coverage metrics and supported releases from a conversation."""
+        return self._timed_extract("coverage", self.llm_port.extract_coverage, conversation)
 
     def execute(self, conversation: str, current_date: date, registry: StreamProjectRegistry) -> ExtractionResult:
         """Extract structured data from a conversation."""
         project_id, _ = self.extract_project_id(conversation, registry)
         time_window = self.extract_time_window(conversation, current_date)
-        test_coverage = self.extract_test_coverage(conversation)
-        supported_releases_count = self.extract_supported_releases_count(conversation)
+        coverage = self.extract_coverage(conversation)
 
         return ExtractionResult(
             project_id=project_id,
             time_window=time_window,
             metrics=SubmissionMetrics(
-                test_coverage=test_coverage,
+                test_coverage=coverage.metrics,
                 overall_test_cases=None,
-                supported_releases_count=supported_releases_count,
+                supported_releases_count=coverage.supported_releases_count,
             ),
         )
 
@@ -79,8 +70,8 @@ class ExtractStructuredDataUseCase:
         """Extract only the requested data sections from a conversation."""
         project_id, _ = self.extract_project_id(conversation, registry)
         time_window = self.extract_time_window(conversation, current_date)
-        test_coverage = self.extract_test_coverage(conversation) if include_test_coverage else None
-        supported_releases_count = self.extract_supported_releases_count(conversation)
+        coverage = self.extract_coverage(conversation)
+        test_coverage = coverage.metrics if include_test_coverage else None
 
         return ExtractionResult(
             project_id=project_id,
@@ -88,23 +79,22 @@ class ExtractStructuredDataUseCase:
             metrics=SubmissionMetrics(
                 test_coverage=test_coverage,
                 overall_test_cases=None,
-                supported_releases_count=supported_releases_count,
+                supported_releases_count=coverage.supported_releases_count,
             ),
         )
 
     def execute_with_history(
         self,
-        conversation: str,
-        history: list[dict[str, str]] | None,
+        request: HistoryExtractionRequest,
         current_date: date,
         registry: StreamProjectRegistry,
     ) -> ExtractionResult:
         """Extract structured data using conversation history."""
         if self.metrics_port is None:
-            return self.llm_port.extract_with_history(conversation, history, current_date, registry)
+            return self.llm_port.extract_with_history(request, current_date, registry)
 
         started_at = time.perf_counter()
-        result = self.llm_port.extract_with_history(conversation, history, current_date, registry)
+        result = self.llm_port.extract_with_history(request, current_date, registry)
         elapsed_ms = (time.perf_counter() - started_at) * 1000
         self.metrics_port.record_llm_latency("history", elapsed_ms)
         return result

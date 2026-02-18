@@ -9,7 +9,7 @@ from .dashboard_data import (
     TrendsDashboardData,
     TrendSeries,
 )
-from .extraction_result import ExtractionResult
+from .extraction_result import CoverageExtractionResult, ExtractionResult, HistoryExtractionRequest
 from .report_data import (
     BucketCountDTO,
     CompletenessStatus,
@@ -25,8 +25,10 @@ __all__ = [
     "AppSettings",
     "BucketCountDTO",
     "CompletenessStatus",
+    "CoverageExtractionResult",
     "DefectLeakageDTO",
     "ExtractionResult",
+    "HistoryExtractionRequest",
     "MonthlyReport",
     "OverviewDashboardData",
     "ProjectDetailDashboardData",

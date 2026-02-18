@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Protocol
 if TYPE_CHECKING:
     from datetime import date
 
-    from qa_chatbot.application.dtos import ExtractionResult
-    from qa_chatbot.domain import ExtractionConfidence, ProjectId, TestCoverageMetrics, TimeWindow
+    from qa_chatbot.application.dtos import CoverageExtractionResult, ExtractionResult, HistoryExtractionRequest
+    from qa_chatbot.domain import ExtractionConfidence, ProjectId, TimeWindow
     from qa_chatbot.domain.registries import StreamProjectRegistry
 
 
@@ -25,17 +25,13 @@ class StructuredExtractionPort(Protocol):
     def extract_time_window(self, conversation: str, current_date: date) -> TimeWindow:
         """Extract the reporting time window."""
 
-    def extract_test_coverage(self, conversation: str) -> TestCoverageMetrics:
-        """Extract test coverage metrics from a conversation."""
-
-    def extract_supported_releases_count(self, conversation: str) -> int | None:
-        """Extract supported releases count from a conversation."""
+    def extract_coverage(self, conversation: str) -> CoverageExtractionResult:
+        """Extract coverage metrics and supported releases from a conversation."""
 
     def extract_with_history(
         self,
-        conversation: str,
-        history: list[dict[str, str]] | None,
+        request: HistoryExtractionRequest,
         current_date: date,
         registry: StreamProjectRegistry,
     ) -> ExtractionResult:
-        """Extract structured data using conversation history."""
+        """Extract selected structured data using conversation history and known values."""

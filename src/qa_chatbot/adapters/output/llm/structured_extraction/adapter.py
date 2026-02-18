@@ -15,9 +15,9 @@ from qa_chatbot.adapters.output.llm.openai import (
     extract_message_content,
     extract_usage,
 )
-from qa_chatbot.application.dtos import ExtractionResult
+from qa_chatbot.application.dtos import CoverageExtractionResult, ExtractionResult, HistoryExtractionRequest
 from qa_chatbot.application.ports.output import StructuredExtractionPort
-from qa_chatbot.domain import ExtractionConfidence, ProjectId, SubmissionMetrics, TestCoverageMetrics, TimeWindow
+from qa_chatbot.domain import ExtractionConfidence, ProjectId, SubmissionMetrics, TimeWindow
 from qa_chatbot.domain.exceptions import InvalidConfigurationError
 
 from .exceptions import AmbiguousExtractionError, LLMExtractionError
@@ -88,47 +88,69 @@ class OpenAIStructuredExtractionAdapter(StructuredExtractionPort):
         data = self._parse_schema(payload, TimeWindowSchema)
         return resolve_time_window(data, current_date)
 
-    def extract_test_coverage(self, conversation: str) -> TestCoverageMetrics:
-        """Extract test coverage metrics from a conversation."""
+    def extract_coverage(self, conversation: str) -> CoverageExtractionResult:
+        """Extract coverage metrics and supported releases from a conversation."""
         data = self._extract_test_coverage_data(conversation)
-        return to_test_coverage_metrics(data)
-
-    def extract_supported_releases_count(self, conversation: str) -> int | None:
-        """Extract supported releases count from a conversation."""
-        data = self._extract_test_coverage_data(conversation)
-        return data.supported_releases_count
+        return CoverageExtractionResult(
+            metrics=to_test_coverage_metrics(data),
+            supported_releases_count=data.supported_releases_count,
+        )
 
     def extract_with_history(
         self,
-        conversation: str,
-        history: list[dict[str, str]] | None,
+        request: HistoryExtractionRequest,
         current_date: date,
         registry: StreamProjectRegistry,
     ) -> ExtractionResult:
         """Extract structured data using conversation history."""
-        project_prompt = build_project_id_prompt(registry)
-        project_payload = self._extract_json(conversation, project_prompt, history)
-        time_payload = self._extract_json(conversation, TIME_WINDOW_PROMPT, history)
-        coverage_payload = self._extract_json(conversation, TEST_COVERAGE_PROMPT, history)
+        project_id = request.known_project_id
+        if request.include_project_id and project_id is None:
+            project_prompt = build_project_id_prompt(registry)
+            project_payload = self._extract_json(request.conversation, project_prompt, request.history)
+            project_data = self._parse_schema(project_payload, ProjectIdSchema)
+            self._raise_if_blank(project_data.project_id, "project identifier")
+            matched_project = registry.find_project(project_data.project_id)
+            if matched_project is None:
+                self._raise_if_ambiguous("project identifier")
+            project_id = ProjectId.from_raw(matched_project.id)
 
-        project_data = self._parse_schema(project_payload, ProjectIdSchema)
-        time_data = self._parse_schema(time_payload, TimeWindowSchema)
-        coverage_data = self._parse_schema(coverage_payload, TestCoverageSchema)
-        self._raise_if_blank(project_data.project_id, "project identifier")
-        matched_project = registry.find_project(project_data.project_id)
-        if matched_project is None:
-            self._raise_if_ambiguous("project identifier")
+        if project_id is None:
+            msg = "Project identifier is required for history extraction"
+            raise LLMExtractionError(msg)
 
-        project_id = ProjectId.from_raw(matched_project.id)
-        time_window = resolve_time_window(time_data, current_date)
+        time_window = request.known_time_window
+        if request.include_time_window and time_window is None:
+            time_payload = self._extract_json(request.conversation, TIME_WINDOW_PROMPT, request.history)
+            time_data = self._parse_schema(time_payload, TimeWindowSchema)
+            time_window = resolve_time_window(time_data, current_date)
+
+        if time_window is None:
+            msg = "Time window is required for history extraction"
+            raise LLMExtractionError(msg)
+
+        should_extract_coverage = (request.include_test_coverage and request.known_test_coverage is None) or (
+            request.include_supported_releases_count and request.known_supported_releases_count is None
+        )
+        coverage_data: TestCoverageSchema | None = None
+        if should_extract_coverage:
+            coverage_payload = self._extract_json(request.conversation, TEST_COVERAGE_PROMPT, request.history)
+            coverage_data = self._parse_schema(coverage_payload, TestCoverageSchema)
+
+        test_coverage = request.known_test_coverage
+        if request.include_test_coverage and test_coverage is None and coverage_data is not None:
+            test_coverage = to_test_coverage_metrics(coverage_data)
+
+        supported_releases_count = request.known_supported_releases_count
+        if request.include_supported_releases_count and supported_releases_count is None and coverage_data is not None:
+            supported_releases_count = coverage_data.supported_releases_count
 
         return ExtractionResult(
             project_id=project_id,
             time_window=time_window,
             metrics=SubmissionMetrics(
-                test_coverage=to_test_coverage_metrics(coverage_data),
+                test_coverage=test_coverage,
                 overall_test_cases=None,
-                supported_releases_count=coverage_data.supported_releases_count,
+                supported_releases_count=supported_releases_count,
             ),
         )
 

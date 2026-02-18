@@ -183,8 +183,9 @@ class ConversationManager:
         if self._is_skip_request(message):
             return self._request_skip_confirmation(session, ConversationState.TEST_COVERAGE, "test coverage")
         try:
-            session.test_coverage = self._extractor.extract_test_coverage(message)
-            session.supported_releases_count = self._extractor.extract_supported_releases_count(message)
+            coverage = self._extractor.extract_coverage(message)
+            session.test_coverage = coverage.metrics
+            session.supported_releases_count = coverage.supported_releases_count
         except DomainError as err:
             return formatters.format_error_message(str(err)) + " " + formatters.prompt_for_test_coverage()
 
@@ -305,9 +306,15 @@ class ConversationManager:
         """Reset stored values for a section."""
         if section == ConversationState.PROJECT_ID:
             session.stream_project = None
+            session.time_window = None
+            session.test_coverage = None
+            session.supported_releases_count = None
             session.pending_confidence = None
+            session.pending_project = None
         elif section == ConversationState.TIME_WINDOW:
             session.time_window = None
+            session.test_coverage = None
+            session.supported_releases_count = None
         elif section == ConversationState.TEST_COVERAGE:
             session.test_coverage = None
             session.supported_releases_count = None

@@ -10,7 +10,7 @@ import pytest
 
 from qa_chatbot.adapters.input.gradio.conversation_manager import ConversationManager, ConversationSession
 from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitProjectDataUseCase
-from qa_chatbot.application.dtos import ExtractionResult
+from qa_chatbot.application.dtos import CoverageExtractionResult, ExtractionResult, HistoryExtractionRequest
 from qa_chatbot.domain import (
     ExtractionConfidence,
     ProjectId,
@@ -44,34 +44,30 @@ class FakeLLM:
         _ = current_date
         return TimeWindow.from_year_month(2026, 1)
 
-    def extract_test_coverage(self, conversation: str) -> TestCoverageMetrics:
-        """Return a fixed coverage payload."""
+    def extract_coverage(self, conversation: str) -> CoverageExtractionResult:
+        """Return fixed coverage and release-count payloads."""
         _ = conversation
-        return TestCoverageMetrics(
-            manual_total=10,
-            automated_total=5,
-            manual_created_in_reporting_month=1,
-            manual_updated_in_reporting_month=1,
-            automated_created_in_reporting_month=1,
-            automated_updated_in_reporting_month=1,
-            percentage_automation=33.33,
+        return CoverageExtractionResult(
+            metrics=TestCoverageMetrics(
+                manual_total=10,
+                automated_total=5,
+                manual_created_in_reporting_month=1,
+                manual_updated_in_reporting_month=1,
+                automated_created_in_reporting_month=1,
+                automated_updated_in_reporting_month=1,
+                percentage_automation=33.33,
+            ),
+            supported_releases_count=2,
         )
-
-    def extract_supported_releases_count(self, conversation: str) -> int | None:
-        """Return a fixed supported releases count."""
-        _ = conversation
-        return 2
 
     def extract_with_history(
         self,
-        conversation: str,
-        history: list[dict[str, str]] | None,
+        request: HistoryExtractionRequest,
         current_date: date,
         registry: StreamProjectRegistry,
     ) -> ExtractionResult:
         """Return a fixed extraction result."""
-        _ = conversation
-        _ = history
+        _ = request
         _ = current_date
         _ = registry
         return ExtractionResult(
@@ -167,3 +163,40 @@ def test_conversation_skip_section(conversation_manager: ConversationManager) ->
     assert "captured" in response.lower()
 
     assert isinstance(session, ConversationSession)
+
+
+def test_edit_project_resets_dependent_sections(conversation_manager: ConversationManager) -> None:
+    """Reset month and coverage when project is edited."""
+    session, _ = conversation_manager.start_session(date(2026, 1, 15))
+
+    _, session = conversation_manager.handle_message("QA Project", session, date(2026, 1, 15))
+    _, session = conversation_manager.handle_message("2026-01", session, date(2026, 1, 15))
+    _, session = conversation_manager.handle_message("coverage", session, date(2026, 1, 15))
+
+    response, session = conversation_manager.handle_message("project", session, date(2026, 1, 15))
+
+    assert "stream/project" in response
+    assert session.state.name == "PROJECT_ID"
+    assert session.stream_project is None
+    assert session.time_window is None
+    assert session.test_coverage is None
+    assert session.supported_releases_count is None
+
+
+def test_edit_month_resets_only_month_and_coverage(conversation_manager: ConversationManager) -> None:
+    """Keep project while resetting month and coverage when month is edited."""
+    session, _ = conversation_manager.start_session(date(2026, 1, 15))
+
+    _, session = conversation_manager.handle_message("QA Project", session, date(2026, 1, 15))
+    _, session = conversation_manager.handle_message("2026-01", session, date(2026, 1, 15))
+    _, session = conversation_manager.handle_message("coverage", session, date(2026, 1, 15))
+    project_before_edit = session.stream_project
+
+    response, session = conversation_manager.handle_message("month", session, date(2026, 1, 15))
+
+    assert "reporting month" in response
+    assert session.state.name == "TIME_WINDOW"
+    assert session.stream_project == project_before_edit
+    assert session.time_window is None
+    assert session.test_coverage is None
+    assert session.supported_releases_count is None

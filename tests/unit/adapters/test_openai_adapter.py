@@ -17,6 +17,7 @@ from qa_chatbot.adapters.output.llm.structured_extraction import (
     OpenAISettings,
     OpenAIStructuredExtractionAdapter,
 )
+from qa_chatbot.application.dtos import HistoryExtractionRequest
 from qa_chatbot.domain import (
     ExtractionConfidence,
     ProjectId,
@@ -29,7 +30,9 @@ if TYPE_CHECKING:
 
 EXPECTED_MANUAL_TOTAL = 100
 EXPECTED_SUPPORTED_RELEASES_COUNT = 4
-EXPECTED_INDEPENDENT_COVERAGE_CALLS = 2
+EXPECTED_SINGLE_COVERAGE_CALLS = 1
+EXPECTED_HISTORY_MANUAL_TOTAL = 7
+EXPECTED_HISTORY_SUPPORTED_RELEASES = 2
 
 
 @dataclass
@@ -245,7 +248,7 @@ def test_extract_project_id_raises_for_blank_response() -> None:
         adapter.extract_project_id("Unknown", registry)
 
 
-def test_extract_test_coverage_accepts_partial_data() -> None:
+def test_extract_coverage_accepts_partial_data() -> None:
     """Accept partial coverage data with null fields."""
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"manual_total": 100, "automated_total": null}'))])])
     adapter = OpenAIStructuredExtractionAdapter(
@@ -253,14 +256,15 @@ def test_extract_test_coverage_accepts_partial_data() -> None:
         client=FakeOpenAITransportClient(responses),
     )
 
-    result = adapter.extract_test_coverage("Manual total is 100")
+    result = adapter.extract_coverage("Manual total is 100")
 
-    assert result.manual_total == EXPECTED_MANUAL_TOTAL
-    assert result.automated_total is None
-    assert result.manual_created_in_reporting_month is None
+    assert result.metrics.manual_total == EXPECTED_MANUAL_TOTAL
+    assert result.metrics.automated_total is None
+    assert result.metrics.manual_created_in_reporting_month is None
+    assert result.supported_releases_count is None
 
 
-def test_extract_test_coverage_accepts_all_null() -> None:
+def test_extract_coverage_accepts_all_null() -> None:
     """Accept response with all null fields."""
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"manual_total": null}'))])])
     adapter = OpenAIStructuredExtractionAdapter(
@@ -268,13 +272,14 @@ def test_extract_test_coverage_accepts_all_null() -> None:
         client=FakeOpenAITransportClient(responses),
     )
 
-    result = adapter.extract_test_coverage("No metrics provided")
+    result = adapter.extract_coverage("No metrics provided")
 
-    assert result.manual_total is None
-    assert result.automated_total is None
+    assert result.metrics.manual_total is None
+    assert result.metrics.automated_total is None
+    assert result.supported_releases_count is None
 
 
-def test_extract_test_coverage_raises_on_negative_manual_total() -> None:
+def test_extract_coverage_raises_on_negative_manual_total() -> None:
     """Raise when coverage payload contains a negative count."""
     responses = iter([FakeResponse([FakeChoice(FakeMessage('{"manual_total": -1}'))])])
     adapter = OpenAIStructuredExtractionAdapter(
@@ -283,7 +288,7 @@ def test_extract_test_coverage_raises_on_negative_manual_total() -> None:
     )
 
     with pytest.raises(LLMExtractionError):
-        adapter.extract_test_coverage("Manual total is -1")
+        adapter.extract_coverage("Manual total is -1")
 
 
 def test_extract_supported_releases_raises_on_negative_value() -> None:
@@ -295,7 +300,7 @@ def test_extract_supported_releases_raises_on_negative_value() -> None:
     )
 
     with pytest.raises(LLMExtractionError):
-        adapter.extract_supported_releases_count("Supported releases are -1")
+        adapter.extract_coverage("Supported releases are -1")
 
 
 def test_extract_time_window_raises_when_response_has_no_choices() -> None:
@@ -346,13 +351,10 @@ def test_extract_time_window_raises_when_message_content_is_missing() -> None:
         adapter.extract_time_window("January 2026", date(2026, 2, 2))
 
 
-def test_extract_supported_releases_performs_independent_extraction_calls() -> None:
-    """Perform independent API calls for repeated coverage prompt extraction."""
+def test_extract_coverage_performs_single_extraction_call_for_metrics_and_releases() -> None:
+    """Use one API call to extract both coverage metrics and supported releases."""
     responses = iter(
-        [
-            FakeResponse([FakeChoice(FakeMessage('{"manual_total": 100, "automated_total": 20, "supported_releases_count": 4}'))]),
-            FakeResponse([FakeChoice(FakeMessage('{"manual_total": 100, "automated_total": 20, "supported_releases_count": 4}'))]),
-        ]
+        [FakeResponse([FakeChoice(FakeMessage('{"manual_total": 100, "automated_total": 20, "supported_releases_count": 4}'))])]
     )
     client = FakeOpenAITransportClient(responses)
     adapter = OpenAIStructuredExtractionAdapter(
@@ -360,12 +362,88 @@ def test_extract_supported_releases_performs_independent_extraction_calls() -> N
         client=client,
     )
 
-    coverage = adapter.extract_test_coverage("Coverage update")
-    supported_releases = adapter.extract_supported_releases_count("Coverage update")
+    coverage = adapter.extract_coverage("Coverage update")
 
-    assert coverage.manual_total == EXPECTED_MANUAL_TOTAL
-    assert supported_releases == EXPECTED_SUPPORTED_RELEASES_COUNT
-    assert client.calls == EXPECTED_INDEPENDENT_COVERAGE_CALLS
+    assert coverage.metrics.manual_total == EXPECTED_MANUAL_TOTAL
+    assert coverage.supported_releases_count == EXPECTED_SUPPORTED_RELEASES_COUNT
+    assert client.calls == EXPECTED_SINGLE_COVERAGE_CALLS
+
+
+def test_extract_with_history_skips_project_extraction_when_known() -> None:
+    """Skip project extraction call when known project is provided and extraction is disabled."""
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"kind": "iso_month", "month": "2026-01"}'))])])
+    client = FakeOpenAITransportClient(responses)
+    adapter = OpenAIStructuredExtractionAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=client,
+    )
+
+    result = adapter.extract_with_history(
+        request=HistoryExtractionRequest(
+            conversation="Conversation",
+            history=[{"role": "user", "content": "hello"}],
+            known_project_id=ProjectId("bridge"),
+            known_supported_releases_count=EXPECTED_HISTORY_SUPPORTED_RELEASES,
+            include_project_id=False,
+            include_test_coverage=False,
+            include_supported_releases_count=True,
+        ),
+        current_date=date(2026, 2, 2),
+        registry=build_default_stream_project_registry(),
+    )
+
+    assert result.project_id == ProjectId("bridge")
+    assert result.time_window == TimeWindow.from_year_month(2026, 1)
+    assert client.calls == 1
+
+
+def test_extract_with_history_extracts_coverage_once_for_metrics_and_releases() -> None:
+    """Extract coverage and supported releases with a single API call."""
+    responses = iter([FakeResponse([FakeChoice(FakeMessage('{"manual_total": 7, "supported_releases_count": 2}'))])])
+    client = FakeOpenAITransportClient(responses)
+    adapter = OpenAIStructuredExtractionAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=client,
+    )
+
+    result = adapter.extract_with_history(
+        request=HistoryExtractionRequest(
+            conversation="Conversation",
+            history=[{"role": "user", "content": "hello"}],
+            known_project_id=ProjectId("bridge"),
+            known_time_window=TimeWindow.from_year_month(2026, 1),
+            include_project_id=False,
+            include_time_window=False,
+            include_test_coverage=True,
+            include_supported_releases_count=True,
+        ),
+        current_date=date(2026, 2, 2),
+        registry=build_default_stream_project_registry(),
+    )
+
+    assert result.metrics.test_coverage is not None
+    assert result.metrics.test_coverage.manual_total == EXPECTED_HISTORY_MANUAL_TOTAL
+    assert result.metrics.supported_releases_count == EXPECTED_HISTORY_SUPPORTED_RELEASES
+    assert client.calls == 1
+
+
+def test_extract_with_history_raises_when_required_known_project_missing() -> None:
+    """Raise when project extraction is disabled and known project is not provided."""
+    adapter = OpenAIStructuredExtractionAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeOpenAITransportClient(iter(())),
+    )
+
+    with pytest.raises(LLMExtractionError):
+        adapter.extract_with_history(
+            request=HistoryExtractionRequest(
+                conversation="Conversation",
+                history=None,
+                include_project_id=False,
+            ),
+            current_date=date(2026, 2, 2),
+            registry=build_default_stream_project_registry(),
+        )
 
 
 def test_extract_time_window_raises_extraction_error_on_api_error() -> None:
@@ -399,8 +477,10 @@ def test_extract_with_history_raises_on_invalid_role() -> None:
 
     with pytest.raises(InvalidHistoryError):
         adapter.extract_with_history(
-            conversation="Conversation",
-            history=[{"role": "bot", "content": "Hello"}],
+            request=HistoryExtractionRequest(
+                conversation="Conversation",
+                history=[{"role": "bot", "content": "Hello"}],
+            ),
             current_date=date(2026, 2, 2),
             registry=build_default_stream_project_registry(),
         )
@@ -416,8 +496,10 @@ def test_extract_with_history_raises_on_blank_content() -> None:
 
     with pytest.raises(InvalidHistoryError):
         adapter.extract_with_history(
-            conversation="Conversation",
-            history=[{"role": "user", "content": "   "}],
+            request=HistoryExtractionRequest(
+                conversation="Conversation",
+                history=[{"role": "user", "content": "   "}],
+            ),
             current_date=date(2026, 2, 2),
             registry=build_default_stream_project_registry(),
         )
