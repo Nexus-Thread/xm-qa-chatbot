@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date
 
+import pytest
+
 from qa_chatbot.application.dtos import CoverageExtractionResult, ExtractionResult, HistoryExtractionRequest
 from qa_chatbot.application.use_cases import ExtractStructuredDataUseCase
 from qa_chatbot.domain import (
@@ -17,6 +19,7 @@ from qa_chatbot.domain import (
 from qa_chatbot.domain.registries import StreamProjectRegistry
 
 EXPECTED_SUPPORTED_RELEASES_COUNT = 3
+EXPECTED_MANUAL_TOTAL = 10
 
 
 @dataclass
@@ -26,22 +29,32 @@ class _FakeLLM:
     extract_coverage_calls: int = 0
     execute_with_history_registry: StreamProjectRegistry | None = None
     execute_with_history_request: HistoryExtractionRequest | None = None
+    fail_on_operation: str | None = None
 
     def extract_project_id(
         self,
         conversation: str,
         registry: StreamProjectRegistry,
     ) -> tuple[ProjectId, ExtractionConfidence]:
+        if self.fail_on_operation == "project_id":
+            msg = "project extraction failed"
+            raise RuntimeError(msg)
         _ = conversation
         _ = registry
         return ProjectId("project-a"), ExtractionConfidence.high()
 
     def extract_time_window(self, conversation: str, current_date: date) -> TimeWindow:
+        if self.fail_on_operation == "time_window":
+            msg = "time extraction failed"
+            raise RuntimeError(msg)
         _ = conversation
         _ = current_date
         return TimeWindow.from_year_month(2026, 1)
 
     def extract_coverage(self, conversation: str) -> CoverageExtractionResult:
+        if self.fail_on_operation == "coverage":
+            msg = "coverage extraction failed"
+            raise RuntimeError(msg)
         _ = conversation
         self.extract_coverage_calls += 1
         return CoverageExtractionResult(
@@ -129,6 +142,24 @@ def test_execute_sections_skips_test_coverage_when_not_requested() -> None:
     assert result.metrics.supported_releases_count == EXPECTED_SUPPORTED_RELEASES_COUNT
 
 
+def test_execute_returns_combined_extraction_result() -> None:
+    """Combine project, month, and coverage into the final DTO."""
+    llm = _FakeLLM()
+    use_case = ExtractStructuredDataUseCase(llm_port=llm)
+
+    result = use_case.execute(
+        conversation="full update",
+        current_date=date(2026, 2, 1),
+        registry=_registry(),
+    )
+
+    assert result.project_id == ProjectId("project-a")
+    assert result.time_window == TimeWindow.from_year_month(2026, 1)
+    assert result.metrics.test_coverage is not None
+    assert result.metrics.test_coverage.manual_total == EXPECTED_MANUAL_TOTAL
+    assert result.metrics.supported_releases_count == EXPECTED_SUPPORTED_RELEASES_COUNT
+
+
 def test_execute_with_history_passes_registry_to_llm_port() -> None:
     """Forward the configured registry for history-based extraction."""
     llm = _FakeLLM()
@@ -197,3 +228,41 @@ def test_execute_with_history_forwards_known_fields_and_flags() -> None:
     assert llm.execute_with_history_request.include_time_window is False
     assert llm.execute_with_history_request.include_test_coverage is False
     assert llm.execute_with_history_request.include_supported_releases_count is True
+
+
+@pytest.mark.parametrize(
+    ("method_name", "operation_name"),
+    [
+        ("extract_project_id", "project_id"),
+        ("extract_time_window", "time_window"),
+        ("extract_coverage", "coverage"),
+    ],
+)
+def test_timed_extract_records_latency_for_direct_methods(method_name: str, operation_name: str) -> None:
+    """Record latency metrics when timed extraction helpers are used."""
+    llm = _FakeLLM()
+    metrics = _FakeMetrics()
+    use_case = ExtractStructuredDataUseCase(llm_port=llm, metrics_port=metrics)
+
+    if method_name == "extract_project_id":
+        use_case.extract_project_id("proj", _registry())
+    elif method_name == "extract_time_window":
+        use_case.extract_time_window("month", date(2026, 2, 1))
+    else:
+        use_case.extract_coverage("coverage")
+
+    assert len(metrics.latencies) == 1
+    assert metrics.latencies[0][0] == operation_name
+    assert metrics.latencies[0][1] >= 0.0
+
+
+def test_timed_extract_does_not_record_latency_when_operation_raises() -> None:
+    """Avoid recording latency metric when extraction raises before completion."""
+    llm = _FakeLLM(fail_on_operation="coverage")
+    metrics = _FakeMetrics()
+    use_case = ExtractStructuredDataUseCase(llm_port=llm, metrics_port=metrics)
+
+    with pytest.raises(RuntimeError, match="coverage extraction failed"):
+        use_case.extract_coverage("broken")
+
+    assert metrics.latencies == []
