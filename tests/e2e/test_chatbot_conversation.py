@@ -328,6 +328,19 @@ def test_time_window_domain_error_reprompts_with_default() -> None:
     assert same_session.state.name == "TIME_WINDOW"
 
 
+def test_invalid_numeric_time_window_reprompts_with_error() -> None:
+    """Handle invalid YYYY-MM input with an error prompt instead of crashing."""
+    manager = _build_manager(llm=FakeLLM(extract_time_window_error=DomainError("bad month")))
+    session, _ = manager.start_session(date(2026, 1, 15))
+    _, session = manager.handle_message("QA Project", session, date(2026, 1, 15))
+
+    response, same_session = manager.handle_message("2026-13", session, date(2026, 1, 15))
+
+    assert "i ran into an issue: bad month" in response.lower()
+    assert "which reporting month" in response.lower()
+    assert same_session.state.name == "TIME_WINDOW"
+
+
 def test_test_coverage_domain_error_reprompts() -> None:
     """Return formatted error when extractor rejects coverage input."""
     manager = _build_manager(llm=FakeLLM(extract_coverage_error=DomainError("bad coverage")))

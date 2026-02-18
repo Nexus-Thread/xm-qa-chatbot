@@ -16,7 +16,7 @@ def welcome_message(today: date) -> str:
     """Return the opening welcome message."""
     default_window = TimeWindow.default_for(today)
     return (
-        "Hi! I can help collect your monthly QA update, including project notes and metrics. "
+        "Hi! I can help collect your monthly QA update, including project metrics. "
         f"This will default to {default_window.to_iso_month()} unless you specify another month. "
         "Which stream/project are you reporting for?"
     )

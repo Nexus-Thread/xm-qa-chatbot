@@ -260,10 +260,7 @@ class ConversationManager:
     ) -> str:
         """Move to the next state after a section is handled."""
         _ = today
-        if section == ConversationState.TEST_COVERAGE:
-            session.state = ConversationState.CONFIRMATION
-            return self._build_confirmation_prompt(session)
-
+        _ = section
         session.state = ConversationState.CONFIRMATION
         return self._build_confirmation_prompt(session)
 
@@ -395,7 +392,7 @@ class ConversationManager:
                     year = int(parts[0])
                     month = int(parts[1])
                     return TimeWindow.from_year_month(year, month)
-                except ValueError:
+                except (DomainError, ValueError):
                     return None
         return None
 

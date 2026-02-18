@@ -61,7 +61,7 @@ class GradioAdapter:
                     response, session = self._manager.handle_message(sanitized, session, current_date)
                 history = [
                     *history,
-                    {"role": "user", "content": message},
+                    {"role": "user", "content": sanitized},
                     {"role": "assistant", "content": response},
                 ]
                 return "", history, session

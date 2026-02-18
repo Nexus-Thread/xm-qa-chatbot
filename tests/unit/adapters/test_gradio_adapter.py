@@ -179,6 +179,7 @@ def test_build_ui_registers_callbacks_and_processes_messages(monkeypatch: Monkey
     _, blocked_history, blocked_session = harness.textbox.submit_handler("  hello world  ", [], None)
     assert blocked_session is not None
     assert manager.handled_messages == []
+    assert blocked_history[-2] == {"role": "user", "content": "hello"}
     assert blocked_history[-1] == {"role": "assistant", "content": RATE_LIMITED_MESSAGE}
 
     monkeypatch.setattr(gradio_adapter_module.RateLimiter, "allow", lambda *_: True)
@@ -188,6 +189,7 @@ def test_build_ui_registers_callbacks_and_processes_messages(monkeypatch: Monkey
         ConversationSession(),
     )
     assert manager.handled_messages == ["hello"]
+    assert allowed_history[-2] == {"role": "user", "content": "hello"}
     assert allowed_history[-1] == {"role": "assistant", "content": "handled:hello"}
 
     reset_session, reset_history = harness.button.click_handler()

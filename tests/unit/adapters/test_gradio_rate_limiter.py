@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import gc
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
@@ -45,6 +46,21 @@ def test_rate_limiter_resets_after_window(monkeypatch: MonkeyPatch) -> None:
     fake_datetime_later = type("Fake", (), {"now": classmethod(fake_now_later)})
     monkeypatch.setattr("qa_chatbot.adapters.input.gradio.rate_limiter.datetime", fake_datetime_later)
     assert limiter.allow(session) is True
+
+
+def test_rate_limiter_drops_collected_session_entries() -> None:
+    """Remove request tracking when a session is garbage-collected."""
+    limiter = RateLimiter(max_requests=1, window_seconds=60)
+    session = ConversationSession()
+    key = id(session)
+
+    assert limiter.allow(session) is True
+    assert key in limiter._requests  # noqa: SLF001
+
+    del session
+    gc.collect()
+
+    assert key not in limiter._requests  # noqa: SLF001
 
 
 def test_sanitize_input_trims_and_limits_length() -> None:
