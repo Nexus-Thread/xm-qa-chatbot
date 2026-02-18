@@ -7,17 +7,18 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from qa_chatbot.adapters.input import EnvSettingsAdapter
-from qa_chatbot.adapters.output import HtmlDashboardAdapter, InMemoryMetricsAdapter, SQLiteAdapter
-from qa_chatbot.application import SubmitProjectDataUseCase
+from qa_chatbot.adapters.output import HtmlDashboardAdapter, InMemoryMetricsAdapter, MockJiraAdapter, SQLiteAdapter
+from qa_chatbot.application import GenerateMonthlyReportUseCase, GetDashboardDataUseCase, SubmitProjectDataUseCase
 from qa_chatbot.application.dtos import SubmissionCommand
-from qa_chatbot.domain import ProjectId, SubmissionMetrics, TestCoverageMetrics, TimeWindow, build_default_registry
+from qa_chatbot.application.services.reporting_calculations import EdgeCasePolicy
+from qa_chatbot.domain import ProjectId, SubmissionMetrics, TestCoverageMetrics, TimeWindow, build_default_stream_project_registry
 
 # ruff: noqa: T201
 
 
 def load_active_projects() -> list[dict[str, str]]:
     """Load all active projects from the hardcoded registry."""
-    registry = build_default_registry()
+    registry = build_default_stream_project_registry()
     projects = [{"id": project.id, "name": project.name} for project in registry.active_projects()]
     print(f"✅ Loaded {len(projects)} active projects\n")
     return projects
@@ -88,6 +89,79 @@ def create_test_coverage_metrics(data: dict[str, int]) -> TestCoverageMetrics:
     )
 
 
+def _build_dashboard_adapter(settings: object, storage: SQLiteAdapter) -> HtmlDashboardAdapter:
+    registry = build_default_stream_project_registry()
+    edge_case_policy = EdgeCasePolicy()
+    jira_adapter = MockJiraAdapter(
+        registry=registry,
+        jira_base_url=settings.jira_base_url,
+        jira_username=settings.jira_username,
+        jira_api_token=settings.jira_api_token,
+    )
+    report_use_case = GenerateMonthlyReportUseCase(
+        storage_port=storage,
+        jira_port=jira_adapter,
+        registry=registry,
+        timezone="UTC",
+        edge_case_policy=edge_case_policy,
+    )
+    dashboard_data_use_case = GetDashboardDataUseCase(storage_port=storage)
+    dashboard_output_dir = Path(settings.dashboard_output_dir)
+    return HtmlDashboardAdapter(
+        get_dashboard_data_use_case=dashboard_data_use_case,
+        generate_monthly_report_use_case=report_use_case,
+        output_dir=dashboard_output_dir,
+    )
+
+
+def _seed_project_data(
+    project_config: dict[str, str],
+    time_windows: list[TimeWindow],
+    submitter: SubmitProjectDataUseCase,
+) -> int:
+    project_id_str = project_config["id"]
+    project_name = project_config["name"]
+    project_id = ProjectId.from_raw(project_id_str)
+
+    trend_direction = random.choice(["increasing", "decreasing"])  # noqa: S311
+    trend_emoji = "📈" if trend_direction == "increasing" else "📉"
+
+    print(f"\n{trend_emoji} {project_name} ({project_id_str}) - {trend_direction}")
+
+    data_month1 = generate_baseline_data()
+    data_month2 = apply_trend(data_month1, trend_direction)
+    data_month3 = apply_trend(data_month2, trend_direction)
+    all_month_data = [data_month1, data_month2, data_month3]
+
+    submissions_count = 0
+    for time_window, data in zip(time_windows, all_month_data, strict=True):
+        test_coverage = create_test_coverage_metrics(data)
+
+        command = SubmissionCommand(
+            project_id=project_id,
+            time_window=time_window,
+            metrics=SubmissionMetrics(
+                test_coverage=test_coverage,
+                overall_test_cases=None,
+                supported_releases_count=None,
+            ),
+            raw_conversation="Seeded data via seed_database.py script",
+            created_at=datetime.now(UTC),
+        )
+
+        submitter.execute(command)
+        submissions_count += 1
+
+        print(
+            f"  {time_window.to_iso_month()}: "
+            f"M={data['manual_total']:4d}, "
+            f"A={data['automated_total']:4d}, "
+            f"Auto%={test_coverage.percentage_automation:5.2f}%"
+        )
+
+    return submissions_count
+
+
 def seed_database() -> None:
     """Seed the database with pseudo-random data."""
     settings = EnvSettingsAdapter().load()
@@ -105,15 +179,7 @@ def seed_database() -> None:
     print("Step 1: Initializing adapters...")
     storage = SQLiteAdapter(database_url=settings.database_url, echo=settings.database_echo)
     storage.initialize_schema()
-
-    dashboard_output_dir = Path(settings.dashboard_output_dir)
-    dashboard_adapter = HtmlDashboardAdapter(
-        storage_port=storage,
-        output_dir=dashboard_output_dir,
-        jira_base_url=settings.jira_base_url,
-        jira_username=settings.jira_username,
-        jira_api_token=settings.jira_api_token,
-    )
+    dashboard_adapter = _build_dashboard_adapter(settings=settings, storage=storage)
 
     metrics_adapter = InMemoryMetricsAdapter()
     print("✅ Adapters initialized\n")
@@ -146,48 +212,11 @@ def seed_database() -> None:
     total_submissions = 0
 
     for project_config in projects:
-        project_id_str = project_config["id"]
-        project_name = project_config["name"]
-        project_id = ProjectId.from_raw(project_id_str)
-
-        # Choose random trend direction
-        trend_direction = random.choice(["increasing", "decreasing"])  # noqa: S311
-        trend_emoji = "📈" if trend_direction == "increasing" else "📉"
-
-        print(f"\n{trend_emoji} {project_name} ({project_id_str}) - {trend_direction}")
-
-        # Generate baseline for first month
-        data_month1 = generate_baseline_data()
-        data_month2 = apply_trend(data_month1, trend_direction)
-        data_month3 = apply_trend(data_month2, trend_direction)
-
-        all_month_data = [data_month1, data_month2, data_month3]
-
-        # Submit data for each month
-        for time_window, data in zip(time_windows, all_month_data, strict=True):
-            test_coverage = create_test_coverage_metrics(data)
-
-            command = SubmissionCommand(
-                project_id=project_id,
-                time_window=time_window,
-                metrics=SubmissionMetrics(
-                    test_coverage=test_coverage,
-                    overall_test_cases=None,
-                    supported_releases_count=None,
-                ),
-                raw_conversation="Seeded data via seed_database.py script",
-                created_at=datetime.now(UTC),
-            )
-
-            submitter.execute(command)
-            total_submissions += 1
-
-            print(
-                f"  {time_window.to_iso_month()}: "
-                f"M={data['manual_total']:4d}, "
-                f"A={data['automated_total']:4d}, "
-                f"Auto%={test_coverage.percentage_automation:5.2f}%"
-            )
+        total_submissions += _seed_project_data(
+            project_config=project_config,
+            time_windows=time_windows,
+            submitter=submitter,
+        )
 
     print("\n" + "=" * 80)
     print(f"✅ SUCCESS: Seeded {total_submissions} submissions for {len(projects)} projects")

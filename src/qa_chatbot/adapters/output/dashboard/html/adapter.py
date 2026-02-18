@@ -9,14 +9,11 @@ from typing import TYPE_CHECKING
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from qa_chatbot.adapters.output.dashboard.exceptions import DashboardRenderError
-from qa_chatbot.adapters.output.jira_mock import MockJiraAdapter
-from qa_chatbot.application.ports import DashboardPort, StoragePort
-from qa_chatbot.application.services.reporting_calculations import EdgeCasePolicy
-from qa_chatbot.application.use_cases import GenerateMonthlyReportUseCase, GetDashboardDataUseCase
-from qa_chatbot.domain import build_default_stream_project_registry
+from qa_chatbot.application.ports import DashboardPort
 
 if TYPE_CHECKING:
     from qa_chatbot.application.dtos import ProjectDetailDashboardData, TrendsDashboardData, TrendSeries
+    from qa_chatbot.application.use_cases import GenerateMonthlyReportUseCase, GetDashboardDataUseCase
     from qa_chatbot.domain import ProjectId, TimeWindow
 
 
@@ -24,12 +21,9 @@ if TYPE_CHECKING:
 class HtmlDashboardAdapter(DashboardPort):
     """Generate static HTML dashboards."""
 
-    storage_port: StoragePort
+    get_dashboard_data_use_case: GetDashboardDataUseCase
+    generate_monthly_report_use_case: GenerateMonthlyReportUseCase
     output_dir: Path
-    jira_base_url: str
-    jira_username: str
-    jira_api_token: str
-    report_timezone: str = "UTC"
 
     def __post_init__(self) -> None:
         """Prepare template environment and output directory."""
@@ -40,21 +34,8 @@ class HtmlDashboardAdapter(DashboardPort):
             loader=FileSystemLoader(templates_dir),
             autoescape=select_autoescape(["html"]),
         )
-        self._use_case = GetDashboardDataUseCase(self.storage_port)
-        registry = build_default_stream_project_registry()
-        edge_case_policy = EdgeCasePolicy()
-        self._report_use_case = GenerateMonthlyReportUseCase(
-            storage_port=self.storage_port,
-            jira_port=MockJiraAdapter(
-                registry=registry,
-                jira_base_url=self.jira_base_url,
-                jira_username=self.jira_username,
-                jira_api_token=self.jira_api_token,
-            ),
-            registry=registry,
-            timezone=self.report_timezone,
-            edge_case_policy=edge_case_policy,
-        )
+        self._use_case = self.get_dashboard_data_use_case
+        self._report_use_case = self.generate_monthly_report_use_case
 
     def generate_overview(self, month: TimeWindow) -> Path:
         """Generate the overview dashboard for a month."""

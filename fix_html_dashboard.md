@@ -16,9 +16,9 @@ Audit-driven remediation plan for `HtmlDashboardAdapter` and related templates/t
 - [x] Wrap template load/render/write failures with `DashboardRenderError(... ) from err`
 
 ### Phase 2 — Architecture Cleanup
-- [ ] Remove internal creation of adapters/use-cases from `HtmlDashboardAdapter`
-- [ ] Inject dependencies from composition root (`main.py`) via ports/factories
-- [ ] Ensure runtime wiring uses intended Jira provider (mock only in dev/test)
+- [x] Remove internal creation of adapters/use-cases from `HtmlDashboardAdapter`
+- [x] Inject dependencies from composition root (`main.py`) via ports/factories
+- [x] Ensure runtime wiring uses intended Jira provider (mock for now in all environments)
 
 ### Phase 3 — Hardening
 - [ ] Strengthen smoke-check with required section/table/chart markers
@@ -63,7 +63,7 @@ Audit-driven remediation plan for `HtmlDashboardAdapter` and related templates/t
 ### Phase 2 — Architecture Cleanup
 4. Remove internal creation of use cases/adapters from `HtmlDashboardAdapter`.
 5. Inject dependencies from composition root (`main.py`) via ports/factories.
-6. Ensure runtime wiring uses intended Jira provider (mock only in dev/test).
+6. Ensure runtime wiring uses intended Jira provider (mock for now in all environments).
 
 ### Phase 3 — Hardening
 7. Strengthen smoke-check with required section/table/chart markers.

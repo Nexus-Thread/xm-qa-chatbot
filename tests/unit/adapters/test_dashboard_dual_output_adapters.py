@@ -11,8 +11,11 @@ import pytest
 from qa_chatbot.adapters.output.dashboard.composite import CompositeDashboardAdapter
 from qa_chatbot.adapters.output.dashboard.confluence import ConfluenceDashboardAdapter
 from qa_chatbot.adapters.output.dashboard.exceptions import DashboardRenderError
+from qa_chatbot.adapters.output.jira_mock import MockJiraAdapter
+from qa_chatbot.application import GenerateMonthlyReportUseCase, GetDashboardDataUseCase
 from qa_chatbot.application.ports import DashboardPort
-from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWindow
+from qa_chatbot.application.services.reporting_calculations import EdgeCasePolicy
+from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWindow, build_default_stream_project_registry
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -134,12 +137,26 @@ def test_confluence_dashboard_adapter_generates_local_artifacts(
 ) -> None:
     """Confluence adapter should generate local files for all views."""
     _seed_submissions(sqlite_adapter)
-    adapter = ConfluenceDashboardAdapter(
-        storage_port=sqlite_adapter,
-        output_dir=tmp_path / "dashboards",
+    registry = build_default_stream_project_registry()
+    jira_adapter = MockJiraAdapter(
+        registry=registry,
         jira_base_url="https://jira.example.com",
         jira_username="jira-user@example.com",
         jira_api_token="token",  # noqa: S106
+    )
+    report_use_case = GenerateMonthlyReportUseCase(
+        storage_port=sqlite_adapter,
+        jira_port=jira_adapter,
+        registry=registry,
+        timezone="UTC",
+        edge_case_policy=EdgeCasePolicy(),
+        now_provider=lambda: datetime(2026, 2, 4, 12, 0, 0, tzinfo=UTC),
+    )
+    dashboard_data_use_case = GetDashboardDataUseCase(storage_port=sqlite_adapter)
+    adapter = ConfluenceDashboardAdapter(
+        get_dashboard_data_use_case=dashboard_data_use_case,
+        generate_monthly_report_use_case=report_use_case,
+        output_dir=tmp_path / "dashboards",
     )
 
     months = [TimeWindow.from_year_month(2026, 2), TimeWindow.from_year_month(2026, 1)]

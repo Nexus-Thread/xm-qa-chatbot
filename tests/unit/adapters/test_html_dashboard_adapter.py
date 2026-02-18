@@ -11,9 +11,12 @@ import pytest
 
 from qa_chatbot.adapters.output.dashboard.exceptions import DashboardRenderError
 from qa_chatbot.adapters.output.dashboard.html import HtmlDashboardAdapter
+from qa_chatbot.adapters.output.jira_mock import MockJiraAdapter
+from qa_chatbot.application import GenerateMonthlyReportUseCase, GetDashboardDataUseCase
 from qa_chatbot.application.dtos import CompletenessStatus, MonthlyReport, ReportMetadata
 from qa_chatbot.application.dtos import TestCoverageRow as CoverageRowDTO
-from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWindow
+from qa_chatbot.application.services.reporting_calculations import EdgeCasePolicy
+from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWindow, build_default_stream_project_registry
 
 if TYPE_CHECKING:
     from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter
@@ -115,28 +118,27 @@ def _seed_submissions(sqlite_adapter: SQLiteAdapter) -> None:
 def dashboard_adapter(sqlite_adapter: SQLiteAdapter, tmp_path: Path) -> HtmlDashboardAdapter:
     """Provide the HTML dashboard adapter with seeded data."""
     _seed_submissions(sqlite_adapter)
-    adapter = HtmlDashboardAdapter(
-        storage_port=sqlite_adapter,
-        output_dir=tmp_path / "dashboards",
+    registry = build_default_stream_project_registry()
+    jira_adapter = MockJiraAdapter(
+        registry=registry,
         jira_base_url="https://jira.example.com",
         jira_username="jira-user@example.com",
         jira_api_token="token",  # noqa: S106
     )
-    return _with_fixed_report_timestamp(adapter)
-
-
-def _with_fixed_report_timestamp(adapter: HtmlDashboardAdapter) -> HtmlDashboardAdapter:
-    report_use_case = adapter._report_use_case  # noqa: SLF001
-    adapter._report_use_case = report_use_case.__class__(  # noqa: SLF001
-        storage_port=report_use_case.storage_port,
-        jira_port=report_use_case.jira_port,
-        registry=report_use_case.registry,
-        timezone=report_use_case.timezone,
-        edge_case_policy=report_use_case.edge_case_policy,
-        completeness_mode=report_use_case.completeness_mode,
+    report_use_case = GenerateMonthlyReportUseCase(
+        storage_port=sqlite_adapter,
+        jira_port=jira_adapter,
+        registry=registry,
+        timezone="UTC",
+        edge_case_policy=EdgeCasePolicy(),
         now_provider=lambda: datetime(2026, 2, 4, 12, 0, 0, tzinfo=UTC),
     )
-    return adapter
+    dashboard_data_use_case = GetDashboardDataUseCase(storage_port=sqlite_adapter)
+    return HtmlDashboardAdapter(
+        get_dashboard_data_use_case=dashboard_data_use_case,
+        generate_monthly_report_use_case=report_use_case,
+        output_dir=tmp_path / "dashboards",
+    )
 
 
 def test_generate_overview_snapshot(

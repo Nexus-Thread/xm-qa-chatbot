@@ -13,9 +13,13 @@ from qa_chatbot.adapters.output import (
     CompositeDashboardAdapter,
     ConfluenceDashboardAdapter,
     HtmlDashboardAdapter,
+    MockJiraAdapter,
     SQLiteAdapter,
 )
+from qa_chatbot.application import GenerateMonthlyReportUseCase, GetDashboardDataUseCase
+from qa_chatbot.application.services.reporting_calculations import EdgeCasePolicy
 from qa_chatbot.config import LoggingSettings, configure_logging
+from qa_chatbot.domain import build_default_stream_project_registry
 
 if TYPE_CHECKING:
     from qa_chatbot.application.dtos import AppSettings
@@ -101,19 +105,32 @@ def _build_dashboard_adapter(
     logger: logging.Logger,
 ) -> CompositeDashboardAdapter:
     logger.info("Initializing dashboard adapter")
-    html_dashboard = HtmlDashboardAdapter(
-        storage_port=storage,
-        output_dir=output_dir,
+    registry = build_default_stream_project_registry()
+    edge_case_policy = EdgeCasePolicy()
+    jira_adapter = MockJiraAdapter(
+        registry=registry,
         jira_base_url=settings.jira_base_url,
         jira_username=settings.jira_username,
         jira_api_token=settings.jira_api_token,
     )
-    confluence_dashboard = ConfluenceDashboardAdapter(
+    report_use_case = GenerateMonthlyReportUseCase(
         storage_port=storage,
+        jira_port=jira_adapter,
+        registry=registry,
+        timezone="UTC",
+        edge_case_policy=edge_case_policy,
+    )
+    dashboard_data_use_case = GetDashboardDataUseCase(storage_port=storage)
+
+    html_dashboard = HtmlDashboardAdapter(
+        get_dashboard_data_use_case=dashboard_data_use_case,
+        generate_monthly_report_use_case=report_use_case,
         output_dir=output_dir,
-        jira_base_url=settings.jira_base_url,
-        jira_username=settings.jira_username,
-        jira_api_token=settings.jira_api_token,
+    )
+    confluence_dashboard = ConfluenceDashboardAdapter(
+        get_dashboard_data_use_case=dashboard_data_use_case,
+        generate_monthly_report_use_case=report_use_case,
+        output_dir=output_dir,
     )
     return CompositeDashboardAdapter(adapters=(html_dashboard, confluence_dashboard))
 
