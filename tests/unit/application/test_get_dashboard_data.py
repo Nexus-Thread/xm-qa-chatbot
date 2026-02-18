@@ -128,3 +128,35 @@ def test_build_trends_returns_series_for_each_project() -> None:
 
     series_labels = [series.label for series in trends.qa_metric_series["manual_total"]]
     assert series_labels == ["Alpha", "Beta"]
+
+
+def test_build_project_detail_returns_empty_snapshot_for_missing_month() -> None:
+    """Create an empty snapshot when a project has no submission for a requested month."""
+    project = ProjectId("Gamma")
+    month = TimeWindow.from_year_month(2026, 2)
+    use_case = GetDashboardDataUseCase(storage_port=FakeStoragePort(submissions=[]))
+
+    detail = use_case.build_project_detail(project, [month])
+
+    assert detail.snapshots[0].month == month
+    assert detail.snapshots[0].qa_metrics["manual_total"] is None
+    assert detail.snapshots[0].qa_metrics["automated_total"] is None
+
+
+def test_build_trends_returns_none_when_latest_submission_has_no_coverage() -> None:
+    """Use None trend value when the latest submission for a month has no coverage payload."""
+    project = ProjectId("Alpha")
+    month = TimeWindow.from_year_month(2026, 1)
+    submission_without_coverage = Submission.create(
+        project_id=project,
+        month=month,
+        test_coverage=None,
+        overall_test_cases=None,
+        supported_releases_count=1,
+        created_at=datetime(2026, 1, 2, tzinfo=UTC),
+    )
+    use_case = GetDashboardDataUseCase(storage_port=FakeStoragePort([submission_without_coverage]))
+
+    trends = use_case.build_trends([project], [month])
+
+    assert trends.qa_metric_series["manual_total"][0].values == [None]

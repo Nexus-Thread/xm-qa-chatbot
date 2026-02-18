@@ -83,6 +83,33 @@ class _FakeJiraPort:
         return f"https://jira.example.com/{project_id.value}/{label}"
 
 
+class _FailingJiraPort(_FakeJiraPort):
+    """Jira stub that simulates upstream failures for one metric."""
+
+    def fetch_bugs_found(self, project_id: ProjectId, _period: ReportingPeriod) -> BucketCount:
+        del project_id
+        msg = "jira unavailable"
+        raise RuntimeError(msg)
+
+
+class _PartialCoverageStoragePort(_FakeStoragePort):
+    """Storage stub returning partial coverage data by project."""
+
+    def get_submissions_by_project(self, project_id: ProjectId, month: TimeWindow) -> list[Submission]:
+        submissions = super().get_submissions_by_project(project_id, month)
+        if project_id.value == "project-a":
+            return [
+                Submission.create(
+                    project_id=project_id,
+                    month=month,
+                    test_coverage=TestCoverageMetrics(manual_total=None, automated_total=2),
+                    overall_test_cases=None,
+                    created_at=datetime(2026, 1, 12, tzinfo=UTC),
+                ),
+            ]
+        return submissions
+
+
 def _build_registry() -> StreamProjectRegistry:
     stream = BusinessStream(id=StreamId("stream-a"), name="Stream A", order=0)
     project = Project(id="project-a", name="Project A", business_stream_id=stream.id)
@@ -154,3 +181,82 @@ def test_init_raises_for_invalid_completeness_mode() -> None:
             edge_case_policy=EdgeCasePolicy(),
             completeness_mode="unknown",
         )
+
+
+def test_execute_marks_failed_completeness_in_fail_mode() -> None:
+    """Mark report as failed completeness when configured to fail on missing data."""
+    month = TimeWindow.from_year_month(2026, 1)
+    use_case = GenerateMonthlyReportUseCase(
+        storage_port=_FakeStoragePort(submissions=[]),
+        jira_port=_FakeJiraPort(),
+        registry=_build_registry(),
+        timezone="UTC",
+        edge_case_policy=EdgeCasePolicy(),
+        completeness_mode="fail",
+    )
+
+    report = use_case.execute(month)
+
+    assert report.completeness.status == "FAILED"
+    assert "test_coverage:project-a" in report.completeness.missing
+
+
+def test_execute_handles_jira_fetch_errors_as_missing_data() -> None:
+    """Capture Jira fetch errors as missing metrics instead of failing report generation."""
+    month = TimeWindow.from_year_month(2026, 1)
+    use_case = GenerateMonthlyReportUseCase(
+        storage_port=_FakeStoragePort(submissions=[_submission(month)]),
+        jira_port=_FailingJiraPort(),
+        registry=_build_registry(),
+        timezone="UTC",
+        edge_case_policy=EdgeCasePolicy(),
+    )
+
+    report = use_case.execute(month)
+
+    assert report.completeness.status == "PARTIAL"
+    assert "bugs_found:project-a" in report.completeness.missing
+    assert report.quality_metrics_rows[1].bugs_found.p1_p2 is None
+    assert report.quality_metrics_rows[1].bugs_found.p3_p4 is None
+
+
+def test_execute_returns_none_for_automation_percentage_when_totals_are_partial() -> None:
+    """Return None automation percentage when one of the totals is missing."""
+    month = TimeWindow.from_year_month(2026, 1)
+    use_case = GenerateMonthlyReportUseCase(
+        storage_port=_PartialCoverageStoragePort(submissions=[_submission(month)]),
+        jira_port=_FakeJiraPort(),
+        registry=_build_registry(),
+        timezone="UTC",
+        edge_case_policy=EdgeCasePolicy(),
+    )
+
+    report = use_case.execute(month)
+
+    assert report.test_coverage_rows[0].percentage_automation is None
+
+
+def test_execute_returns_none_overall_test_cases_when_no_complete_totals_exist() -> None:
+    """Return None for overall test cases when monthly submissions lack complete coverage totals."""
+    month = TimeWindow.from_year_month(2026, 1)
+    submissions = [
+        Submission.create(
+            project_id=ProjectId("project-a"),
+            month=month,
+            test_coverage=None,
+            overall_test_cases=None,
+            supported_releases_count=1,
+            created_at=datetime(2026, 1, 8, tzinfo=UTC),
+        ),
+    ]
+    use_case = GenerateMonthlyReportUseCase(
+        storage_port=_FakeStoragePort(submissions=submissions),
+        jira_port=_FakeJiraPort(),
+        registry=_build_registry(),
+        timezone="UTC",
+        edge_case_policy=EdgeCasePolicy(),
+    )
+
+    report = use_case.execute(month)
+
+    assert report.overall_test_cases is None
