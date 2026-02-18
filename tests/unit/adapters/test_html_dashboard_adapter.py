@@ -4,16 +4,18 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
 
+from qa_chatbot.adapters.output.dashboard.exceptions import DashboardRenderError
 from qa_chatbot.adapters.output.dashboard.html import HtmlDashboardAdapter
+from qa_chatbot.application.dtos import CompletenessStatus, MonthlyReport, ReportMetadata
+from qa_chatbot.application.dtos import TestCoverageRow as CoverageRowDTO
 from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWindow
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter
 
 
@@ -147,6 +149,111 @@ def test_generate_overview_snapshot(
     assert "Monthly QA Summary" in html
     assert "Completeness: PARTIAL" in html
     assert "Section B — Test Coverage" in html
+
+
+def test_generate_overview_uses_reporting_month_coverage_fields(
+    dashboard_adapter: HtmlDashboardAdapter,
+    time_window_feb: TimeWindow,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Render reporting-month test coverage values in overview columns."""
+
+    class _StubReportUseCase:
+        def __init__(self, fixed_report: MonthlyReport) -> None:
+            self._fixed_report = fixed_report
+
+        def execute(self, _month: TimeWindow) -> MonthlyReport:
+            return self._fixed_report
+
+    report = MonthlyReport(
+        metadata=ReportMetadata(
+            reporting_period="2026-02",
+            generated_at="2026-02-04T12:00:00+00:00",
+        ),
+        completeness=CompletenessStatus(status="COMPLETE", missing=(), missing_by_project=None),
+        quality_metrics_rows=(),
+        test_coverage_rows=(
+            CoverageRowDTO(
+                business_stream="Client Engagement",
+                project_name="Project A",
+                percentage_automation=40.0,
+                manual_total=120,
+                manual_created_in_reporting_month=11,
+                manual_updated_in_reporting_month=7,
+                automated_total=80,
+                automated_created_in_reporting_month=9,
+                automated_updated_in_reporting_month=4,
+            ),
+        ),
+        overall_test_cases=200,
+    )
+    monkeypatch.setattr(dashboard_adapter, "_report_use_case", _StubReportUseCase(report))
+
+    output_path = dashboard_adapter.generate_overview(time_window_feb)
+    html = _normalize_html(output_path.read_text(encoding="utf-8"))
+
+    assert ">11</td>" in html
+    assert ">7</td>" in html
+    assert ">9</td>" in html
+    assert ">4</td>" in html
+
+
+def test_generate_overview_wraps_template_load_errors(
+    dashboard_adapter: HtmlDashboardAdapter,
+    time_window_feb: TimeWindow,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Wrap template loading failures with DashboardRenderError."""
+
+    def _raise_load_error(_template_name: str) -> None:
+        raise RuntimeError
+
+    environment = dashboard_adapter._environment  # noqa: SLF001
+    monkeypatch.setattr(environment, "get_template", _raise_load_error)
+
+    with pytest.raises(DashboardRenderError, match=r"Failed to load dashboard template: overview\.html") as exc_info:
+        dashboard_adapter.generate_overview(time_window_feb)
+
+    assert isinstance(exc_info.value.__cause__, RuntimeError)
+
+
+def test_generate_overview_wraps_template_render_errors(
+    dashboard_adapter: HtmlDashboardAdapter,
+    time_window_feb: TimeWindow,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Wrap template rendering failures with DashboardRenderError."""
+
+    class _BrokenTemplate:
+        def render(self, **_context: object) -> str:
+            raise RuntimeError
+
+    environment = dashboard_adapter._environment  # noqa: SLF001
+    monkeypatch.setattr(environment, "get_template", lambda _template_name: _BrokenTemplate())
+
+    with pytest.raises(DashboardRenderError, match=r"Failed to render dashboard template: overview\.html") as exc_info:
+        dashboard_adapter.generate_overview(time_window_feb)
+
+    assert isinstance(exc_info.value.__cause__, RuntimeError)
+
+
+def test_write_atomic_wraps_write_errors(
+    dashboard_adapter: HtmlDashboardAdapter,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Wrap file write failures with DashboardRenderError."""
+
+    def _raise_write_error(_self: Path, _content: str, *, encoding: str = "utf-8") -> int:
+        del encoding
+        raise OSError
+
+    monkeypatch.setattr(Path, "write_text", _raise_write_error)
+
+    with pytest.raises(DashboardRenderError, match="Failed to write dashboard output:") as exc_info:
+        dashboard_adapter._write_atomic(tmp_path / "overview.html", "test")  # noqa: SLF001
+
+    assert isinstance(exc_info.value.__cause__, OSError)
 
 
 def test_generate_project_detail_snapshot(

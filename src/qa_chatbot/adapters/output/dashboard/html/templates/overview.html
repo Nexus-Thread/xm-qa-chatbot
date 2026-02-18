@@ -105,11 +105,11 @@
                 <td class="px-4 py-3 font-medium">{{ row.project_name }}</td>
                 <td class="px-4 py-3 text-right">{{ row.percentage_automation if row.percentage_automation is not none else "-" }}</td>
                 <td class="px-4 py-3 text-right">{{ row.manual_total if row.manual_total is not none else "-" }}</td>
-                <td class="px-4 py-3 text-right">{{ row.manual_created_last_month if row.manual_created_last_month is not none else "-" }}</td>
-                <td class="px-4 py-3 text-right">{{ row.manual_updated_last_month if row.manual_updated_last_month is not none else "-" }}</td>
+                <td class="px-4 py-3 text-right">{{ row.manual_created_in_reporting_month if row.manual_created_in_reporting_month is not none else "-" }}</td>
+                <td class="px-4 py-3 text-right">{{ row.manual_updated_in_reporting_month if row.manual_updated_in_reporting_month is not none else "-" }}</td>
                 <td class="px-4 py-3 text-right">{{ row.automated_total if row.automated_total is not none else "-" }}</td>
-                <td class="px-4 py-3 text-right">{{ row.automated_created_last_month if row.automated_created_last_month is not none else "-" }}</td>
-                <td class="px-4 py-3 text-right">{{ row.automated_updated_last_month if row.automated_updated_last_month is not none else "-" }}</td>
+                <td class="px-4 py-3 text-right">{{ row.automated_created_in_reporting_month if row.automated_created_in_reporting_month is not none else "-" }}</td>
+                <td class="px-4 py-3 text-right">{{ row.automated_updated_in_reporting_month if row.automated_updated_in_reporting_month is not none else "-" }}</td>
               </tr>
               {% else %}
               <tr>

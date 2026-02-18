@@ -93,16 +93,30 @@ class HtmlDashboardAdapter(DashboardPort):
         output_name: str,
         context: dict[str, object],
     ) -> Path:
-        template = self._environment.get_template(template_name)
-        rendered = template.render(**context)
+        try:
+            template = self._environment.get_template(template_name)
+        except Exception as err:
+            msg = f"Failed to load dashboard template: {template_name}"
+            raise DashboardRenderError(msg) from err
+
+        try:
+            rendered = template.render(**context)
+        except Exception as err:
+            msg = f"Failed to render dashboard template: {template_name}"
+            raise DashboardRenderError(msg) from err
+
         self._smoke_check(rendered, template_name)
         output_path = self._output_dir / output_name
         return self._write_atomic(output_path, rendered)
 
     def _write_atomic(self, path: Path, content: str) -> Path:
         temp_path = path.with_suffix(path.suffix + ".tmp")
-        temp_path.write_text(content, encoding="utf-8")
-        temp_path.replace(path)
+        try:
+            temp_path.write_text(content, encoding="utf-8")
+            temp_path.replace(path)
+        except Exception as err:
+            msg = f"Failed to write dashboard output: {path}"
+            raise DashboardRenderError(msg) from err
         return path
 
     def _build_chart_payload(self, data: TrendsDashboardData) -> dict[str, object]:
