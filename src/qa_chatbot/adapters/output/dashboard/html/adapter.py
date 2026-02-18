@@ -23,7 +23,8 @@ DEFAULT_PLOTLY_SCRIPT_SRC = "https://cdn.plot.ly/plotly-2.27.0.min.js"
 SMOKE_CHECK_MARKERS_BY_TEMPLATE: dict[str, tuple[str, ...]] = {
     "overview.html": (
         "Monthly QA Summary",
-        "Section B — Test Coverage",
+        "Quality Metrics",
+        "Test Coverage",
         "<table",
     ),
     "project_detail.html": (

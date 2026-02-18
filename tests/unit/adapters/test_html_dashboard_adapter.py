@@ -151,7 +151,9 @@ def test_generate_overview_snapshot(
     html = _normalize_html(output_path.read_text(encoding="utf-8"))
     assert "Monthly QA Summary" in html
     assert "Completeness: PARTIAL" in html
-    assert "Section B — Test Coverage" in html
+    assert "Quality Metrics" in html
+    assert "Test Coverage" in html
+    assert "Bugs, production incidents, and defect leakage by project" in html
 
 
 def test_generate_overview_uses_reporting_month_coverage_fields(
@@ -312,7 +314,8 @@ def test_generate_overview_smoke_check_reports_missing_markers(
     message = str(exc_info.value)
     assert "Missing markers:" in message
     assert "'Monthly QA Summary'" in message
-    assert "'Section B — Test Coverage'" in message
+    assert "'Quality Metrics'" in message
+    assert "'Test Coverage'" in message
 
 
 def test_generate_overview_renders_configured_asset_script_urls(

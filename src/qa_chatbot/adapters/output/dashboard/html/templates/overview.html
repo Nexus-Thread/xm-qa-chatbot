@@ -7,18 +7,40 @@
     <script src="{{ assets.tailwind_script_src }}"></script>
   </head>
   <body class="bg-slate-100 text-slate-900">
-    <main class="max-w-6xl mx-auto px-6 py-8">
-      <header class="mb-8">
-        <h1 class="text-3xl font-semibold">Monthly QA Summary</h1>
-        <p class="text-slate-600">Reporting month: {{ report.metadata.reporting_period }}</p>
-        <p class="text-xs text-slate-500">
-          Generated at {{ report.metadata.generated_at }} · Completeness: {{ report.completeness.status }}
-        </p>
+    <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+      <header class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 class="text-3xl font-semibold">Monthly QA Summary</h1>
+            <p class="text-slate-600 mt-1">Reporting month: {{ report.metadata.reporting_period }}</p>
+            <p class="text-xs text-slate-500 mt-2">Generated at {{ report.metadata.generated_at }}</p>
+          </div>
+          <div
+            class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {% if report.completeness.status == 'COMPLETE' %}bg-emerald-100 text-emerald-700{% elif report.completeness.status == 'PARTIAL' %}bg-amber-100 text-amber-700{% else %}bg-rose-100 text-rose-700{% endif %}"
+          >
+            Completeness: {{ report.completeness.status }}
+          </div>
+        </div>
+
+        <div class="mt-4 grid gap-3 sm:grid-cols-2">
+          <article class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <p class="text-xs uppercase tracking-wide text-slate-500">Projects in report</p>
+            <p class="text-xl font-semibold text-slate-900">{{ report.test_coverage_rows | length }}</p>
+          </article>
+          <article class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <p class="text-xs uppercase tracking-wide text-slate-500">Overall test cases</p>
+            <p class="text-xl font-semibold text-slate-900">
+              {{ report.overall_test_cases if report.overall_test_cases is not none else "-" }}
+            </p>
+          </article>
+        </div>
+
         {% if report.completeness.missing %}
-        <div class="text-xs text-amber-700 mt-2">
-          <p>Missing: {{ report.completeness.missing | join(", ") }}</p>
+        <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+          <p class="font-semibold">Data completeness notes</p>
+          <p class="mt-1">Missing: {{ report.completeness.missing | join(", ") }}</p>
           {% if report.completeness.missing_by_project %}
-          <ul class="mt-1 list-disc list-inside">
+          <ul class="mt-2 list-disc list-inside">
             {% for project_id, fields in report.completeness.missing_by_project.items() %}
             <li>{{ project_id }}: {{ fields | join(", ") }}</li>
             {% endfor %}
@@ -28,10 +50,12 @@
         {% endif %}
       </header>
 
-      <!-- Section A — Quality Metrics (commented out)
-      <section class="mb-10">
-        <h2 class="text-xl font-semibold mb-3">Section A — Quality Metrics</h2>
-        <div class="overflow-auto bg-white rounded-xl shadow-sm">
+      <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <div class="mb-4">
+          <h2 class="text-xl font-semibold">Quality Metrics</h2>
+          <p class="text-sm text-slate-600">Bugs, production incidents, and defect leakage by project</p>
+        </div>
+        <div class="overflow-auto rounded-xl border border-slate-200">
           <table class="min-w-full text-sm">
             <thead class="bg-slate-50 text-slate-600">
               <tr>
@@ -50,17 +74,17 @@
                 <td class="px-4 py-3 font-medium">{{ row.project_name }}</td>
                 <td class="px-4 py-3 text-right">{{ row.supported_releases_count or "-" }}</td>
                 <td class="px-4 py-3">
-                  <div>P1–P2 {{ row.bugs_found.p1_p2 or "-" }}</div>
-                  <div>P3–P4 {{ row.bugs_found.p3_p4 or "-" }}</div>
+                  <div><span class="text-xs text-slate-500">P1–P2:</span> {{ row.bugs_found.p1_p2 or "-" }}</div>
+                  <div><span class="text-xs text-slate-500">P3–P4:</span> {{ row.bugs_found.p3_p4 or "-" }}</div>
                 </td>
                 <td class="px-4 py-3">
-                  <div>P1–P2 {{ row.production_incidents.p1_p2 or "-" }}</div>
-                  <div>P3–P4 {{ row.production_incidents.p3_p4 or "-" }}</div>
+                  <div><span class="text-xs text-slate-500">P1–P2:</span> {{ row.production_incidents.p1_p2 or "-" }}</div>
+                  <div><span class="text-xs text-slate-500">P3–P4:</span> {{ row.production_incidents.p3_p4 or "-" }}</div>
                 </td>
                 <td class="px-4 py-3">
                   {% if row.defect_leakage.rate_percent is not none %}
-                  ({{ row.defect_leakage.numerator }}/{{ row.defect_leakage.denominator }}) * 100 =
-                  {{ row.defect_leakage.rate_percent }}%
+                  {{ row.defect_leakage.numerator }}/{{ row.defect_leakage.denominator }}
+                  ({{ "%.2f" | format(row.defect_leakage.rate_percent) }}%)
                   {% else %}
                   -
                   {% endif %}
@@ -75,15 +99,13 @@
           </table>
         </div>
       </section>
-      -->
 
-      <section>
-        <h2 class="text-xl font-semibold mb-3">Section B — Test Coverage</h2>
-        <p class="text-sm text-slate-600 mb-4">
-          Overall number of test cases across all projects:
-          <span class="font-semibold">{{ report.overall_test_cases if report.overall_test_cases is not none else "-" }}</span>
-        </p>
-        <div class="overflow-auto bg-white rounded-xl shadow-sm">
+      <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <div class="mb-4">
+          <h2 class="text-xl font-semibold">Test Coverage</h2>
+          <p class="text-sm text-slate-600">Manual and automated test-case coverage for the reporting month</p>
+        </div>
+        <div class="overflow-auto rounded-xl border border-slate-200">
           <table class="min-w-full text-sm">
             <thead class="bg-slate-50 text-slate-600">
               <tr>
@@ -100,10 +122,12 @@
             </thead>
             <tbody class="divide-y divide-slate-100">
               {% for row in report.test_coverage_rows %}
-              <tr>
+              <tr class="{% if row.is_portfolio %}bg-slate-50 font-semibold{% endif %}">
                 <td class="px-4 py-3">{{ row.business_stream }}</td>
                 <td class="px-4 py-3 font-medium">{{ row.project_name }}</td>
-                <td class="px-4 py-3 text-right">{{ row.percentage_automation if row.percentage_automation is not none else "-" }}</td>
+                <td class="px-4 py-3 text-right">
+                  {% if row.percentage_automation is not none %}{{ "%.2f" | format(row.percentage_automation) }}%{% else %}-{% endif %}
+                </td>
                 <td class="px-4 py-3 text-right">{{ row.manual_total if row.manual_total is not none else "-" }}</td>
                 <td class="px-4 py-3 text-right">{{ row.manual_created_in_reporting_month if row.manual_created_in_reporting_month is not none else "-" }}</td>
                 <td class="px-4 py-3 text-right">{{ row.manual_updated_in_reporting_month if row.manual_updated_in_reporting_month is not none else "-" }}</td>
