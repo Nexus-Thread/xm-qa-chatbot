@@ -19,6 +19,7 @@ from qa_chatbot.domain import (
     SubmissionMetrics,
     TestCoverageMetrics,
     TimeWindow,
+    build_default_stream_project_registry,
 )
 
 pytestmark = pytest.mark.e2e
@@ -151,13 +152,21 @@ def conversation_manager() -> ConversationManager:
     extractor = ExtractStructuredDataUseCase(llm_port=FakeLLM())
     storage = FakeStorage(submissions=[])
     submitter = SubmitProjectDataUseCase(storage_port=storage)
-    return ConversationManager(extractor=extractor, submitter=submitter)
+    return ConversationManager(
+        extractor=extractor,
+        submitter=submitter,
+        registry=build_default_stream_project_registry(),
+    )
 
 
 def _build_manager(*, llm: FakeLLM | None = None, storage: FakeStorage | None = None) -> ConversationManager:
     extractor = ExtractStructuredDataUseCase(llm_port=llm or FakeLLM())
     submitter = SubmitProjectDataUseCase(storage_port=storage or FakeStorage(submissions=[]))
-    return ConversationManager(extractor=extractor, submitter=submitter)
+    return ConversationManager(
+        extractor=extractor,
+        submitter=submitter,
+        registry=build_default_stream_project_registry(),
+    )
 
 
 def test_conversation_happy_path(conversation_manager: ConversationManager) -> None:

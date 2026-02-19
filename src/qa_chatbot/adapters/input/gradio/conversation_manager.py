@@ -14,13 +14,13 @@ from qa_chatbot.domain import (
     ProjectId,
     SubmissionMetrics,
     TimeWindow,
-    build_default_stream_project_registry,
 )
 
 if TYPE_CHECKING:
     from datetime import date
 
     from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitProjectDataUseCase
+    from qa_chatbot.domain.registries import StreamProjectRegistry
     from qa_chatbot.domain.value_objects import ExtractionConfidence, TestCoverageMetrics
 
 # Time window parsing constants
@@ -61,10 +61,12 @@ class ConversationManager:
         self,
         extractor: ExtractStructuredDataUseCase,
         submitter: SubmitProjectDataUseCase,
+        registry: StreamProjectRegistry,
     ) -> None:
         """Initialize the conversation manager."""
         self._extractor = extractor
         self._submitter = submitter
+        self._registry = registry
 
     def start_session(self, today: date) -> tuple[ConversationSession, str]:
         """Start a new conversation session."""
@@ -114,10 +116,8 @@ class ConversationManager:
 
     def _handle_project_id(self, message: str, session: ConversationSession, today: date) -> str:
         """Handle project identification."""
-        registry = build_default_stream_project_registry()
-
         try:
-            project_id, confidence = self._extractor.extract_project_id(message, registry)
+            project_id, confidence = self._extractor.extract_project_id(message, self._registry)
 
             if confidence.is_high:
                 session.stream_project = project_id
@@ -128,12 +128,12 @@ class ConversationManager:
             session.pending_project = project_id
             session.pending_confidence = confidence
             session.state = ConversationState.PROJECT_CONFIRMATION
-            project = registry.find_project(project_id.value)
+            project = self._registry.find_project(project_id.value)
             project_name = project.name if project else project_id.value
             return formatters.format_project_confirmation(project_name)
 
         except DomainError:
-            project = registry.find_project(message)
+            project = self._registry.find_project(message)
             if project is None:
                 try:
                     ProjectId.from_raw(message)

@@ -20,6 +20,7 @@ from qa_chatbot.domain import (
     SubmissionMetrics,
     TestCoverageMetrics,
     TimeWindow,
+    build_default_stream_project_registry,
 )
 
 pytestmark = pytest.mark.e2e
@@ -107,7 +108,11 @@ class _FakeStorage:
 def _build_manager(*, llm: _FakeLLM | None = None) -> ConversationManager:
     extractor = ExtractStructuredDataUseCase(llm_port=llm or _FakeLLM())
     submitter = SubmitProjectDataUseCase(storage_port=_FakeStorage(submissions=[]))
-    return ConversationManager(extractor=extractor, submitter=submitter)
+    return ConversationManager(
+        extractor=extractor,
+        submitter=submitter,
+        registry=build_default_stream_project_registry(),
+    )
 
 
 def test_unknown_state_returns_formatted_error() -> None:

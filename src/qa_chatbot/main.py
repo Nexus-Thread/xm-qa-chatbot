@@ -89,7 +89,7 @@ def main() -> None:
         dashboard_port=dashboard_adapter,
         metrics_port=metrics_adapter,
     )
-    manager = ConversationManager(extractor=extractor, submitter=submitter)
+    manager = ConversationManager(extractor=extractor, submitter=submitter, registry=registry)
 
     gradio_settings = GradioSettings(
         server_port=settings.server_port,

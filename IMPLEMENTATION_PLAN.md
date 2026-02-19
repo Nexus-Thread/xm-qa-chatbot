@@ -67,7 +67,7 @@ This is a living checklist. Each top-level checkbox is one implementation chunk 
   - Deliverables: `DomainError` no longer derives from `ValueError`; update dashboard error base and catch sites
   - Acceptance: no catch logic depends on `ValueError` for domain/adapter failures
 
-- [ ] **CH-11: Inject stream/project registry into ConversationManager** (`ARCH-05`)
+- [x] **CH-11: Inject stream/project registry into ConversationManager** (`ARCH-05`)
   - Deliverables: registry passed via constructor from composition root
   - Acceptance: no per-call registry builder invocation in input adapter
 
