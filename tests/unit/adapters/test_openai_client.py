@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 import httpx
 import pytest
 from openai import APIError
@@ -118,8 +120,9 @@ def test_openai_client_creates_json_completion_with_expected_args() -> None:
     }
 
 
-def test_openai_client_retries_on_api_error() -> None:
+def test_openai_client_retries_on_api_error(caplog: pytest.LogCaptureFixture) -> None:
     """Retry transport call with exponential backoff on APIError."""
+    caplog.set_level(logging.WARNING)
     request = httpx.Request("POST", "https://example.com/v1/chat/completions")
     transient_error = APIError("temporary failure", request=request, body=None)
     sentinel_response = object()
@@ -163,10 +166,12 @@ def test_openai_client_retries_on_api_error() -> None:
     assert response is sentinel_response
     assert sdk_client.chat.completions.calls == EXPECTED_CALLS_AFTER_RETRY_SUCCESS
     assert sleep_calls == [0.5]
+    assert any(record.message == "OpenAI completion failed, retrying" for record in caplog.records)
 
 
-def test_openai_client_raises_after_max_retries() -> None:
+def test_openai_client_raises_after_max_retries(caplog: pytest.LogCaptureFixture) -> None:
     """Raise APIError after exhausting retry attempts."""
+    caplog.set_level(logging.ERROR)
     request = httpx.Request("POST", "https://example.com/v1/chat/completions")
     transient_error = APIError("temporary failure", request=request, body=None)
     sleep_calls: list[float] = []
@@ -205,3 +210,4 @@ def test_openai_client_raises_after_max_retries() -> None:
 
     assert sdk_client.chat.completions.calls == EXPECTED_CALLS_AFTER_RETRY_FAILURE
     assert sleep_calls == [0.5, 1.0]
+    assert any(record.message == "OpenAI completion failed after retries" for record in caplog.records)

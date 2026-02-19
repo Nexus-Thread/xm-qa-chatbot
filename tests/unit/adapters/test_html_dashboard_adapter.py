@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -207,8 +208,10 @@ def test_generate_overview_wraps_template_load_errors(
     dashboard_adapter: HtmlDashboardAdapter,
     time_window_feb: TimeWindow,
     monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Wrap template loading failures with DashboardRenderError."""
+    caplog.set_level(logging.ERROR)
 
     def _raise_load_error(_template_name: str) -> None:
         raise RuntimeError
@@ -220,14 +223,17 @@ def test_generate_overview_wraps_template_load_errors(
         dashboard_adapter.generate_overview(time_window_feb)
 
     assert isinstance(exc_info.value.__cause__, RuntimeError)
+    assert any(record.message == "Dashboard template load failed" for record in caplog.records)
 
 
 def test_generate_overview_wraps_template_render_errors(
     dashboard_adapter: HtmlDashboardAdapter,
     time_window_feb: TimeWindow,
     monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Wrap template rendering failures with DashboardRenderError."""
+    caplog.set_level(logging.ERROR)
 
     class _BrokenTemplate:
         def render(self, **_context: object) -> str:
@@ -240,14 +246,17 @@ def test_generate_overview_wraps_template_render_errors(
         dashboard_adapter.generate_overview(time_window_feb)
 
     assert isinstance(exc_info.value.__cause__, RuntimeError)
+    assert any(record.message == "Dashboard template render failed" for record in caplog.records)
 
 
 def test_write_atomic_wraps_write_errors(
     dashboard_adapter: HtmlDashboardAdapter,
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     """Wrap file write failures with DashboardRenderError."""
+    caplog.set_level(logging.ERROR)
 
     def _raise_write_error(_self: Path, _content: str, *, encoding: str = "utf-8") -> int:
         del encoding
@@ -259,6 +268,7 @@ def test_write_atomic_wraps_write_errors(
         dashboard_adapter._write_atomic(tmp_path / "overview.html", "test")  # noqa: SLF001
 
     assert isinstance(exc_info.value.__cause__, OSError)
+    assert any(record.message == "Dashboard output write failed" for record in caplog.records)
 
 
 def test_write_atomic_uses_unique_temp_file_suffix(

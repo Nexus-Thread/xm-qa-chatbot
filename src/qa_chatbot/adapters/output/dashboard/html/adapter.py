@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -53,6 +54,7 @@ class HtmlDashboardAdapter(DashboardPort):
 
     def __post_init__(self) -> None:
         """Prepare template environment and output directory."""
+        self._logger = logging.getLogger(self.__class__.__name__)
         self._output_dir = self.output_dir
         self._output_dir.mkdir(parents=True, exist_ok=True)
         self._tailwind_script_src = self.tailwind_script_src
@@ -120,12 +122,26 @@ class HtmlDashboardAdapter(DashboardPort):
         try:
             template = self._environment.get_template(template_name)
         except Exception as err:
+            self._logger.exception(
+                "Dashboard template load failed",
+                extra={
+                    "adapter_name": self.__class__.__name__,
+                    "template_name": template_name,
+                },
+            )
             msg = f"Failed to load dashboard template: {template_name}"
             raise DashboardRenderError(msg) from err
 
         try:
             rendered = template.render(**context)
         except Exception as err:
+            self._logger.exception(
+                "Dashboard template render failed",
+                extra={
+                    "adapter_name": self.__class__.__name__,
+                    "template_name": template_name,
+                },
+            )
             msg = f"Failed to render dashboard template: {template_name}"
             raise DashboardRenderError(msg) from err
 
@@ -141,6 +157,13 @@ class HtmlDashboardAdapter(DashboardPort):
         except Exception as err:
             if temp_path.exists():
                 temp_path.unlink(missing_ok=True)
+            self._logger.exception(
+                "Dashboard output write failed",
+                extra={
+                    "adapter_name": self.__class__.__name__,
+                    "output_path": str(path),
+                },
+            )
             msg = f"Failed to write dashboard output: {path}"
             raise DashboardRenderError(msg) from err
         return path

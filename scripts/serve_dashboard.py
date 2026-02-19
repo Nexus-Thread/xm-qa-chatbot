@@ -8,6 +8,8 @@ from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from qa_chatbot.config import LoggingSettings, configure_logging
+
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments for the server."""
@@ -33,14 +35,20 @@ def run_server(directory: Path, host: str, port: int) -> None:
         raise FileNotFoundError(message)
     handler = partial(SimpleHTTPRequestHandler, directory=str(directory.resolve()))
     server = ThreadingHTTPServer((host, port), handler)
-    LOGGER.info(f"Serving dashboard HTML, directory: {directory}, url: http://{host}:{port}")  # noqa: G004
+    LOGGER.info(
+        "Serving dashboard HTML",
+        extra={
+            "directory": str(directory),
+            "url": f"http://{host}:{port}",
+        },
+    )
     server.serve_forever()
 
 
 def main() -> None:
     """Entry point for the dashboard server."""
     args = parse_args()
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    configure_logging(LoggingSettings(level="INFO"))
     run_server(args.directory, args.host, args.port)
 
 

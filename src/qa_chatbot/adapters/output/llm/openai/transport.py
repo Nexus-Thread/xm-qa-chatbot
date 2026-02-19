@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import time
 from typing import TYPE_CHECKING, Protocol, cast
 
@@ -59,6 +60,7 @@ class OpenAIClient:
         self._max_retries = max_retries
         self._backoff_seconds = backoff_seconds
         self._sleep = sleep
+        self._logger = logging.getLogger(self.__class__.__name__)
 
     def create_json_completion(
         self,
@@ -72,8 +74,24 @@ class OpenAIClient:
                 return self._chat_completions_create(model, messages)
             except APIError:
                 if attempt >= self._max_retries - 1:
+                    self._logger.exception(
+                        "OpenAI completion failed after retries",
+                        extra={
+                            "model": model,
+                            "max_retries": self._max_retries,
+                        },
+                    )
                     raise
                 delay = self._backoff_seconds * (2**attempt)
+                self._logger.warning(
+                    "OpenAI completion failed, retrying",
+                    extra={
+                        "model": model,
+                        "attempt": attempt + 1,
+                        "max_retries": self._max_retries,
+                        "retry_delay_seconds": delay,
+                    },
+                )
                 self._sleep(delay)
 
         message = "Unreachable retry state"
