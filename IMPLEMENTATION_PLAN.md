@@ -87,7 +87,7 @@ This is a living checklist. Each top-level checkbox is one implementation chunk 
   - Deliverables: remove `*.prev` snapshot files and ignore future leftovers
   - Acceptance: repo contains no `.prev` snapshot artifacts
 
-- [ ] **CH-15: Clarify scripts coverage decision** (`TEST-01`)
+- [x] **CH-15: Clarify scripts coverage decision** (`TEST-01`)
   - Deliverables: either include `scripts/` in coverage scope or document explicit exclusion
   - Acceptance: coverage strategy is explicit and documented
 

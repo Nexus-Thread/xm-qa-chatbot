@@ -37,6 +37,8 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
+# Coverage scope is intentionally limited to application package sources.
+# Operational scripts under scripts/ are excluded from measured coverage for now.
 addopts = "-ra --cov=src/qa_chatbot --cov-report=term-missing --cov-fail-under=98"
 markers = [
     "integration: tests that validate behavior across module boundaries",

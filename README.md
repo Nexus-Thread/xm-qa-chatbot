@@ -112,6 +112,11 @@ pytest tests/
 
 The test suite enforces a minimum of 98% coverage via pytest configuration.
 
+Coverage scope is intentionally limited to `src/qa_chatbot` (`--cov=src/qa_chatbot`).
+The `scripts/` directory is currently excluded from measured coverage because scripts are
+operational entry points, and their behavior is validated through direct execution flows
+and integration/e2e coverage of the underlying application modules.
+
 Useful marker-based subsets:
 
 ```bash
