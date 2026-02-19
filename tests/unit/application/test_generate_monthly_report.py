@@ -83,13 +83,22 @@ class _FakeJiraPort:
         return f"https://jira.example.com/{project_id.value}/{label}"
 
 
-class _FailingJiraPort(_FakeJiraPort):
-    """Jira stub that simulates upstream failures for one metric."""
+class _OperationalFailingJiraPort(_FakeJiraPort):
+    """Jira stub that simulates operational upstream failures for one metric."""
 
     def fetch_bugs_found(self, project_id: ProjectId, _period: ReportingPeriod) -> BucketCount:
         del project_id
         msg = "jira unavailable"
-        raise RuntimeError(msg)
+        raise ConnectionError(msg)
+
+
+class _ProgrammingErrorJiraPort(_FakeJiraPort):
+    """Jira stub that simulates a programming bug in adapter code."""
+
+    def fetch_bugs_found(self, project_id: ProjectId, _period: ReportingPeriod) -> BucketCount:
+        del project_id
+        msg = "unexpected adapter attribute mismatch"
+        raise AttributeError(msg)
 
 
 class _PartialCoverageStoragePort(_FakeStoragePort):
@@ -202,11 +211,11 @@ def test_execute_marks_failed_completeness_in_fail_mode() -> None:
 
 
 def test_execute_handles_jira_fetch_errors_as_missing_data() -> None:
-    """Capture Jira fetch errors as missing metrics instead of failing report generation."""
+    """Capture operational Jira fetch errors as missing metrics instead of failing report generation."""
     month = TimeWindow.from_year_month(2026, 1)
     use_case = GenerateMonthlyReportUseCase(
         storage_port=_FakeStoragePort(submissions=[_submission(month)]),
-        jira_port=_FailingJiraPort(),
+        jira_port=_OperationalFailingJiraPort(),
         registry=_build_registry(),
         timezone="UTC",
         edge_case_policy=EdgeCasePolicy(),
@@ -218,6 +227,21 @@ def test_execute_handles_jira_fetch_errors_as_missing_data() -> None:
     assert "bugs_found:project-a" in report.completeness.missing
     assert report.quality_metrics_rows[1].bugs_found.p1_p2 is None
     assert report.quality_metrics_rows[1].bugs_found.p3_p4 is None
+
+
+def test_execute_propagates_programming_errors_from_jira_fetch() -> None:
+    """Propagate programming errors from Jira fetch instead of masking them as missing data."""
+    month = TimeWindow.from_year_month(2026, 1)
+    use_case = GenerateMonthlyReportUseCase(
+        storage_port=_FakeStoragePort(submissions=[_submission(month)]),
+        jira_port=_ProgrammingErrorJiraPort(),
+        registry=_build_registry(),
+        timezone="UTC",
+        edge_case_policy=EdgeCasePolicy(),
+    )
+
+    with pytest.raises(AttributeError):
+        _ = use_case.execute(month)
 
 
 def test_execute_returns_none_for_automation_percentage_when_totals_are_partial() -> None:

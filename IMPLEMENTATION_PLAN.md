@@ -43,7 +43,7 @@ This is a living checklist. Each top-level checkbox is one implementation chunk 
 
 ## Phase 2 — Fast reliability hardening
 
-- [ ] **CH-06: Narrow broad exception handling in monthly report fetch** (`ERR-01`)
+- [x] **CH-06: Narrow broad exception handling in monthly report fetch** (`ERR-01`)
   - Deliverables: replace broad `except Exception` with expected exception set
   - Acceptance: programming errors propagate; expected operational failures remain handled
 

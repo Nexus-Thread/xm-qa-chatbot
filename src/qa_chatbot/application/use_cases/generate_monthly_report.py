@@ -25,6 +25,7 @@ from qa_chatbot.application.services.reporting_calculations import (
 from qa_chatbot.domain import (
     BucketCount,
     DefectLeakage,
+    DomainError,
     InvalidConfigurationError,
     ProjectId,
     ReportingPeriod,
@@ -292,8 +293,8 @@ class GenerateMonthlyReportUseCase:
     ) -> object:
         try:
             return func()
-        except Exception as err:
-            # Intentionally broad: mark data as missing rather than failing entire report
+        except (ConnectionError, DomainError, OSError, TimeoutError) as err:
+            # Catch only expected operational failures and mark data as missing
             missing.append(label)
             missing_by_project.setdefault(project_id, []).append(label.split(":", maxsplit=1)[0])
             LOGGER.exception(
