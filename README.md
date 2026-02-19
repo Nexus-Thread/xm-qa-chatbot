@@ -72,29 +72,29 @@ Transport behavior is configurable via `OPENAI_VERIFY_SSL` and `OPENAI_TIMEOUT_S
 
 ## Environment variables
 
-| Variable | Default | Description |
-| --- | --- | --- |
-| `OPENAI_BASE_URL` | `http://localhost:11434/v1` | OpenAI-compatible API base URL (Ollama or OpenAI). |
-| `OPENAI_API_KEY` | `ollama` | API key (ignored by Ollama). |
-| `OPENAI_MODEL` | `llama2` | Model name to use. |
-| `OPENAI_MAX_RETRIES` | `3` | Max retry attempts for transient LLM API failures. |
-| `OPENAI_BACKOFF_SECONDS` | `1.0` | Base delay in seconds for exponential retry backoff. |
-| `OPENAI_VERIFY_SSL` | `true` | Toggle TLS certificate verification for OpenAI HTTP calls. |
-| `OPENAI_TIMEOUT_SECONDS` | `30.0` | Timeout in seconds for OpenAI HTTP calls. |
-| `DATABASE_URL` | `sqlite:///./qa_chatbot.db` | SQLite connection string. |
-| `DATABASE_ECHO` | `false` | SQLAlchemy logging toggle. |
-| `DASHBOARD_OUTPUT_DIR` | `./dashboard_html` | Output folder for generated dashboards. |
-| `DASHBOARD_TAILWIND_SCRIPT_SRC` | `https://cdn.tailwindcss.com` | Script URL for Tailwind in browser dashboard templates. |
-| `DASHBOARD_PLOTLY_SCRIPT_SRC` | `https://cdn.plot.ly/plotly-2.27.0.min.js` | Script URL for Plotly in browser dashboard templates. |
-| `JIRA_BASE_URL` | `https://jira.example.com` | Jira base URL for generated issue links. |
-| `JIRA_USERNAME` | `jira-user@example.com` | Jira username stored in app settings for adapter wiring. |
-| `JIRA_API_TOKEN` | `replace-with-jira-api-token` | Jira API token stored in app settings for adapter wiring. |
-| `GRADIO_SERVER_PORT` | `7860` | Gradio server port. |
-| `GRADIO_SHARE` | `false` | Generate a public Gradio share link. |
-| `LOG_LEVEL` | `INFO` | Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`). |
-| `INPUT_MAX_CHARS` | `2000` | Max characters accepted per chat message. |
-| `RATE_LIMIT_REQUESTS` | `8` | Max messages per session within the rate limit window. |
-| `RATE_LIMIT_WINDOW_SECONDS` | `60` | Rate limit window size in seconds. |
+| Variable | Default | Purpose | Example |
+| --- | --- | --- | --- |
+| `OPENAI_BASE_URL` | `http://localhost:11434/v1` | OpenAI-compatible API base URL used by the structured extraction adapter. | `https://api.openai.com/v1` |
+| `OPENAI_API_KEY` | `ollama` | API key used for provider authentication (ignored by Ollama). | `sk-your-openai-api-key` |
+| `OPENAI_MODEL` | `llama2` | Model identifier used for extraction calls. | `gpt-4o-mini` |
+| `OPENAI_MAX_RETRIES` | `3` | Maximum retry attempts for transient LLM transport failures. | `5` |
+| `OPENAI_BACKOFF_SECONDS` | `1.0` | Base backoff delay used by exponential retry logic. | `2.0` |
+| `OPENAI_VERIFY_SSL` | `true` | Enables TLS certificate verification for OpenAI HTTP requests. | `true` |
+| `OPENAI_TIMEOUT_SECONDS` | `30.0` | Request timeout for OpenAI HTTP calls. | `60.0` |
+| `DATABASE_URL` | `sqlite:///./qa_chatbot.db` | SQLAlchemy connection URL for submission storage. | `sqlite:///./qa_chatbot.db` |
+| `DATABASE_ECHO` | `false` | Enables SQLAlchemy SQL echo logging for debugging. | `true` |
+| `DASHBOARD_OUTPUT_DIR` | `./dashboard_html` | Output directory where dashboard HTML artifacts are generated. | `./dashboard_html` |
+| `DASHBOARD_TAILWIND_SCRIPT_SRC` | `https://cdn.tailwindcss.com` | Script source used to load Tailwind in browser dashboard templates. | `https://cdn.tailwindcss.com` |
+| `DASHBOARD_PLOTLY_SCRIPT_SRC` | `https://cdn.plot.ly/plotly-2.27.0.min.js` | Script source used to load Plotly in browser dashboard templates. | `https://cdn.plot.ly/plotly-2.27.0.min.js` |
+| `JIRA_BASE_URL` | `https://jira.example.com` | Base Jira URL used when building issue/filter links. | `https://your-company.atlassian.net` |
+| `JIRA_USERNAME` | `jira-user@example.com` | Jira username stored in app settings for adapter wiring. | `qa-bot@your-company.com` |
+| `JIRA_API_TOKEN` | `replace-with-jira-api-token` | Jira API token stored in app settings for adapter wiring. | `replace-with-jira-api-token` |
+| `GRADIO_SERVER_PORT` | `7860` | Local port used by the Gradio UI server. | `7860` |
+| `GRADIO_SHARE` | `false` | Enables public Gradio share URL generation. | `false` |
+| `LOG_LEVEL` | `INFO` | Application logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`). | `DEBUG` |
+| `INPUT_MAX_CHARS` | `2000` | Maximum user message length accepted by the chat input adapter. | `4000` |
+| `RATE_LIMIT_REQUESTS` | `8` | Maximum chat requests allowed per rate-limit window. | `10` |
+| `RATE_LIMIT_WINDOW_SECONDS` | `60` | Rate-limit window size, in seconds. | `60` |
 
 ## Observability and safeguards
 

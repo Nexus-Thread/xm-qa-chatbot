@@ -95,7 +95,7 @@ This is a living checklist. Each top-level checkbox is one implementation chunk 
 
 ## Phase 5 — Documentation, config clarity, and observability
 
-- [ ] **CH-16: Document all environment variables** (`DOC-02`, `CFG-03`, `QW-10`)
+- [x] **CH-16: Document all environment variables** (`DOC-02`, `CFG-03`, `QW-10`)
   - Deliverables: README env table + `.env.example` aligned with `AppSettings`
   - Acceptance: every settings field is documented with purpose/default/example
 
