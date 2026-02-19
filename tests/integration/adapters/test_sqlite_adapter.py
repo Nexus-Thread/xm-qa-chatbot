@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 
 from qa_chatbot.domain import StorageOperationError
 
@@ -141,3 +142,83 @@ def test_sqlite_adapter_translates_sqlalchemy_error(sqlite_adapter: SQLiteAdapte
 
     with pytest.raises(StorageOperationError, match="SQLite read operation failed"):
         sqlite_adapter.get_submissions_by_month(time_window_jan)
+
+
+def test_sqlite_schema_rejects_negative_scalar_metrics(sqlite_adapter: SQLiteAdapter) -> None:
+    """Enforce non-negative scalar metric checks at schema level."""
+    with sqlite_adapter.engine.begin() as connection, pytest.raises(IntegrityError):
+        connection.execute(
+            text(
+                """
+                INSERT INTO submissions (
+                    id,
+                    project_id,
+                    month,
+                    created_at,
+                    test_coverage,
+                    overall_test_cases,
+                    supported_releases_count,
+                    raw_conversation
+                ) VALUES (
+                    :id,
+                    :project_id,
+                    :month,
+                    :created_at,
+                    :test_coverage,
+                    :overall_test_cases,
+                    :supported_releases_count,
+                    :raw_conversation
+                )
+                """
+            ),
+            {
+                "id": "negative-overall-test-cases",
+                "project_id": "project-a",
+                "month": "2026-01",
+                "created_at": "2026-01-10T10:00:00+00:00",
+                "test_coverage": "{}",
+                "overall_test_cases": -1,
+                "supported_releases_count": 1,
+                "raw_conversation": None,
+            },
+        )
+
+
+def test_sqlite_schema_rejects_invalid_month_format(sqlite_adapter: SQLiteAdapter) -> None:
+    """Enforce month format and bounds checks at schema level."""
+    with sqlite_adapter.engine.begin() as connection, pytest.raises(IntegrityError):
+        connection.execute(
+            text(
+                """
+                INSERT INTO submissions (
+                    id,
+                    project_id,
+                    month,
+                    created_at,
+                    test_coverage,
+                    overall_test_cases,
+                    supported_releases_count,
+                    raw_conversation
+                ) VALUES (
+                    :id,
+                    :project_id,
+                    :month,
+                    :created_at,
+                    :test_coverage,
+                    :overall_test_cases,
+                    :supported_releases_count,
+                    :raw_conversation
+                )
+                """
+            ),
+            {
+                "id": "invalid-month",
+                "project_id": "project-a",
+                "month": "2026-13",
+                "created_at": "2026-01-10T10:00:00+00:00",
+                "test_coverage": "{}",
+                "overall_test_cases": 1,
+                "supported_releases_count": 1,
+                "raw_conversation": None,
+            },
+        )
