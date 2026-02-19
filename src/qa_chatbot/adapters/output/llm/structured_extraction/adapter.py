@@ -38,6 +38,8 @@ if TYPE_CHECKING:
 
     from .settings import OpenAISettings
 
+LOGGER = logging.getLogger(__name__)
+
 
 class OpenAIStructuredExtractionAdapter(StructuredExtractionPort):
     """Extracts structured data using an OpenAI-compatible API."""
@@ -54,7 +56,6 @@ class OpenAIStructuredExtractionAdapter(StructuredExtractionPort):
         else:
             self._client = build_client(settings)
         self._last_usage: TokenUsage | None = None
-        self._logger = logging.getLogger(self.__class__.__name__)
 
     @property
     def last_usage(self) -> TokenUsage | None:
@@ -181,9 +182,10 @@ class OpenAIStructuredExtractionAdapter(StructuredExtractionPort):
                     completion_tokens=usage.completion_tokens,
                     total_tokens=usage.total_tokens,
                 )
-            self._logger.info(
+            LOGGER.info(
                 "LLM extraction completed",
                 extra={
+                    "component": self.__class__.__name__,
                     "model": self._settings.model,
                     "prompt_name": prompt.split("\n", maxsplit=1)[0],
                     "prompt_tokens": self._last_usage.prompt_tokens if self._last_usage else None,
@@ -197,9 +199,10 @@ class OpenAIStructuredExtractionAdapter(StructuredExtractionPort):
             msg = str(err)
             raise LLMExtractionError(msg) from err
         except APIError as err:
-            self._logger.exception(
+            LOGGER.exception(
                 "LLM extraction failed",
                 extra={
+                    "component": self.__class__.__name__,
                     "model": self._settings.model,
                 },
             )
@@ -208,7 +211,7 @@ class OpenAIStructuredExtractionAdapter(StructuredExtractionPort):
 
     def _parse_schema(self, payload: dict[str, Any], schema: type[SchemaT]) -> SchemaT:
         """Validate payload against a Pydantic schema."""
-        return parse_schema_payload(payload, schema, self._logger)
+        return parse_schema_payload(payload, schema, LOGGER)
 
     def _extract_test_coverage_data(
         self,

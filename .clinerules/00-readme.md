@@ -26,6 +26,7 @@
 - `08-pr-and-commit-hygiene.md` - PR size, commit messages, reviews
 - `09-tooling-and-ci.md` - Local quality gate, CI expectations
 - `10-documentation-standards.md` - Clear, concise docstrings and comments
+- `11-logging-conventions.md` - Module-level logger standard and exceptions
 
 ## Workflows
 - `workflows/update-repo-navigation.md` - Generate project-specific navigation maps on demand

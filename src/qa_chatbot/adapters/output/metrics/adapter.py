@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 
     from qa_chatbot.domain import ProjectId, TimeWindow
 
+LOGGER = logging.getLogger(__name__)
+
 
 @dataclass(frozen=True)
 class MetricsSnapshot:
@@ -74,16 +76,11 @@ class _LatencyAccumulator:
 class InMemoryMetricsAdapter(MetricsPort):
     """Store metrics in memory and log updates."""
 
-    _logger: logging.Logger = field(init=False, repr=False)
     _lock: LockType = field(default_factory=threading.Lock, init=False, repr=False)
     submissions: int = 0
     last_submission_at: datetime | None = None
     llm_latency_ms: dict[str, float] = field(default_factory=dict)
     _llm_latency_stats: dict[str, _LatencyAccumulator] = field(default_factory=dict, init=False, repr=False)
-
-    def __post_init__(self) -> None:
-        """Initialize logging for metrics."""
-        self._logger = logging.getLogger(self.__class__.__name__)
 
     def record_submission(self, project_id: ProjectId, time_window: TimeWindow) -> None:
         """Record a successful submission event."""
@@ -91,9 +88,10 @@ class InMemoryMetricsAdapter(MetricsPort):
             self.submissions += 1
             self.last_submission_at = datetime.now(tz=UTC)
             submission_count = self.submissions
-        self._logger.info(
+        LOGGER.info(
             "Submission recorded",
             extra={
+                "component": self.__class__.__name__,
                 "project_id": str(project_id),
                 "time_window": str(time_window),
                 "submission_count": submission_count,
@@ -119,9 +117,10 @@ class InMemoryMetricsAdapter(MetricsPort):
             accumulator.add_sample(elapsed_ms)
             sample_count = accumulator.count
 
-        self._logger.info(
+        LOGGER.info(
             "LLM latency recorded",
             extra={
+                "component": self.__class__.__name__,
                 "operation": normalized_operation,
                 "elapsed_ms": round(elapsed_ms, 2),
                 "sample_count": sample_count,

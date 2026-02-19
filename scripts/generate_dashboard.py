@@ -25,6 +25,8 @@ if TYPE_CHECKING:
     from qa_chatbot.application.dtos import AppSettings
     from qa_chatbot.domain import ProjectId, TimeWindow
 
+LOGGER = logging.getLogger(__name__)
+
 # ruff: noqa: T201
 
 
@@ -66,7 +68,6 @@ def generate_dashboards(
 ) -> None:
     """Generate all dashboard views from existing database data."""
     configure_logging(LoggingSettings(level=log_level))
-    logger = logging.getLogger(__name__)
 
     print("=" * 80)
     print("DASHBOARD GENERATION SCRIPT")
@@ -77,9 +78,9 @@ def generate_dashboards(
     print(f"Months to include: {months_limit}")
     print("=" * 80 + "\n")
 
-    storage = _build_storage(database_url=database_url, logger=logger)
-    dashboard = _build_dashboard_adapter(storage=storage, output_dir=output_dir, settings=settings, logger=logger)
-    recent_months, projects = _load_generation_inputs(storage=storage, months_limit=months_limit, logger=logger)
+    storage = _build_storage(database_url=database_url)
+    dashboard = _build_dashboard_adapter(storage=storage, output_dir=output_dir, settings=settings)
+    recent_months, projects = _load_generation_inputs(storage=storage, months_limit=months_limit)
     if recent_months is None or projects is None:
         return
     print(f"📊 Found {len(projects)} projects and {len(recent_months)} recent months\n")
@@ -91,8 +92,8 @@ def generate_dashboards(
     _print_summary(output_dir=output_dir, generated_files=generated_files, overview_path=overview_path)
 
 
-def _build_storage(database_url: str, logger: logging.Logger) -> SQLiteAdapter:
-    logger.info("Initializing storage adapter")
+def _build_storage(database_url: str) -> SQLiteAdapter:
+    LOGGER.info("Initializing storage adapter")
     storage = SQLiteAdapter(database_url=database_url, echo=False)
     storage.initialize_schema()
     return storage
@@ -102,9 +103,8 @@ def _build_dashboard_adapter(
     storage: SQLiteAdapter,
     output_dir: Path,
     settings: AppSettings,
-    logger: logging.Logger,
 ) -> CompositeDashboardAdapter:
-    logger.info("Initializing dashboard adapter")
+    LOGGER.info("Initializing dashboard adapter")
     registry = build_default_stream_project_registry()
     edge_case_policy = EdgeCasePolicy()
     jira_adapter = MockJiraAdapter(
@@ -140,16 +140,15 @@ def _build_dashboard_adapter(
 def _load_generation_inputs(
     storage: SQLiteAdapter,
     months_limit: int,
-    logger: logging.Logger,
 ) -> tuple[list[TimeWindow], list[ProjectId]] | tuple[None, None]:
-    logger.info("Fetching recent months from database")
+    LOGGER.info("Fetching recent months from database")
     recent_months = storage.get_recent_months(limit=months_limit)
     if not recent_months:
         print("❌ No data found in database. Nothing to generate.")
         print("\nTip: Run 'python scripts/seed_database.py' to populate the database.\n")
         return None, None
 
-    logger.info("Fetching all projects from database")
+    LOGGER.info("Fetching all projects from database")
     projects = storage.get_all_projects()
     if not projects:
         print("❌ No projects found in database. Nothing to generate.")

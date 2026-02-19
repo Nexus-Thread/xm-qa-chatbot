@@ -18,6 +18,8 @@ if TYPE_CHECKING:
     from qa_chatbot.application.use_cases import GenerateMonthlyReportUseCase, GetDashboardDataUseCase
     from qa_chatbot.domain import ProjectId, TimeWindow
 
+LOGGER = logging.getLogger(__name__)
+
 DEFAULT_TAILWIND_SCRIPT_SRC = "https://cdn.tailwindcss.com"
 DEFAULT_PLOTLY_SCRIPT_SRC = "https://cdn.plot.ly/plotly-2.27.0.min.js"
 
@@ -54,7 +56,6 @@ class HtmlDashboardAdapter(DashboardPort):
 
     def __post_init__(self) -> None:
         """Prepare template environment and output directory."""
-        self._logger = logging.getLogger(self.__class__.__name__)
         self._output_dir = self.output_dir
         self._output_dir.mkdir(parents=True, exist_ok=True)
         self._tailwind_script_src = self.tailwind_script_src
@@ -122,7 +123,7 @@ class HtmlDashboardAdapter(DashboardPort):
         try:
             template = self._environment.get_template(template_name)
         except Exception as err:
-            self._logger.exception(
+            LOGGER.exception(
                 "Dashboard template load failed",
                 extra={
                     "adapter_name": self.__class__.__name__,
@@ -135,7 +136,7 @@ class HtmlDashboardAdapter(DashboardPort):
         try:
             rendered = template.render(**context)
         except Exception as err:
-            self._logger.exception(
+            LOGGER.exception(
                 "Dashboard template render failed",
                 extra={
                     "adapter_name": self.__class__.__name__,
@@ -157,7 +158,7 @@ class HtmlDashboardAdapter(DashboardPort):
         except Exception as err:
             if temp_path.exists():
                 temp_path.unlink(missing_ok=True)
-            self._logger.exception(
+            LOGGER.exception(
                 "Dashboard output write failed",
                 extra={
                     "adapter_name": self.__class__.__name__,

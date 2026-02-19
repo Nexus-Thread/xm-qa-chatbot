@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from qa_chatbot.domain import Submission, SubmissionMetrics
@@ -14,6 +14,8 @@ if TYPE_CHECKING:
     from qa_chatbot.application.dtos import SubmissionCommand
     from qa_chatbot.application.ports.output import DashboardPort, MetricsPort, StoragePort
 
+LOGGER = logging.getLogger(__name__)
+
 
 @dataclass(frozen=True)
 class SubmitProjectDataUseCase:
@@ -22,17 +24,13 @@ class SubmitProjectDataUseCase:
     storage_port: StoragePort
     dashboard_port: DashboardPort | None = None
     metrics_port: MetricsPort | None = None
-    _logger: logging.Logger = field(init=False, repr=False)
-
-    def __post_init__(self) -> None:
-        """Initialize logging for the use case."""
-        object.__setattr__(self, "_logger", logging.getLogger(self.__class__.__name__))
 
     def execute(self, command: SubmissionCommand) -> Submission:
         """Persist a project submission, merging with existing data for the same project/month."""
-        self._logger.info(
+        LOGGER.info(
             "Submitting project data",
             extra={
+                "component": self.__class__.__name__,
                 "project_id": str(command.project_id),
                 "time_window": str(command.time_window),
             },
@@ -50,9 +48,10 @@ class SubmitProjectDataUseCase:
             self.metrics_port.record_submission(submission.project_id, submission.month)
         if self.dashboard_port is not None:
             self._generate_dashboards(submission)
-        self._logger.info(
+        LOGGER.info(
             "Submission saved",
             extra={
+                "component": self.__class__.__name__,
                 "submission_id": submission.id,
                 "project_id": str(submission.project_id),
                 "time_window": str(submission.month),
@@ -101,9 +100,10 @@ class SubmitProjectDataUseCase:
             try:
                 operation()
             except Exception:
-                self._logger.exception(
+                LOGGER.exception(
                     "Dashboard generation failed",
                     extra={
+                        "component": self.__class__.__name__,
                         "view": view,
                         "project_id": str(submission.project_id),
                         "time_window": str(submission.month),

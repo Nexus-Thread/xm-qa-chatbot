@@ -13,6 +13,8 @@ from .constants import DEFAULT_BACKOFF_SECONDS, DEFAULT_MAX_RETRIES
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+LOGGER = logging.getLogger(__name__)
+
 
 class _ChatCompletionsProtocol(Protocol):
     """Private protocol for the SDK completions namespace."""
@@ -60,7 +62,6 @@ class OpenAIClient:
         self._max_retries = max_retries
         self._backoff_seconds = backoff_seconds
         self._sleep = sleep
-        self._logger = logging.getLogger(self.__class__.__name__)
 
     def create_json_completion(
         self,
@@ -74,18 +75,20 @@ class OpenAIClient:
                 return self._chat_completions_create(model, messages)
             except APIError:
                 if attempt >= self._max_retries - 1:
-                    self._logger.exception(
+                    LOGGER.exception(
                         "OpenAI completion failed after retries",
                         extra={
+                            "component": self.__class__.__name__,
                             "model": model,
                             "max_retries": self._max_retries,
                         },
                     )
                     raise
                 delay = self._backoff_seconds * (2**attempt)
-                self._logger.warning(
+                LOGGER.warning(
                     "OpenAI completion failed, retrying",
                     extra={
+                        "component": self.__class__.__name__,
                         "model": model,
                         "attempt": attempt + 1,
                         "max_retries": self._max_retries,

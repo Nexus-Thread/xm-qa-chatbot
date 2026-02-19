@@ -18,6 +18,8 @@ if TYPE_CHECKING:
     from qa_chatbot.application.use_cases import GenerateMonthlyReportUseCase, GetDashboardDataUseCase
     from qa_chatbot.domain import ProjectId, TimeWindow
 
+LOGGER = logging.getLogger(__name__)
+
 SMOKE_CHECK_MARKERS_BY_FILE: dict[str, tuple[str, ...]] = {
     "overview.confluence.html": (
         "<ac:structured-macro",
@@ -49,7 +51,6 @@ class ConfluenceDashboardAdapter(DashboardPort):
 
     def __post_init__(self) -> None:
         """Prepare output folder and data providers."""
-        self._logger = logging.getLogger(self.__class__.__name__)
         self._output_dir = self.output_dir
         self._output_dir.mkdir(parents=True, exist_ok=True)
         self._use_case = self.get_dashboard_data_use_case
@@ -82,7 +83,7 @@ class ConfluenceDashboardAdapter(DashboardPort):
             temp_path.replace(output_path)
         except Exception as err:
             temp_path.unlink(missing_ok=True)
-            self._logger.exception(
+            LOGGER.exception(
                 "Confluence dashboard write failed",
                 extra={
                     "adapter_name": self.__class__.__name__,
@@ -92,7 +93,7 @@ class ConfluenceDashboardAdapter(DashboardPort):
             )
             msg = f"Failed to write Confluence dashboard output: {output_path}"
             raise DashboardRenderError(msg) from err
-        self._logger.info(
+        LOGGER.info(
             "Confluence dashboard generated",
             extra={
                 "adapter_name": self.__class__.__name__,
@@ -200,7 +201,7 @@ class ConfluenceDashboardAdapter(DashboardPort):
             markers.extend(("<h1>Project Detail —", "<table", "</table>"))
         missing = [marker for marker in markers if marker not in rendered]
         if missing:
-            self._logger.error(
+            LOGGER.error(
                 "Confluence dashboard smoke check failed",
                 extra={
                     "adapter_name": self.__class__.__name__,

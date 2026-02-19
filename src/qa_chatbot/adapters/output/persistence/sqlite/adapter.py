@@ -25,6 +25,8 @@ if TYPE_CHECKING:
 
     ScalarType = TypeVar("ScalarType")
 
+LOGGER = logging.getLogger(__name__)
+
 
 class SQLiteAdapter(StoragePort):
     """SQLite implementation of the storage port."""
@@ -33,7 +35,6 @@ class SQLiteAdapter(StoragePort):
         """Initialize the adapter with a database connection."""
         self._engine = create_engine(database_url, echo=echo, future=True)
         self._session_factory = sessionmaker(bind=self._engine, expire_on_commit=False)
-        self._logger = logging.getLogger(self.__class__.__name__)
 
     def initialize_schema(self) -> None:
         """Create database tables if needed."""
@@ -114,7 +115,7 @@ class SQLiteAdapter(StoragePort):
             session.commit()
         except SQLAlchemyError as err:
             session.rollback()
-            self._logger.exception("SQLite write operation failed")
+            LOGGER.exception("SQLite write operation failed")
             msg = "SQLite write operation failed"
             raise StorageOperationError(msg) from err
         finally:
@@ -127,7 +128,7 @@ class SQLiteAdapter(StoragePort):
         try:
             yield session
         except SQLAlchemyError as err:
-            self._logger.exception("SQLite read operation failed")
+            LOGGER.exception("SQLite read operation failed")
             msg = "SQLite read operation failed"
             raise StorageOperationError(msg) from err
         finally:
