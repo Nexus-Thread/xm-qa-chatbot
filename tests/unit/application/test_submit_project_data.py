@@ -8,7 +8,7 @@ from pathlib import Path
 
 from qa_chatbot.application.dtos import SubmissionCommand
 from qa_chatbot.application.use_cases import SubmitProjectDataUseCase
-from qa_chatbot.domain import ProjectId, Submission, SubmissionMetrics, TestCoverageMetrics, TimeWindow
+from qa_chatbot.domain import DomainError, ProjectId, Submission, SubmissionMetrics, TestCoverageMetrics, TimeWindow
 
 EXPECTED_MERGED_MANUAL_TOTAL = 8
 EXPECTED_MERGED_AUTOMATED_TOTAL = 7
@@ -62,7 +62,7 @@ class _FailingOverviewDashboardPort:
     def generate_overview(self, month: TimeWindow) -> Path:
         _ = month
         msg = "overview failed"
-        raise ValueError(msg)
+        raise DomainError(msg)
 
     def generate_project_detail(self, project_id: ProjectId, months: list[TimeWindow]) -> Path:
         _ = project_id

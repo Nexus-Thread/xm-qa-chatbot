@@ -63,7 +63,7 @@ This is a living checklist. Each top-level checkbox is one implementation chunk 
 
 ## Phase 3 — Architecture boundary corrections
 
-- [ ] **CH-10: Fix exception hierarchy base classes** (`ARCH-02`, `ARCH-03`, `ARCH-06`)
+- [x] **CH-10: Fix exception hierarchy base classes** (`ARCH-02`, `ARCH-03`, `ARCH-06`)
   - Deliverables: `DomainError` no longer derives from `ValueError`; update dashboard error base and catch sites
   - Acceptance: no catch logic depends on `ValueError` for domain/adapter failures
 

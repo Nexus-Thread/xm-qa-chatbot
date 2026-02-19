@@ -6,7 +6,7 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from qa_chatbot.domain import Submission, SubmissionMetrics
+from qa_chatbot.domain import DomainError, Submission, SubmissionMetrics
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -99,7 +99,7 @@ class SubmitProjectDataUseCase:
         for view, operation in operations:
             try:
                 operation()
-            except ValueError as err:
+            except DomainError as err:
                 LOGGER.exception(
                     "Dashboard generation failed",
                     extra={

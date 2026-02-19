@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from qa_chatbot.domain import TimeWindow
+from qa_chatbot.domain import DomainError, TimeWindow
 
 from .exceptions import LLMExtractionError
 
@@ -28,6 +28,6 @@ def resolve_time_window(data: TimeWindowSchema, current_date: date) -> TimeWindo
     try:
         year_str, month_str = data.month.split("-")
         return TimeWindow.from_year_month(int(year_str), int(month_str))
-    except ValueError as err:
+    except (DomainError, ValueError) as err:
         message = "Time window must be in YYYY-MM format"
         raise LLMExtractionError(message) from err

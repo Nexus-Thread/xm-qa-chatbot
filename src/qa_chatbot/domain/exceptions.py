@@ -1,7 +1,7 @@
 """Domain-specific errors."""
 
 
-class DomainError(ValueError):
+class DomainError(Exception):
     """Base class for domain errors."""
 
 
