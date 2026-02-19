@@ -23,7 +23,7 @@ This is a living checklist. Each top-level checkbox is one implementation chunk 
   - Deliverables: remove tracked `.env`, add `.env` to `.gitignore`, create `.env.example`
   - Acceptance: `.env` is not tracked; `.env.example` includes all required settings keys
 
-- [ ] **CH-02: Add Makefile quality gate targets** (`CI-02`, `DX-01`)
+- [x] **CH-02: Add Makefile quality gate targets** (`CI-02`, `DX-01`)
   - Deliverables: `Makefile` targets `format`, `lint`, `typecheck`, `test`, `quality-gate`, `serve`
   - Acceptance: `make quality-gate` runs the same sequence as project rules
 
