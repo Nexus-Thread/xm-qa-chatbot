@@ -11,6 +11,7 @@ from qa_chatbot.adapters.output.llm.structured_extraction.exceptions import (
     LLMExtractionError,
 )
 from qa_chatbot.adapters.output.llm.structured_extraction.history import normalize_history
+from qa_chatbot.adapters.output.llm.structured_extraction.json_response import MAX_LOGGED_PAYLOAD_CHARS, serialize_payload_preview
 from qa_chatbot.adapters.output.llm.structured_extraction.mappers import to_test_coverage_metrics
 from qa_chatbot.adapters.output.llm.structured_extraction.parsers import resolve_time_window
 from qa_chatbot.adapters.output.llm.structured_extraction.schemas import TestCoverageSchema as CoverageSchema
@@ -85,3 +86,13 @@ def test_to_test_coverage_metrics_maps_schema_fields() -> None:
     assert result.automated_created_in_reporting_month == EXPECTED_AUTOMATED_CREATED
     assert result.automated_updated_in_reporting_month == EXPECTED_AUTOMATED_UPDATED
     assert result.percentage_automation is None
+
+
+def test_serialize_payload_preview_truncates_large_payload() -> None:
+    """Trim logged payload preview when serialized JSON exceeds max length."""
+    payload = {"value": "x" * (MAX_LOGGED_PAYLOAD_CHARS + 100)}
+
+    preview = serialize_payload_preview(payload)
+
+    assert preview.endswith("...")
+    assert len(preview) == MAX_LOGGED_PAYLOAD_CHARS + len("...")

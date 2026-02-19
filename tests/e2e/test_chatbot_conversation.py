@@ -21,6 +21,8 @@ from qa_chatbot.domain import (
     TimeWindow,
 )
 
+pytestmark = pytest.mark.e2e
+
 if TYPE_CHECKING:
     from qa_chatbot.domain.registries import StreamProjectRegistry
 

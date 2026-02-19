@@ -10,6 +10,8 @@ from sqlalchemy.exc import IntegrityError
 
 from qa_chatbot.domain import StorageOperationError
 
+pytestmark = pytest.mark.integration
+
 if TYPE_CHECKING:
     from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter
     from qa_chatbot.domain import ProjectId, Submission, TimeWindow

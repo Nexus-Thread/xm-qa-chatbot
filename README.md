@@ -101,3 +101,21 @@ Transport behavior is configurable via `OPENAI_VERIFY_SSL` and `OPENAI_TIMEOUT_S
 - **Metrics**: The app tracks submission counts and recent LLM latency in memory.
 - **Rate limiting**: Per-session sliding window rate limiter (defaults to 8 messages/minute).
 - **Input limits**: Messages are trimmed to `INPUT_MAX_CHARS` to prevent oversized payloads.
+
+## Testing
+
+Run all tests and enforce coverage threshold:
+
+```bash
+pytest tests/
+```
+
+The test suite enforces a minimum of 98% coverage via pytest configuration.
+
+Useful marker-based subsets:
+
+```bash
+pytest -m integration --no-cov
+pytest -m e2e --no-cov
+pytest -m "not slow" --no-cov
+```

@@ -37,6 +37,12 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
+addopts = "-ra --cov=src/qa_chatbot --cov-report=term-missing --cov-fail-under=98"
+markers = [
+    "integration: tests that validate behavior across module boundaries",
+    "e2e: tests that exercise end-to-end user-facing flows",
+    "slow: tests with longer runtime or external dependency setup",
+]
 
 [tool.ruff]
 target-version = "py311"

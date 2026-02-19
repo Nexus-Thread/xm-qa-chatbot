@@ -503,3 +503,24 @@ def test_extract_with_history_raises_on_blank_content() -> None:
             current_date=date(2026, 2, 2),
             registry=build_default_stream_project_registry(),
         )
+
+
+def test_extract_with_history_raises_when_required_known_time_window_missing() -> None:
+    """Raise when time-window extraction is disabled and known time window is missing."""
+    adapter = OpenAIStructuredExtractionAdapter(
+        settings=OpenAISettings(base_url="http://localhost", api_key="test", model="llama2"),
+        client=FakeOpenAITransportClient(iter(())),
+    )
+
+    with pytest.raises(LLMExtractionError, match="Time window is required for history extraction"):
+        adapter.extract_with_history(
+            request=HistoryExtractionRequest(
+                conversation="Conversation",
+                history=None,
+                known_project_id=ProjectId("bridge"),
+                include_project_id=False,
+                include_time_window=False,
+            ),
+            current_date=date(2026, 2, 2),
+            registry=build_default_stream_project_registry(),
+        )

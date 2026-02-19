@@ -9,11 +9,14 @@ import pytest
 
 from qa_chatbot.adapters.output.llm.openai import OpenAIClientSettings, build_client, extract_message_content
 
+pytestmark = pytest.mark.integration
+
 
 @pytest.mark.skipif(
     os.getenv("OLLAMA_BASE_URL") is None,
     reason="OLLAMA_BASE_URL not configured",
 )
+@pytest.mark.slow
 def test_openai_adapter_with_ollama_returns_hello_world_json() -> None:
     """Send a hello-world prompt via OpenAI transport client."""
     settings = OpenAIClientSettings(
