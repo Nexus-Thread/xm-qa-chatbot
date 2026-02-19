@@ -5,6 +5,12 @@
 - Rule files are ordered by the numeric prefix (e.g., `01-`, `02-`) to keep a consistent reading order.
 - Each file should focus on a single theme (core standards, architecture, testing, etc.).
 
+## Rule precedence and conflict resolution
+- Treat rules marked as **hard constraints** or **non-negotiable** as highest priority within `.clinerules/`.
+- **Must** statements take precedence over **Should** statements.
+- If two rules with the same strength conflict, the rule in the higher-numbered file wins.
+- Any intentional deviation must be documented in ADR/PR notes.
+
 ## Toggling modules
 - To **disable** a rule set temporarily, move the file to `.clinerules-bank/`.
 - To **enable** a rule set, move it back to `.clinerules/`.
@@ -30,6 +36,19 @@
 
 ## Workflows
 - `workflows/update-repo-navigation.md` - Generate project-specific navigation maps on demand
+
+## Enforcement and automation matrix
+Use this map to keep "Must" rules enforceable, not just advisory.
+
+| Rule area | Primary enforcement | Secondary enforcement |
+| --- | --- | --- |
+| Naming, formatting, imports | `ruff format .`, `ruff check . --fix`, `ruff check .` | PR review |
+| Type contracts and API drift | `mypy src/ tests/` | PR review |
+| Behavior changes and regressions | `pytest tests/` | Targeted regression tests |
+| Architecture boundaries (hexagonal) | Code review vs `02-architecture-guardrails.md` | Optional import-lint/custom boundary scripts |
+| Module/file structure conventions | Code review | Optional repository audit script |
+| Docs/ADR/changelog updates | PR checklist/review | Release checklist |
+| Logging conventions | `ruff` + code review | Runtime log sampling |
 
 ## Scope
 These rules apply to Python projects using hexagonal architecture unless explicitly stated otherwise.

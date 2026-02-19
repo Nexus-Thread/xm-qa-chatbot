@@ -21,7 +21,9 @@ Use these rules for all Python code in this repo to keep behavior predictable an
 - For broader hexagonal boundary doctrine, see `02-architecture-guardrails.md`.
 
 ## Error handling
-- Raise **domain-specific exceptions** (defined in `domain/exceptions.py`), not generic `Exception`.
+- Raise **layer-appropriate exceptions** (not generic `Exception`):
+  - In `domain/` and `application/`: use domain/application-specific exceptions (typically from `domain/exceptions.py` or application exception modules).
+  - In adapters: use adapter/infrastructure-specific exceptions internally when needed, then translate at adapter boundaries.
 - **Never** use bare `except:`; catch the most specific exception possible.
 - Preserve context with `raise CustomError(...) from err`.
 - Validate inputs at module boundaries (e.g., adapters) and fail fast with clear errors.
@@ -30,13 +32,6 @@ Use these rules for all Python code in this repo to keep behavior predictable an
 
 ## Logging
 - Use the configured logger (typically from a dedicated `logging_config.py` module) — **no `print()`** in production code.
-- Levels:
-  - `debug`: noisy diagnostics
-  - `info`: flow milestones
-  - `warning`: recoverable issues
-  - `error`: operation failures
-- Include structured context when possible via `extra={...}`.
-- Use `logger.exception(...)` inside `except` blocks to capture stack traces automatically.
-- Use `logger.error(...)` when no active exception is being handled.
 - Never log secrets, tokens, API keys, or sensitive data unless required for debugging.
-- Log boundary crossings at `info` with structured context (request IDs, adapter name).
+- Keep logging setup centralized; do not duplicate global logging configuration in feature modules.
+- For logger naming, structured context, exception logging patterns, and allowed exceptions, see `11-logging-conventions.md`.

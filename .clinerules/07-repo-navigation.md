@@ -28,11 +28,12 @@ tests/
 │   ├── domain/            # Domain logic tests
 │   ├── application/       # Use case tests
 │   └── adapters/          # Adapter unit tests
-└── integration/           # Integration tests with I/O
-    └── adapters/          # Adapter integration tests
+├── integration/           # Integration tests with I/O
+│   └── adapters/          # Adapter integration tests
+└── e2e/                   # Optional end-to-end scenarios
 ```
 
-**Note:** Test directories should mirror the source structure for easy navigation.
+**Note:** Test directories should mirror the source structure for easy navigation. `e2e/` may be organized by user flow instead of strict source mirroring.
 
 ## Documentation and configuration
 - `README.md`: Project onboarding, setup, and usage
@@ -67,6 +68,9 @@ rg "new.*Adapter|Adapter\(" src/
 ```bash
 # View directory tree
 tree src/<package_name>/ -L 3
+
+# Fallback if tree is unavailable
+find src/<package_name>/ -maxdepth 3 -type d
 
 # List all Python files in a layer
 find src/<package_name>/domain/ -name "*.py"
