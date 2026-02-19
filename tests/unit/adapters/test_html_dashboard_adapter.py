@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 import pytest
+from jinja2 import TemplateNotFound, TemplateRuntimeError
 
 from qa_chatbot.adapters.output.dashboard.exceptions import DashboardRenderError
 from qa_chatbot.adapters.output.dashboard.html import HtmlDashboardAdapter
@@ -214,7 +215,8 @@ def test_generate_overview_wraps_template_load_errors(
     caplog.set_level(logging.ERROR)
 
     def _raise_load_error(_template_name: str) -> None:
-        raise RuntimeError
+        missing_template = "overview.html"
+        raise TemplateNotFound(missing_template)
 
     environment = dashboard_adapter._environment  # noqa: SLF001
     monkeypatch.setattr(environment, "get_template", _raise_load_error)
@@ -222,7 +224,7 @@ def test_generate_overview_wraps_template_load_errors(
     with pytest.raises(DashboardRenderError, match=r"Failed to load dashboard template: overview\.html") as exc_info:
         dashboard_adapter.generate_overview(time_window_feb)
 
-    assert isinstance(exc_info.value.__cause__, RuntimeError)
+    assert isinstance(exc_info.value.__cause__, TemplateNotFound)
     assert any(record.message == "Dashboard template load failed" for record in caplog.records)
 
 
@@ -237,7 +239,7 @@ def test_generate_overview_wraps_template_render_errors(
 
     class _BrokenTemplate:
         def render(self, **_context: object) -> str:
-            raise RuntimeError
+            raise TemplateRuntimeError
 
     environment = dashboard_adapter._environment  # noqa: SLF001
     monkeypatch.setattr(environment, "get_template", lambda _template_name: _BrokenTemplate())
@@ -245,7 +247,7 @@ def test_generate_overview_wraps_template_render_errors(
     with pytest.raises(DashboardRenderError, match=r"Failed to render dashboard template: overview\.html") as exc_info:
         dashboard_adapter.generate_overview(time_window_feb)
 
-    assert isinstance(exc_info.value.__cause__, RuntimeError)
+    assert isinstance(exc_info.value.__cause__, TemplateRuntimeError)
     assert any(record.message == "Dashboard template render failed" for record in caplog.records)
 
 

@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+from jinja2 import Environment, FileSystemLoader, TemplateError, select_autoescape
 
 from qa_chatbot.adapters.output.dashboard.exceptions import DashboardRenderError
 from qa_chatbot.application.ports import DashboardPort
@@ -122,12 +122,13 @@ class HtmlDashboardAdapter(DashboardPort):
     ) -> Path:
         try:
             template = self._environment.get_template(template_name)
-        except Exception as err:
+        except TemplateError as err:
             LOGGER.exception(
                 "Dashboard template load failed",
                 extra={
-                    "adapter_name": self.__class__.__name__,
+                    "component": self.__class__.__name__,
                     "template_name": template_name,
+                    "error_type": type(err).__name__,
                 },
             )
             msg = f"Failed to load dashboard template: {template_name}"
@@ -135,12 +136,13 @@ class HtmlDashboardAdapter(DashboardPort):
 
         try:
             rendered = template.render(**context)
-        except Exception as err:
+        except TemplateError as err:
             LOGGER.exception(
                 "Dashboard template render failed",
                 extra={
-                    "adapter_name": self.__class__.__name__,
+                    "component": self.__class__.__name__,
                     "template_name": template_name,
+                    "error_type": type(err).__name__,
                 },
             )
             msg = f"Failed to render dashboard template: {template_name}"
@@ -155,14 +157,15 @@ class HtmlDashboardAdapter(DashboardPort):
         try:
             temp_path.write_text(content, encoding="utf-8")
             temp_path.replace(path)
-        except Exception as err:
+        except OSError as err:
             if temp_path.exists():
                 temp_path.unlink(missing_ok=True)
             LOGGER.exception(
                 "Dashboard output write failed",
                 extra={
-                    "adapter_name": self.__class__.__name__,
+                    "component": self.__class__.__name__,
                     "output_path": str(path),
+                    "error_type": type(err).__name__,
                 },
             )
             msg = f"Failed to write dashboard output: {path}"

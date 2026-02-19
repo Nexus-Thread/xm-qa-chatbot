@@ -99,7 +99,7 @@ class SubmitProjectDataUseCase:
         for view, operation in operations:
             try:
                 operation()
-            except Exception:
+            except ValueError as err:
                 LOGGER.exception(
                     "Dashboard generation failed",
                     extra={
@@ -107,5 +107,6 @@ class SubmitProjectDataUseCase:
                         "view": view,
                         "project_id": str(submission.project_id),
                         "time_window": str(submission.month),
+                        "error_type": type(err).__name__,
                     },
                 )

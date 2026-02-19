@@ -115,7 +115,14 @@ class SQLiteAdapter(StoragePort):
             session.commit()
         except SQLAlchemyError as err:
             session.rollback()
-            LOGGER.exception("SQLite write operation failed")
+            LOGGER.exception(
+                "SQLite write operation failed",
+                extra={
+                    "component": self.__class__.__name__,
+                    "operation": "write",
+                    "error_type": type(err).__name__,
+                },
+            )
             msg = "SQLite write operation failed"
             raise StorageOperationError(msg) from err
         finally:
@@ -128,7 +135,14 @@ class SQLiteAdapter(StoragePort):
         try:
             yield session
         except SQLAlchemyError as err:
-            LOGGER.exception("SQLite read operation failed")
+            LOGGER.exception(
+                "SQLite read operation failed",
+                extra={
+                    "component": self.__class__.__name__,
+                    "operation": "read",
+                    "error_type": type(err).__name__,
+                },
+            )
             msg = "SQLite read operation failed"
             raise StorageOperationError(msg) from err
         finally:

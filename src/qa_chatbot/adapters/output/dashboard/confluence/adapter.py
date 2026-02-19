@@ -81,14 +81,15 @@ class ConfluenceDashboardAdapter(DashboardPort):
         try:
             temp_path.write_text(rendered, encoding="utf-8")
             temp_path.replace(output_path)
-        except Exception as err:
+        except OSError as err:
             temp_path.unlink(missing_ok=True)
             LOGGER.exception(
                 "Confluence dashboard write failed",
                 extra={
-                    "adapter_name": self.__class__.__name__,
+                    "component": self.__class__.__name__,
                     "file_name": file_name,
                     "output_path": str(output_path),
+                    "error_type": type(err).__name__,
                 },
             )
             msg = f"Failed to write Confluence dashboard output: {output_path}"
@@ -96,7 +97,7 @@ class ConfluenceDashboardAdapter(DashboardPort):
         LOGGER.info(
             "Confluence dashboard generated",
             extra={
-                "adapter_name": self.__class__.__name__,
+                "component": self.__class__.__name__,
                 "file_name": file_name,
                 "output_path": str(output_path),
             },
@@ -204,7 +205,7 @@ class ConfluenceDashboardAdapter(DashboardPort):
             LOGGER.error(
                 "Confluence dashboard smoke check failed",
                 extra={
-                    "adapter_name": self.__class__.__name__,
+                    "component": self.__class__.__name__,
                     "file_name": file_name,
                     "missing_markers": tuple(missing),
                 },
