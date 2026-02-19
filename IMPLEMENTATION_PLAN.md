@@ -19,7 +19,7 @@ This is a living checklist. Each top-level checkbox is one implementation chunk 
 
 ## Phase 1 — Critical security + CI foundations
 
-- [ ] **CH-01: Env file hygiene** (`SEC-01`, `CFG-01`)
+- [x] **CH-01: Env file hygiene** (`SEC-01`, `CFG-01`)
   - Deliverables: remove tracked `.env`, add `.env` to `.gitignore`, create `.env.example`
   - Acceptance: `.env` is not tracked; `.env.example` includes all required settings keys
 
