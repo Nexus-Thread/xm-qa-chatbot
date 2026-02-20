@@ -19,7 +19,7 @@ from qa_chatbot.domain import (
 if TYPE_CHECKING:
     from datetime import date
 
-    from qa_chatbot.application import ExtractStructuredDataUseCase, SubmitProjectDataUseCase
+    from qa_chatbot.application.ports import ExtractStructuredDataPort, SubmitProjectDataPort
     from qa_chatbot.domain.registries import StreamProjectRegistry
     from qa_chatbot.domain.value_objects import ExtractionConfidence, TestCoverageMetrics
 
@@ -59,8 +59,8 @@ class ConversationManager:
 
     def __init__(
         self,
-        extractor: ExtractStructuredDataUseCase,
-        submitter: SubmitProjectDataUseCase,
+        extractor: ExtractStructuredDataPort,
+        submitter: SubmitProjectDataPort,
         registry: StreamProjectRegistry,
     ) -> None:
         """Initialize the conversation manager."""

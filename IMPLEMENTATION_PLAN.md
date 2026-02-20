@@ -71,7 +71,7 @@ This is a living checklist. Each top-level checkbox is one implementation chunk 
   - Deliverables: registry passed via constructor from composition root
   - Acceptance: no per-call registry builder invocation in input adapter
 
-- [ ] **CH-12: Add input ports in application layer** (`ARCH-04`)
+- [x] **CH-12: Add input ports in application layer** (`ARCH-04`)
   - Deliverables: `application/ports/input/` protocols for use cases and updated wiring
   - Acceptance: driving adapters depend on input port contracts rather than concrete classes
 

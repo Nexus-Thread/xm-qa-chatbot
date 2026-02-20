@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from qa_chatbot.application.dtos import MonthlyReport, ProjectDetailDashboardData, TrendsDashboardData
-    from qa_chatbot.application.use_cases import GenerateMonthlyReportUseCase, GetDashboardDataUseCase
+    from qa_chatbot.application.ports import GenerateMonthlyReportPort, GetDashboardDataPort
     from qa_chatbot.domain import ProjectId, TimeWindow
 
 LOGGER = logging.getLogger(__name__)
@@ -45,8 +45,8 @@ PROJECT_DETAIL_FILE_PREFIX = "project-"
 class ConfluenceDashboardAdapter(DashboardPort):
     """Generate Confluence-ready dashboard files locally."""
 
-    get_dashboard_data_use_case: GetDashboardDataUseCase
-    generate_monthly_report_use_case: GenerateMonthlyReportUseCase
+    get_dashboard_data_use_case: GetDashboardDataPort
+    generate_monthly_report_use_case: GenerateMonthlyReportPort
     output_dir: Path
 
     def __post_init__(self) -> None:

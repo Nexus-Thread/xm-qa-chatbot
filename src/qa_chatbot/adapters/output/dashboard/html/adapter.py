@@ -15,7 +15,7 @@ from qa_chatbot.application.ports import DashboardPort
 
 if TYPE_CHECKING:
     from qa_chatbot.application.dtos import ProjectDetailDashboardData, TrendsDashboardData, TrendSeries
-    from qa_chatbot.application.use_cases import GenerateMonthlyReportUseCase, GetDashboardDataUseCase
+    from qa_chatbot.application.ports import GenerateMonthlyReportPort, GetDashboardDataPort
     from qa_chatbot.domain import ProjectId, TimeWindow
 
 LOGGER = logging.getLogger(__name__)
@@ -48,8 +48,8 @@ SMOKE_CHECK_MARKERS_BY_TEMPLATE: dict[str, tuple[str, ...]] = {
 class HtmlDashboardAdapter(DashboardPort):
     """Generate static HTML dashboards."""
 
-    get_dashboard_data_use_case: GetDashboardDataUseCase
-    generate_monthly_report_use_case: GenerateMonthlyReportUseCase
+    get_dashboard_data_use_case: GetDashboardDataPort
+    generate_monthly_report_use_case: GenerateMonthlyReportPort
     output_dir: Path
     tailwind_script_src: str = DEFAULT_TAILWIND_SCRIPT_SRC
     plotly_script_src: str = DEFAULT_PLOTLY_SCRIPT_SRC

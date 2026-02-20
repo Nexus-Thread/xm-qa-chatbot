@@ -1,7 +1,16 @@
 """Application layer for QA chatbot."""
 
 from .dtos import ExtractionResult, SubmissionCommand
-from .ports import DashboardPort, MetricsPort, StoragePort, StructuredExtractionPort
+from .ports import (
+    DashboardPort,
+    ExtractStructuredDataPort,
+    GenerateMonthlyReportPort,
+    GetDashboardDataPort,
+    MetricsPort,
+    StoragePort,
+    StructuredExtractionPort,
+    SubmitProjectDataPort,
+)
 from .use_cases import (
     ExtractStructuredDataUseCase,
     GenerateMonthlyReportUseCase,
@@ -11,13 +20,17 @@ from .use_cases import (
 
 __all__ = [
     "DashboardPort",
+    "ExtractStructuredDataPort",
     "ExtractStructuredDataUseCase",
     "ExtractionResult",
+    "GenerateMonthlyReportPort",
     "GenerateMonthlyReportUseCase",
+    "GetDashboardDataPort",
     "GetDashboardDataUseCase",
     "MetricsPort",
     "StoragePort",
     "StructuredExtractionPort",
     "SubmissionCommand",
+    "SubmitProjectDataPort",
     "SubmitProjectDataUseCase",
 ]

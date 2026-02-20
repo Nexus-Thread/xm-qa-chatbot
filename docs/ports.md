@@ -3,6 +3,28 @@
 ## Overview
 This document describes the application layer ports and their data contracts.
 
+## Input ports
+
+Location: `src/qa_chatbot/application/ports/input/`
+
+### ExtractStructuredDataPort
+- `extract_project_id(conversation: str, registry: StreamProjectRegistry) -> tuple[ProjectId, ExtractionConfidence]`
+- `extract_time_window(conversation: str, current_date: date) -> TimeWindow`
+- `extract_coverage(conversation: str) -> CoverageExtractionResult`
+- `execute(conversation: str, current_date: date, registry: StreamProjectRegistry) -> ExtractionResult`
+- `execute_with_history(request: HistoryExtractionRequest, current_date: date, registry: StreamProjectRegistry) -> ExtractionResult`
+
+### SubmitProjectDataPort
+- `execute(command: SubmissionCommand) -> Submission`
+
+### GenerateMonthlyReportPort
+- `execute(month: TimeWindow) -> MonthlyReport`
+
+### GetDashboardDataPort
+- `build_overview(month: TimeWindow) -> OverviewDashboardData`
+- `build_project_detail(project_id: ProjectId, months: list[TimeWindow]) -> ProjectDetailDashboardData`
+- `build_trends(projects: list[ProjectId], months: list[TimeWindow]) -> TrendsDashboardData`
+
 ## DashboardPort
 Location: `src/qa_chatbot/application/ports/output/dashboard_port.py`
 
@@ -18,9 +40,8 @@ Location: `src/qa_chatbot/application/ports/output/structured_extraction_port.py
 
 - `extract_project_id(conversation: str, registry: StreamProjectRegistry) -> tuple[ProjectId, ExtractionConfidence]`
 - `extract_time_window(conversation: str, current_date: date) -> TimeWindow`
-- `extract_test_coverage(conversation: str) -> TestCoverageMetrics`
-- `extract_supported_releases_count(conversation: str) -> int | None`
-- `extract_with_history(conversation: str, history: list[dict[str, str]] | None, current_date: date, registry: StreamProjectRegistry) -> ExtractionResult`
+- `extract_coverage(conversation: str) -> CoverageExtractionResult`
+- `extract_with_history(request: HistoryExtractionRequest, current_date: date, registry: StreamProjectRegistry) -> ExtractionResult`
 
 Expected errors: `LLMExtractionError`, `AmbiguousExtractionError`
 
