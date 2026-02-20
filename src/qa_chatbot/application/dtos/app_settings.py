@@ -22,6 +22,7 @@ class AppSettings:
     openai_timeout_seconds: float
     database_url: str
     database_echo: bool
+    database_timeout_seconds: float
     dashboard_output_dir: Path
     dashboard_tailwind_script_src: str
     dashboard_plotly_script_src: str

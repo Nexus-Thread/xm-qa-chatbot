@@ -24,6 +24,7 @@ class EnvSettings(BaseSettings):
     openai_timeout_seconds: float = Field(default=30.0, validation_alias="OPENAI_TIMEOUT_SECONDS", gt=0.0, le=300.0)
     database_url: str = Field(default="sqlite:///./qa_chatbot.db", validation_alias="DATABASE_URL")
     database_echo: bool = Field(default=False, validation_alias="DATABASE_ECHO")
+    database_timeout_seconds: float = Field(default=5.0, validation_alias="DATABASE_TIMEOUT_SECONDS", gt=0.0, le=120.0)
     dashboard_output_dir: Path = Field(default=Path("./dashboard_html"), validation_alias="DASHBOARD_OUTPUT_DIR")
     dashboard_tailwind_script_src: str = Field(
         default="https://cdn.tailwindcss.com",

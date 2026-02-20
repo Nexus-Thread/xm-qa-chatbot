@@ -9,6 +9,7 @@ from qa_chatbot.domain.exceptions import InvalidConfigurationError
 
 EXPECTED_DEFAULT_OPENAI_MAX_RETRIES = 3
 EXPECTED_DEFAULT_OPENAI_TIMEOUT_SECONDS = 30.0
+EXPECTED_DEFAULT_DATABASE_TIMEOUT_SECONDS = 5.0
 
 
 def test_settings_loads_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -25,6 +26,7 @@ def test_settings_loads_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.openai_backoff_seconds == 1.0
     assert settings.openai_verify_ssl is True
     assert settings.openai_timeout_seconds == EXPECTED_DEFAULT_OPENAI_TIMEOUT_SECONDS
+    assert settings.database_timeout_seconds == EXPECTED_DEFAULT_DATABASE_TIMEOUT_SECONDS
     assert settings.jira_base_url == "https://jira.example.com"
     assert settings.jira_username == "jira-user@example.com"
     assert settings.jira_api_token
@@ -74,6 +76,14 @@ def test_settings_rejects_invalid_openai_backoff_seconds(monkeypatch: pytest.Mon
 def test_settings_rejects_invalid_openai_timeout_seconds(monkeypatch: pytest.MonkeyPatch) -> None:
     """Raise when timeout seconds are outside accepted bounds."""
     monkeypatch.setenv("OPENAI_TIMEOUT_SECONDS", "0")
+
+    with pytest.raises(InvalidConfigurationError):
+        EnvSettingsAdapter().load()
+
+
+def test_settings_rejects_invalid_database_timeout_seconds(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Raise when database timeout seconds are outside accepted bounds."""
+    monkeypatch.setenv("DATABASE_TIMEOUT_SECONDS", "0")
 
     with pytest.raises(InvalidConfigurationError):
         EnvSettingsAdapter().load()

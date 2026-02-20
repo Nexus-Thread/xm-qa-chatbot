@@ -179,7 +179,11 @@ def seed_database() -> None:
 
     # Initialize adapters
     print("Step 1: Initializing adapters...")
-    storage = SQLiteAdapter(database_url=settings.database_url, echo=settings.database_echo)
+    storage = SQLiteAdapter(
+        database_url=settings.database_url,
+        echo=settings.database_echo,
+        timeout_seconds=settings.database_timeout_seconds,
+    )
     storage.initialize_schema()
     dashboard_adapter = _build_dashboard_adapter(settings=settings, storage=storage)
 

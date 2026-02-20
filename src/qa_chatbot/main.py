@@ -35,7 +35,11 @@ def main() -> None:
             level=settings.log_level,
         )
     )
-    storage = SQLiteAdapter(database_url=settings.database_url, echo=settings.database_echo)
+    storage = SQLiteAdapter(
+        database_url=settings.database_url,
+        echo=settings.database_echo,
+        timeout_seconds=settings.database_timeout_seconds,
+    )
     storage.initialize_schema()
 
     registry = build_default_stream_project_registry()

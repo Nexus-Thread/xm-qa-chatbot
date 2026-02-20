@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 import pytest
 from sqlalchemy import text
@@ -13,6 +14,8 @@ from qa_chatbot.domain import StorageOperationError
 pytestmark = pytest.mark.integration
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter
     from qa_chatbot.domain import ProjectId, Submission, TimeWindow
 
@@ -144,6 +147,47 @@ def test_sqlite_adapter_translates_sqlalchemy_error(sqlite_adapter: SQLiteAdapte
 
     with pytest.raises(StorageOperationError, match="SQLite read operation failed"):
         sqlite_adapter.get_submissions_by_month(time_window_jan)
+
+
+def test_sqlite_adapter_initializes_wal_mode(sqlite_adapter: SQLiteAdapter) -> None:
+    """Enable WAL journal mode when initializing SQLite schema."""
+    with sqlite_adapter.engine.connect() as connection:
+        journal_mode = connection.execute(text("PRAGMA journal_mode")).scalar_one()
+
+    assert str(journal_mode).lower() == "wal"
+
+
+def test_sqlite_adapter_applies_busy_timeout_from_configuration(tmp_path: Path) -> None:
+    """Apply busy_timeout pragma from configured timeout seconds."""
+    from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter  # noqa: PLC0415
+
+    timeout_seconds = 12.5
+    database_path = tmp_path / "busy_timeout.db"
+    adapter = SQLiteAdapter(
+        database_url=f"sqlite:///{database_path}",
+        timeout_seconds=timeout_seconds,
+    )
+    adapter.initialize_schema()
+
+    with adapter.engine.connect() as connection:
+        busy_timeout_ms = connection.execute(text("PRAGMA busy_timeout")).scalar_one()
+
+    assert busy_timeout_ms == int(timeout_seconds * 1000)
+    adapter.engine.dispose()
+
+
+def test_sqlite_adapter_skips_pragmas_for_non_sqlite_backend(tmp_path: Path) -> None:
+    """Skip SQLite pragma initialization for non-SQLite backends."""
+    from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter  # noqa: PLC0415
+
+    adapter = SQLiteAdapter(database_url=f"sqlite:///{tmp_path / 'skip_pragmas.db'}")
+    with patch("sqlalchemy.engine.url.URL.get_backend_name", return_value="postgresql"):
+        adapter.initialize_schema()
+
+    with adapter.engine.connect() as connection:
+        journal_mode = connection.execute(text("PRAGMA journal_mode")).scalar_one()
+
+    assert str(journal_mode).lower() != "wal"
 
 
 def test_sqlite_schema_rejects_negative_scalar_metrics(sqlite_adapter: SQLiteAdapter) -> None:

@@ -83,6 +83,7 @@ Transport behavior is configurable via `OPENAI_VERIFY_SSL` and `OPENAI_TIMEOUT_S
 | `OPENAI_TIMEOUT_SECONDS` | `30.0` | Request timeout for OpenAI HTTP calls. | `60.0` |
 | `DATABASE_URL` | `sqlite:///./qa_chatbot.db` | SQLAlchemy connection URL for submission storage. | `sqlite:///./qa_chatbot.db` |
 | `DATABASE_ECHO` | `false` | Enables SQLAlchemy SQL echo logging for debugging. | `true` |
+| `DATABASE_TIMEOUT_SECONDS` | `5.0` | SQLite lock wait timeout in seconds; also applied as `PRAGMA busy_timeout`. | `10.0` |
 | `DASHBOARD_OUTPUT_DIR` | `./dashboard_html` | Output directory where dashboard HTML artifacts are generated. | `./dashboard_html` |
 | `DASHBOARD_TAILWIND_SCRIPT_SRC` | `https://cdn.tailwindcss.com` | Script source used to load Tailwind in browser dashboard templates. | `https://cdn.tailwindcss.com` |
 | `DASHBOARD_PLOTLY_SCRIPT_SRC` | `https://cdn.plot.ly/plotly-2.27.0.min.js` | Script source used to load Plotly in browser dashboard templates. | `https://cdn.plot.ly/plotly-2.27.0.min.js` |

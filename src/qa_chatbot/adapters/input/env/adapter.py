@@ -30,6 +30,7 @@ class EnvSettingsAdapter:
             openai_timeout_seconds=settings.openai_timeout_seconds,
             database_url=settings.database_url,
             database_echo=settings.database_echo,
+            database_timeout_seconds=settings.database_timeout_seconds,
             dashboard_output_dir=settings.dashboard_output_dir,
             dashboard_tailwind_script_src=settings.dashboard_tailwind_script_src,
             dashboard_plotly_script_src=settings.dashboard_plotly_script_src,

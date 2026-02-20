@@ -17,6 +17,7 @@ def test_main_wires_components(monkeypatch: pytest.MonkeyPatch) -> None:
         log_level="INFO",
         database_url="sqlite:///./qa_chatbot.db",
         database_echo=False,
+        database_timeout_seconds=5.0,
         dashboard_output_dir="./dashboard_html",
         dashboard_tailwind_script_src="https://cdn.tailwindcss.com",
         dashboard_plotly_script_src="https://cdn.plot.ly/plotly-2.27.0.min.js",

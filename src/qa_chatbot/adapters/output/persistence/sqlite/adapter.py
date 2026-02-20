@@ -6,7 +6,7 @@ import logging
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, TypeVar
 
-from sqlalchemy import create_engine, delete, select
+from sqlalchemy import create_engine, delete, select, text
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
@@ -27,18 +27,37 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
+MILLISECONDS_PER_SECOND = 1000
+DEFAULT_TIMEOUT_SECONDS = 5.0
+
 
 class SQLiteAdapter(StoragePort):
     """SQLite implementation of the storage port."""
 
-    def __init__(self, database_url: str, *, echo: bool = False) -> None:
+    def __init__(
+        self,
+        database_url: str,
+        *,
+        echo: bool = False,
+        timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
+    ) -> None:
         """Initialize the adapter with a database connection."""
-        self._engine = create_engine(database_url, echo=echo, future=True)
+        connect_args: dict[str, float] = {}
+        if database_url.startswith("sqlite"):
+            connect_args["timeout"] = timeout_seconds
+        self._engine = create_engine(
+            database_url,
+            echo=echo,
+            future=True,
+            connect_args=connect_args,
+        )
         self._session_factory = sessionmaker(bind=self._engine, expire_on_commit=False)
+        self._timeout_seconds = timeout_seconds
 
     def initialize_schema(self) -> None:
         """Create database tables if needed."""
         Base.metadata.create_all(self._engine)
+        self._initialize_sqlite_pragmas()
 
     def save_submission(self, submission: Submission) -> None:
         """Persist a submission in SQLite, replacing any existing submission for the same project/month."""
@@ -147,3 +166,13 @@ class SQLiteAdapter(StoragePort):
             raise StorageOperationError(msg) from err
         finally:
             session.close()
+
+    def _initialize_sqlite_pragmas(self) -> None:
+        """Initialize SQLite runtime pragmas for reliability."""
+        if self._engine.url.get_backend_name() != "sqlite":
+            return
+
+        busy_timeout_ms = int(self._timeout_seconds * MILLISECONDS_PER_SECOND)
+        with self._engine.begin() as connection:
+            connection.execute(text("PRAGMA journal_mode=WAL"))
+            connection.exec_driver_sql(f"PRAGMA busy_timeout={busy_timeout_ms}")

@@ -36,7 +36,11 @@ def submit_test_coverage_data() -> None:
 
     # Initialize adapters (same as in main.py)
     print("Step 1: Initializing storage adapter...")
-    storage = SQLiteAdapter(database_url=settings.database_url, echo=settings.database_echo)
+    storage = SQLiteAdapter(
+        database_url=settings.database_url,
+        echo=settings.database_echo,
+        timeout_seconds=settings.database_timeout_seconds,
+    )
     storage.initialize_schema()
     print("✅ Storage initialized\n")
 

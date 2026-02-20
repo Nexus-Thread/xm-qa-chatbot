@@ -47,7 +47,7 @@ This is a living checklist. Each top-level checkbox is one implementation chunk 
   - Deliverables: replace broad `except Exception` with expected exception set
   - Acceptance: programming errors propagate; expected operational failures remain handled
 
-- [ ] **CH-07: SQLite timeout + WAL mode** (`ERR-02`, `PERF-03`)
+- [x] **CH-07: SQLite timeout + WAL mode** (`ERR-02`, `PERF-03`)
   - Deliverables: SQLite connection timeout and WAL initialization
   - Acceptance: adapter config includes timeout; integration tests verify behavior
 

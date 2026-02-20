@@ -78,7 +78,10 @@ def generate_dashboards(
     print(f"Months to include: {months_limit}")
     print("=" * 80 + "\n")
 
-    storage = _build_storage(database_url=database_url)
+    storage = _build_storage(
+        database_url=database_url,
+        timeout_seconds=settings.database_timeout_seconds,
+    )
     dashboard = _build_dashboard_adapter(storage=storage, output_dir=output_dir, settings=settings)
     recent_months, projects = _load_generation_inputs(storage=storage, months_limit=months_limit)
     if recent_months is None or projects is None:
@@ -92,9 +95,13 @@ def generate_dashboards(
     _print_summary(output_dir=output_dir, generated_files=generated_files, overview_path=overview_path)
 
 
-def _build_storage(database_url: str) -> SQLiteAdapter:
+def _build_storage(database_url: str, timeout_seconds: float) -> SQLiteAdapter:
     LOGGER.info("Initializing storage adapter")
-    storage = SQLiteAdapter(database_url=database_url, echo=False)
+    storage = SQLiteAdapter(
+        database_url=database_url,
+        echo=False,
+        timeout_seconds=timeout_seconds,
+    )
     storage.initialize_schema()
     return storage
 
