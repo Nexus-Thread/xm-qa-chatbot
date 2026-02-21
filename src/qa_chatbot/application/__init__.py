@@ -1,6 +1,6 @@
 """Application layer for QA chatbot."""
 
-from .dtos import ExtractionResult, SubmissionCommand
+from .dtos import ExtractionResult, SubmissionCommand, SubmissionResult
 from .ports import (
     DashboardPort,
     ExtractStructuredDataPort,
@@ -31,6 +31,7 @@ __all__ = [
     "StoragePort",
     "StructuredExtractionPort",
     "SubmissionCommand",
+    "SubmissionResult",
     "SubmitProjectDataPort",
     "SubmitProjectDataUseCase",
 ]

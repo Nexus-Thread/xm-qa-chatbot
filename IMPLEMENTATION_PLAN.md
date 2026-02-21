@@ -37,7 +37,7 @@ Only **pending** chunks are listed below. Completed chunks were removed from thi
 
 ## Phase 2 — Fast reliability hardening
 
-- [ ] **CH-08: Surface dashboard generation warning to caller** (`ERR-04`)
+- [x] **CH-08: Surface dashboard generation warning to caller** (`ERR-04`)
   - Deliverables: submission result includes warning/status when dashboard generation fails
   - Acceptance: user-visible outcome distinguishes saved data vs dashboard failure
 

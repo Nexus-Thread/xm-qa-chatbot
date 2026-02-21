@@ -6,6 +6,7 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from qa_chatbot.application.dtos import SubmissionResult
 from qa_chatbot.domain import DomainError, Submission, SubmissionMetrics
 
 if TYPE_CHECKING:
@@ -25,7 +26,7 @@ class SubmitProjectDataUseCase:
     dashboard_port: DashboardPort | None = None
     metrics_port: MetricsPort | None = None
 
-    def execute(self, command: SubmissionCommand) -> Submission:
+    def execute(self, command: SubmissionCommand) -> SubmissionResult:
         """Persist a project submission, merging with existing data for the same project/month."""
         submit_extra = self._log_extra(
             correlation_id=command.correlation_id,
@@ -47,8 +48,9 @@ class SubmitProjectDataUseCase:
         self.storage_port.save_submission(submission)
         if self.metrics_port is not None:
             self.metrics_port.record_submission(submission.project_id, submission.month)
+        dashboard_warnings: tuple[str, ...] = ()
         if self.dashboard_port is not None:
-            self._generate_dashboards(submission, command.correlation_id)
+            dashboard_warnings = self._generate_dashboards(submission, command.correlation_id)
         saved_extra = self._log_extra(
             correlation_id=command.correlation_id,
             submission_id=submission.id,
@@ -59,7 +61,7 @@ class SubmitProjectDataUseCase:
             "Submission saved",
             extra=saved_extra,
         )
-        return submission
+        return SubmissionResult(submission=submission, warnings=dashboard_warnings)
 
     def _merge_with_existing(
         self,
@@ -76,11 +78,12 @@ class SubmitProjectDataUseCase:
         existing = max(existing_submissions, key=lambda s: s.created_at)
         return command.metrics.merge_with(existing.metrics)
 
-    def _generate_dashboards(self, submission: Submission, correlation_id: str | None) -> None:
+    def _generate_dashboards(self, submission: Submission, correlation_id: str | None) -> tuple[str, ...]:
         """Generate dashboards without failing the submission flow on render errors."""
         if self.dashboard_port is None:
-            return
+            return ()
         dashboard_port = self.dashboard_port
+        warnings: list[str] = []
 
         recent_months = self.storage_port.get_recent_months(limit=6)
         projects = self.storage_port.get_all_projects()
@@ -113,6 +116,9 @@ class SubmitProjectDataUseCase:
                     "Dashboard generation failed",
                     extra=dashboard_error_extra,
                 )
+                warnings.append(f"Dashboard generation failed for {view}: {err}")
+
+        return tuple(warnings)
 
     def _log_extra(self, *, correlation_id: str | None, **extra: object) -> dict[str, object]:
         """Build structured log context for this use case."""

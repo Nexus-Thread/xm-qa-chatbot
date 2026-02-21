@@ -214,12 +214,12 @@ class ConversationManager:
         """Handle final confirmation and persistence."""
         if self._is_affirmative(message):
             try:
-                self._submitter.execute(self._build_command(session))
+                result = self._submitter.execute(self._build_command(session))
             except DomainError as err:
                 return formatters.format_error_message(str(err))
 
             session.state = ConversationState.SAVED
-            return formatters.format_saved_message()
+            return formatters.format_saved_message(result.warnings)
 
         target_state = self._detect_edit_target(message)
         if target_state is None:

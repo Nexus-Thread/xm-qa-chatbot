@@ -136,7 +136,7 @@ def test_execute_merges_with_existing_submission() -> None:
     storage = _FakeStoragePort(submissions=[existing_submission])
     use_case = SubmitProjectDataUseCase(storage_port=storage)
 
-    created = use_case.execute(
+    result = use_case.execute(
         _command(
             project_id=project_id,
             month=month,
@@ -145,10 +145,11 @@ def test_execute_merges_with_existing_submission() -> None:
         )
     )
 
-    assert created.metrics.test_coverage is not None
-    assert created.metrics.test_coverage.manual_total == EXPECTED_MERGED_MANUAL_TOTAL
-    assert created.metrics.test_coverage.automated_total == EXPECTED_MERGED_AUTOMATED_TOTAL
-    assert created.metrics.supported_releases_count == EXPECTED_MERGED_RELEASES_COUNT
+    assert result.submission.metrics.test_coverage is not None
+    assert result.submission.metrics.test_coverage.manual_total == EXPECTED_MERGED_MANUAL_TOTAL
+    assert result.submission.metrics.test_coverage.automated_total == EXPECTED_MERGED_AUTOMATED_TOTAL
+    assert result.submission.metrics.supported_releases_count == EXPECTED_MERGED_RELEASES_COUNT
+    assert result.warnings == ()
 
 
 def test_execute_survives_dashboard_generation_failure(caplog: LogCaptureFixture) -> None:
@@ -166,7 +167,7 @@ def test_execute_survives_dashboard_generation_failure(caplog: LogCaptureFixture
 
     logger_name = "qa_chatbot.application.use_cases.submit_project_data"
     with caplog.at_level(logging.INFO, logger=logger_name):
-        created = use_case.execute(
+        result = use_case.execute(
             _command(
                 project_id=project_id,
                 month=month,
@@ -176,10 +177,12 @@ def test_execute_survives_dashboard_generation_failure(caplog: LogCaptureFixture
             )
         )
 
-    assert created in storage.submissions
+    assert result.submission in storage.submissions
     assert metrics.calls == [(project_id, month)]
     assert dashboard.detail_calls == 1
     assert dashboard.trends_calls == 1
+    assert len(result.warnings) == 1
+    assert "overview failed" in result.warnings[0]
 
     submit_record = next(record for record in caplog.records if record.getMessage() == "Submitting project data")
     saved_record = next(record for record in caplog.records if record.getMessage() == "Submission saved")

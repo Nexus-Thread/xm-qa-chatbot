@@ -20,6 +20,7 @@ from .report_data import (
     TestCoverageRow,
 )
 from .submission_command import SubmissionCommand
+from .submission_result import SubmissionResult
 
 __all__ = [
     "AppSettings",
@@ -37,6 +38,7 @@ __all__ = [
     "QualityMetricsRow",
     "ReportMetadata",
     "SubmissionCommand",
+    "SubmissionResult",
     "TestCoverageRow",
     "TrendSeries",
     "TrendsDashboardData",

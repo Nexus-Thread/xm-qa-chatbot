@@ -120,7 +120,7 @@ def _seed_project_data(
     project_config: dict[str, str],
     time_windows: list[TimeWindow],
     submitter: SubmitProjectDataUseCase,
-) -> int:
+) -> tuple[int, int]:
     project_id_str = project_config["id"]
     project_name = project_config["name"]
     project_id = ProjectId.from_raw(project_id_str)
@@ -136,6 +136,7 @@ def _seed_project_data(
     all_month_data = [data_month1, data_month2, data_month3]
 
     submissions_count = 0
+    warnings_count = 0
     for time_window, data in zip(time_windows, all_month_data, strict=True):
         test_coverage = create_test_coverage_metrics(data)
 
@@ -151,8 +152,14 @@ def _seed_project_data(
             created_at=datetime.now(UTC),
         )
 
-        submitter.execute(command)
+        result = submitter.execute(command)
         submissions_count += 1
+        warnings_count += len(result.warnings)
+
+        if result.has_warnings:
+            print(f"  ⚠️  Dashboard warnings for {time_window.to_iso_month()}:")
+            for warning in result.warnings:
+                print(f"     - {warning}")
 
         print(
             f"  {time_window.to_iso_month()}: "
@@ -161,7 +168,7 @@ def _seed_project_data(
             f"Auto%={test_coverage.percentage_automation:5.2f}%"
         )
 
-    return submissions_count
+    return submissions_count, warnings_count
 
 
 def seed_database() -> None:
@@ -216,16 +223,21 @@ def seed_database() -> None:
     # Seed data
     print("Step 4: Generating and submitting data...")
     total_submissions = 0
+    total_warnings = 0
 
     for project_config in projects:
-        total_submissions += _seed_project_data(
+        project_submissions, project_warnings = _seed_project_data(
             project_config=project_config,
             time_windows=time_windows,
             submitter=submitter,
         )
+        total_submissions += project_submissions
+        total_warnings += project_warnings
 
     print("\n" + "=" * 80)
     print(f"✅ SUCCESS: Seeded {total_submissions} submissions for {len(projects)} projects")
+    if total_warnings:
+        print(f"⚠️  Dashboard warnings encountered: {total_warnings}")
     print("=" * 80)
     print("\nNext steps:")
     print("  1. View the dashboard: python scripts/serve_dashboard.py")

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -149,6 +150,29 @@ class FailingStorage(FakeStorage):
         _ = submission
         msg = "storage down"
         raise DomainError(msg)
+
+
+@dataclass
+class FailingOverviewDashboard:
+    """Dashboard fake that fails only for overview generation."""
+
+    def generate_overview(self, month: TimeWindow) -> Path:
+        """Raise a domain error for overview rendering."""
+        _ = month
+        msg = "overview failed"
+        raise DomainError(msg)
+
+    def generate_project_detail(self, project_id: ProjectId, months: list[TimeWindow]) -> Path:
+        """Return a placeholder detail path."""
+        _ = project_id
+        _ = months
+        return Path("project.html")
+
+    def generate_trends(self, projects: list[ProjectId], months: list[TimeWindow]) -> Path:
+        """Return a placeholder trends path."""
+        _ = projects
+        _ = months
+        return Path("trends.html")
 
 
 @pytest.fixture
@@ -418,3 +442,28 @@ def test_save_error_in_confirmation_returns_formatted_error() -> None:
 
     assert "i ran into an issue: storage down" in response.lower()
     assert same_session.state.name == "CONFIRMATION"
+
+
+def test_confirmation_save_with_dashboard_warning_returns_warning_message() -> None:
+    """Show warning save text when dashboard generation fails after persistence."""
+    extractor = ExtractStructuredDataUseCase(llm_port=FakeLLM())
+    storage = FakeStorage(submissions=[])
+    submitter = SubmitProjectDataUseCase(
+        storage_port=storage,
+        dashboard_port=FailingOverviewDashboard(),
+    )
+    manager = ConversationManager(
+        extractor=extractor,
+        submitter=submitter,
+        registry=build_default_stream_project_registry(),
+    )
+    session, _ = manager.start_session(date(2026, 1, 15))
+    _, session = manager.handle_message("QA Project", session, date(2026, 1, 15))
+    _, session = manager.handle_message("2026-01", session, date(2026, 1, 15))
+    _, session = manager.handle_message("coverage", session, date(2026, 1, 15))
+
+    response, saved_session = manager.handle_message("yes", session, date(2026, 1, 15))
+
+    assert "saved" in response.lower()
+    assert "dashboard" in response.lower()
+    assert saved_session.state.name == "SAVED"

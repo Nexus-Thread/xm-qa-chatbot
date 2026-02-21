@@ -86,9 +86,11 @@ def format_project_confirmation(project_name: str) -> str:
     return f"I matched your input to **{project_name}**. Is this correct? (yes/no)"
 
 
-def format_saved_message() -> str:
-    """Return the success message after saving."""
-    return "Thanks! Your update has been saved."
+def format_saved_message(warnings: tuple[str, ...] = ()) -> str:
+    """Return save outcome message with optional warning context."""
+    if not warnings:
+        return "Thanks! Your update has been saved."
+    return "Thanks! Your update has been saved, but dashboard generation reported warnings."
 
 
 def format_edit_prompt(section_label: str) -> str:

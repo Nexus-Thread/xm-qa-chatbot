@@ -39,3 +39,11 @@ def test_format_edit_prompt_mentions_requested_section() -> None:
 
     assert "corrected details" in prompt
     assert "test coverage" in prompt
+
+
+def test_format_saved_message_with_warnings_mentions_dashboard_issue() -> None:
+    """Show warning-specific save message when dashboard warnings are present."""
+    message = formatters.format_saved_message(("Dashboard generation failed for overview: boom",))
+
+    assert "saved" in message.lower()
+    assert "dashboard" in message.lower()

@@ -64,8 +64,14 @@ def submit_test_coverage_data() -> None:
     )
 
     try:
-        submitter.execute(command)
+        result = submitter.execute(command)
         print("✅ Data submitted successfully!\n")
+
+        if result.has_warnings:
+            print("⚠️  Submission saved with dashboard warnings:")
+            for warning in result.warnings:
+                print(f"   - {warning}")
+            print()
 
         print("=" * 60)
         print("✅ SUCCESS: Data has been saved to the database!")
