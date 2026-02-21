@@ -23,6 +23,8 @@ if TYPE_CHECKING:
 INITIAL_MANUAL_TOTAL = 10
 UPDATED_MANUAL_TOTAL = 2000
 UPDATED_AUTOMATED_TOTAL = 500
+EXPECTED_JANUARY_TOTAL = 25
+EXPECTED_LATEST_ONLY_TOTAL = 17
 
 
 def test_sqlite_adapter_persists_and_queries(
@@ -114,6 +116,117 @@ def test_sqlite_adapter_returns_recent_months_descending_with_limit(
     recent_months = sqlite_adapter.get_recent_months(limit=1)
 
     assert [month.to_iso_month() for month in recent_months] == [time_window_feb.to_iso_month()]
+
+
+def test_sqlite_adapter_aggregates_overall_test_cases_for_month(
+    sqlite_adapter: SQLiteAdapter,
+    project_id_a: ProjectId,
+    project_id_b: ProjectId,
+    time_window_jan: TimeWindow,
+    time_window_feb: TimeWindow,
+) -> None:
+    """Aggregate overall test cases from all projects for a selected month."""
+    from datetime import UTC, datetime  # noqa: PLC0415
+
+    from qa_chatbot.domain import Submission, TestCoverageMetrics  # noqa: PLC0415
+
+    sqlite_adapter.save_submission(
+        Submission.create(
+            project_id=project_id_a,
+            month=time_window_jan,
+            test_coverage=TestCoverageMetrics(manual_total=10, automated_total=5),
+            created_at=datetime(2026, 1, 5, tzinfo=UTC),
+        )
+    )
+    sqlite_adapter.save_submission(
+        Submission.create(
+            project_id=project_id_b,
+            month=time_window_jan,
+            test_coverage=TestCoverageMetrics(manual_total=4, automated_total=6),
+            created_at=datetime(2026, 1, 7, tzinfo=UTC),
+        )
+    )
+    sqlite_adapter.save_submission(
+        Submission.create(
+            project_id=project_id_a,
+            month=time_window_feb,
+            test_coverage=TestCoverageMetrics(manual_total=1, automated_total=1),
+            created_at=datetime(2026, 2, 7, tzinfo=UTC),
+        )
+    )
+
+    january_total = sqlite_adapter.get_overall_test_cases_by_month(time_window_jan)
+
+    assert january_total == EXPECTED_JANUARY_TOTAL
+
+
+def test_sqlite_adapter_aggregates_overall_test_cases_using_latest_submission(
+    sqlite_adapter: SQLiteAdapter,
+    project_id_a: ProjectId,
+    time_window_jan: TimeWindow,
+) -> None:
+    """Use latest submission values when aggregating a project's monthly totals."""
+    from datetime import UTC, datetime  # noqa: PLC0415
+
+    from qa_chatbot.domain import Submission, TestCoverageMetrics  # noqa: PLC0415
+
+    sqlite_adapter.save_submission(
+        Submission.create(
+            project_id=project_id_a,
+            month=time_window_jan,
+            test_coverage=TestCoverageMetrics(manual_total=1, automated_total=2),
+            created_at=datetime(2026, 1, 2, tzinfo=UTC),
+        )
+    )
+    sqlite_adapter.save_submission(
+        Submission.create(
+            project_id=project_id_a,
+            month=time_window_jan,
+            test_coverage=TestCoverageMetrics(manual_total=8, automated_total=9),
+            created_at=datetime(2026, 1, 20, tzinfo=UTC),
+        )
+    )
+
+    total = sqlite_adapter.get_overall_test_cases_by_month(time_window_jan)
+
+    assert total == EXPECTED_LATEST_ONLY_TOTAL
+
+
+def test_sqlite_adapter_returns_none_for_overall_test_cases_without_complete_coverage(
+    sqlite_adapter: SQLiteAdapter,
+    project_id_a: ProjectId,
+    project_id_b: ProjectId,
+    time_window_jan: TimeWindow,
+    time_window_feb: TimeWindow,
+) -> None:
+    """Return None when no complete coverage totals are available for a month."""
+    from datetime import UTC, datetime  # noqa: PLC0415
+
+    from qa_chatbot.domain import Submission, TestCoverageMetrics  # noqa: PLC0415
+
+    sqlite_adapter.save_submission(
+        Submission.create(
+            project_id=project_id_a,
+            month=time_window_jan,
+            test_coverage=None,
+            supported_releases_count=1,
+            created_at=datetime(2026, 1, 5, tzinfo=UTC),
+        )
+    )
+    sqlite_adapter.save_submission(
+        Submission.create(
+            project_id=project_id_b,
+            month=time_window_jan,
+            test_coverage=TestCoverageMetrics(manual_total=None, automated_total=6),
+            created_at=datetime(2026, 1, 7, tzinfo=UTC),
+        )
+    )
+
+    january_total = sqlite_adapter.get_overall_test_cases_by_month(time_window_jan)
+    february_total = sqlite_adapter.get_overall_test_cases_by_month(time_window_feb)
+
+    assert january_total is None
+    assert february_total is None
 
 
 def test_sqlite_adapter_clear_all_submissions_removes_data(

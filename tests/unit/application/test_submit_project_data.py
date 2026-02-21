@@ -42,6 +42,10 @@ class _FakeStoragePort:
         months = sorted({submission.month for submission in self.submissions}, key=lambda item: item.to_iso_month())
         return list(reversed(months))[:limit]
 
+    def get_overall_test_cases_by_month(self, month: TimeWindow) -> int | None:
+        _ = month
+        return None
+
 
 @dataclass
 class _FakeMetricsPort:

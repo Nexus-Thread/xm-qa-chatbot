@@ -134,6 +134,11 @@ class FakeStorage:
         _ = limit
         return []
 
+    def get_overall_test_cases_by_month(self, month: TimeWindow) -> int | None:
+        """Return no aggregate total for testing."""
+        _ = month
+        return None
+
 
 @dataclass
 class FailingStorage(FakeStorage):

@@ -46,6 +46,11 @@ class FakeStoragePort:
         months = sorted({submission.month for submission in self._submissions}, key=lambda item: item.to_iso_month())
         return list(reversed(months))[:limit]
 
+    def get_overall_test_cases_by_month(self, month: TimeWindow) -> int | None:
+        """Return no aggregate total for dashboard data tests."""
+        _ = month
+        return None
+
 
 def _submission(
     project_id: ProjectId,

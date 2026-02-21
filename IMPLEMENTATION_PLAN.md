@@ -123,7 +123,7 @@ This is a living checklist. Each top-level checkbox is one implementation chunk 
   - Deliverables: replace N×M query pattern with batch retrieval strategy
   - Acceptance: fewer DB round trips and measured improvement on representative data
 
-- [ ] **CH-22: Move monthly aggregation closer to SQL** (`PERF-02`)
+- [x] **CH-22: Move monthly aggregation closer to SQL** (`PERF-02`)
   - Deliverables: avoid full-month Python-side filtering when computing totals
   - Acceptance: aggregation path is measurably faster and correctness is test-covered
 

@@ -6,7 +6,7 @@ import logging
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, TypeVar
 
-from sqlalchemy import create_engine, delete, select, text
+from sqlalchemy import create_engine, delete, func, select, text
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
@@ -104,6 +104,44 @@ class SQLiteAdapter(StoragePort):
         statement = select(SubmissionModel.month).distinct().order_by(SubmissionModel.month.desc()).limit(limit)
         rows: list[str] = self._execute_scalar(statement)
         return [time_window_from_iso(month) for month in rows]
+
+    def get_overall_test_cases_by_month(self, month: TimeWindow) -> int | None:
+        """Return aggregated overall test cases for latest submissions in a month."""
+        month_iso = month.to_iso_month()
+        latest_created_at = (
+            select(
+                SubmissionModel.project_id.label("project_id"),
+                func.max(SubmissionModel.created_at).label("max_created_at"),
+            )
+            .where(SubmissionModel.month == month_iso)
+            .group_by(SubmissionModel.project_id)
+            .subquery()
+        )
+
+        manual_total = func.json_extract(SubmissionModel.test_coverage, "$.manual_total")
+        automated_total = func.json_extract(SubmissionModel.test_coverage, "$.automated_total")
+        total_expr = func.sum(manual_total + automated_total)
+
+        statement = (
+            select(total_expr)
+            .select_from(SubmissionModel)
+            .join(
+                latest_created_at,
+                (SubmissionModel.project_id == latest_created_at.c.project_id)
+                & (SubmissionModel.created_at == latest_created_at.c.max_created_at),
+            )
+            .where(SubmissionModel.month == month_iso)
+            .where(SubmissionModel.test_coverage.is_not(None))
+            .where(manual_total.is_not(None))
+            .where(automated_total.is_not(None))
+        )
+
+        with self._read_session_scope() as session:
+            result = session.execute(statement).scalar_one_or_none()
+
+        if result is None:
+            return None
+        return int(result)
 
     def clear_all_submissions(self) -> None:
         """Delete all submissions from the database."""

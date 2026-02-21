@@ -58,6 +58,41 @@ class _FakeStoragePort:
         months = sorted({submission.month for submission in self._submissions}, key=lambda item: item.to_iso_month())
         return list(reversed(months))[:limit]
 
+    def get_overall_test_cases_by_month(self, month: TimeWindow) -> int | None:
+        latest_by_project: dict[str, TestCoverageMetrics] = {}
+        latest_created_at: dict[str, datetime] = {}
+        for submission in self.get_submissions_by_month(month):
+            if submission.test_coverage is None:
+                continue
+            project_id = submission.project_id.value
+            recorded_at = submission.created_at
+            if project_id not in latest_created_at or recorded_at > latest_created_at[project_id]:
+                latest_created_at[project_id] = recorded_at
+                latest_by_project[project_id] = submission.test_coverage
+
+        totals = [
+            coverage.manual_total + coverage.automated_total
+            for coverage in latest_by_project.values()
+            if coverage.manual_total is not None and coverage.automated_total is not None
+        ]
+        if not totals:
+            return None
+        return sum(totals)
+
+
+class _OverallCasesOverrideStoragePort(_FakeStoragePort):
+    """Storage stub returning a fixed overall test case aggregate."""
+
+    def __init__(self, submissions: list[Submission], overall_test_cases: int | None) -> None:
+        super().__init__(submissions)
+        self._overall_test_cases = overall_test_cases
+        self.overall_test_cases_calls = 0
+
+    def get_overall_test_cases_by_month(self, month: TimeWindow) -> int | None:
+        _ = month
+        self.overall_test_cases_calls += 1
+        return self._overall_test_cases
+
 
 class _FakeJiraPort:
     """Jira metrics stub for monthly report tests."""
@@ -284,3 +319,25 @@ def test_execute_returns_none_overall_test_cases_when_no_complete_totals_exist()
     report = use_case.execute(month)
 
     assert report.overall_test_cases is None
+
+
+def test_execute_uses_storage_aggregate_for_overall_test_cases() -> None:
+    """Use storage-provided monthly aggregate for overall test cases."""
+    month = TimeWindow.from_year_month(2026, 1)
+    expected_overall_test_cases = 123
+    storage_port = _OverallCasesOverrideStoragePort(
+        submissions=[_submission(month)],
+        overall_test_cases=expected_overall_test_cases,
+    )
+    use_case = GenerateMonthlyReportUseCase(
+        storage_port=storage_port,
+        jira_port=_FakeJiraPort(),
+        registry=_build_registry(),
+        timezone="UTC",
+        edge_case_policy=EdgeCasePolicy(),
+    )
+
+    report = use_case.execute(month)
+
+    assert report.overall_test_cases == expected_overall_test_cases
+    assert storage_port.overall_test_cases_calls == 1

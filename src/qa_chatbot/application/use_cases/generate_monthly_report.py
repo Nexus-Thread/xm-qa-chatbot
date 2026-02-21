@@ -161,26 +161,7 @@ class GenerateMonthlyReportUseCase:
         )
 
     def _extract_overall_test_cases(self, month: TimeWindow) -> int | None:
-        submissions = self.storage_port.get_submissions_by_month(month)
-        latest_by_project: dict[str, TestCoverageMetrics] = {}
-        latest_created_at: dict[str, datetime] = {}
-        for submission in submissions:
-            if submission.test_coverage is None:
-                continue
-            project_id = submission.project_id.value
-            recorded_at = submission.created_at
-            if project_id not in latest_created_at or recorded_at > latest_created_at[project_id]:
-                latest_created_at[project_id] = recorded_at
-                latest_by_project[project_id] = submission.test_coverage
-
-        totals = [
-            coverage.manual_total + coverage.automated_total
-            for coverage in latest_by_project.values()
-            if coverage.manual_total is not None and coverage.automated_total is not None
-        ]
-        if not totals:
-            return None
-        return sum(totals)
+        return self.storage_port.get_overall_test_cases_by_month(month)
 
     def _extract_supported_releases(self, project_id: ProjectId, month: TimeWindow) -> int | None:
         submissions = self.storage_port.get_submissions_by_project(project_id, month)

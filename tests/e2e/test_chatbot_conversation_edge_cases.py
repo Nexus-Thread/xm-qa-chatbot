@@ -104,6 +104,10 @@ class _FakeStorage:
         _ = limit
         return []
 
+    def get_overall_test_cases_by_month(self, month: TimeWindow) -> int | None:
+        _ = month
+        return None
+
 
 def _build_manager(*, llm: _FakeLLM | None = None) -> ConversationManager:
     extractor = ExtractStructuredDataUseCase(llm_port=llm or _FakeLLM())

@@ -29,3 +29,6 @@ class StoragePort(Protocol):
 
     def get_recent_months(self, limit: int) -> list[TimeWindow]:
         """Return the most recent reporting months."""
+
+    def get_overall_test_cases_by_month(self, month: TimeWindow) -> int | None:
+        """Return aggregated overall test cases for the month."""
