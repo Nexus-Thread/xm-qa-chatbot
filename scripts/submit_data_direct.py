@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import traceback
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -13,79 +13,75 @@ from qa_chatbot.application.dtos import SubmissionCommand
 from qa_chatbot.application.services.reporting_calculations import EdgeCasePolicy
 from qa_chatbot.domain import ProjectId, SubmissionMetrics, TestCoverageMetrics, TimeWindow, build_default_stream_project_registry
 
-# ruff: noqa: T201
+
+def _echo(message: str = "") -> None:
+    """Write a user-facing message to stdout."""
+    sys.stdout.write(f"{message}\n")
 
 
 def submit_test_coverage_data() -> None:
     """Submit test coverage data directly through use cases."""
     settings = EnvSettingsAdapter().load()
 
-    print("=" * 60)
-    print("SUBMITTING DATA DIRECTLY TO USE CASES")
-    print("=" * 60)
-    print("\nData to submit:")
-    print("  Project: Client Trading (client_journey stream)")
-    print("  Period: 2026-01")
-    print("  Manual Total: 1000")
-    print("  Manual Created: 100")
-    print("  Manual Updated: 120")
-    print("  Automated Total: 500")
-    print("  Automated Created: 50")
-    print("  Automated Updated: 30")
-    print("=" * 60 + "\n")
+    _echo("=" * 60)
+    _echo("SUBMITTING DATA DIRECTLY TO USE CASES")
+    _echo("=" * 60)
+    _echo("\nData to submit:")
+    _echo("  Project: Client Trading (client_journey stream)")
+    _echo("  Period: 2026-01")
+    _echo("  Manual Total: 1000")
+    _echo("  Manual Created: 100")
+    _echo("  Manual Updated: 120")
+    _echo("  Automated Total: 500")
+    _echo("  Automated Created: 50")
+    _echo("  Automated Updated: 30")
+    _echo("=" * 60 + "\n")
 
     # Initialize adapters (same as in main.py)
-    print("Step 1: Initializing storage adapter...")
+    _echo("Step 1: Initializing storage adapter...")
     storage = SQLiteAdapter(
         database_url=settings.database_url,
         echo=settings.database_echo,
         timeout_seconds=settings.database_timeout_seconds,
     )
     storage.initialize_schema()
-    print("✅ Storage initialized\n")
+    _echo("✅ Storage initialized\n")
 
-    print("Step 2: Initializing dashboard adapter...")
+    _echo("Step 2: Initializing dashboard adapter...")
     dashboard_adapter = _build_dashboard_adapter(settings=settings, storage=storage)
-    print("✅ Dashboard adapter initialized\n")
+    _echo("✅ Dashboard adapter initialized\n")
 
-    print("Step 3: Initializing metrics adapter...")
+    _echo("Step 3: Initializing metrics adapter...")
     metrics_adapter = InMemoryMetricsAdapter()
-    print("✅ Metrics adapter initialized\n")
+    _echo("✅ Metrics adapter initialized\n")
 
-    print("Step 4: Creating submission command...")
+    _echo("Step 4: Creating submission command...")
     command = _build_submission_command()
-    print("✅ Submission command created\n")
+    _echo("✅ Submission command created\n")
 
-    print("Step 5: Submitting data...")
+    _echo("Step 5: Submitting data...")
     submitter = SubmitProjectDataUseCase(
         storage_port=storage,
         dashboard_port=dashboard_adapter,
         metrics_port=metrics_adapter,
     )
+    result = submitter.execute(command)
+    _echo("✅ Data submitted successfully!\n")
 
-    try:
-        result = submitter.execute(command)
-        print("✅ Data submitted successfully!\n")
+    if result.has_warnings:
+        _echo("⚠️  Submission saved with dashboard warnings:")
+        for warning in result.warnings:
+            _echo(f"   - {warning}")
+        _echo()
 
-        if result.has_warnings:
-            print("⚠️  Submission saved with dashboard warnings:")
-            for warning in result.warnings:
-                print(f"   - {warning}")
-            print()
-
-        print("=" * 60)
-        print("✅ SUCCESS: Data has been saved to the database!")
-        print("=" * 60)
-        print("\nNext steps:")
-        print("  1. View the dashboard: python scripts/serve_dashboard.py")
-        print("  2. Check the database: sqlite3 qa_chatbot.db")
-        print("  3. Query submissions:")
-        print("     SELECT * FROM submissions WHERE project_id = 'client_trading';")
-
-    except Exception as e:
-        print(f"❌ ERROR during submission: {e}")
-        traceback.print_exc()
-        raise
+    _echo("=" * 60)
+    _echo("✅ SUCCESS: Data has been saved to the database!")
+    _echo("=" * 60)
+    _echo("\nNext steps:")
+    _echo("  1. View the dashboard: python scripts/serve_dashboard.py")
+    _echo("  2. Check the database: sqlite3 qa_chatbot.db")
+    _echo("  3. Query submissions:")
+    _echo("     SELECT * FROM submissions WHERE project_id = 'client_trading';")
 
 
 def _build_dashboard_adapter(settings: object, storage: SQLiteAdapter) -> HtmlDashboardAdapter:
@@ -141,7 +137,4 @@ def _build_submission_command() -> SubmissionCommand:
 
 
 if __name__ == "__main__":
-    try:
-        submit_test_coverage_data()
-    except Exception as e:  # noqa: BLE001
-        print(f"\n❌ FATAL ERROR: {e}")
+    submit_test_coverage_data()

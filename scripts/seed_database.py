@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
-import random
+import hashlib
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import TypeVar
 
 from qa_chatbot.adapters.input import EnvSettingsAdapter
 from qa_chatbot.adapters.output import HtmlDashboardAdapter, InMemoryMetricsAdapter, MockJiraAdapter, SQLiteAdapter
@@ -13,45 +15,91 @@ from qa_chatbot.application.dtos import SubmissionCommand
 from qa_chatbot.application.services.reporting_calculations import EdgeCasePolicy
 from qa_chatbot.domain import ProjectId, SubmissionMetrics, TestCoverageMetrics, TimeWindow, build_default_stream_project_registry
 
-# ruff: noqa: T201
+T = TypeVar("T")
+
+
+class DeterministicRng:
+    """Deterministic pseudo-random generator based on SHA-256."""
+
+    def __init__(self, seed: str) -> None:
+        """Initialize generator state with a stable seed."""
+        self._seed = seed
+        self._counter = 0
+
+    def _next_fraction(self) -> float:
+        payload = f"{self._seed}:{self._counter}".encode()
+        self._counter += 1
+        digest = hashlib.sha256(payload).digest()
+        value = int.from_bytes(digest[:8], byteorder="big", signed=False)
+        return value / float((1 << 64) - 1)
+
+    def randint(self, start: int, end: int) -> int:
+        """Return deterministic integer in inclusive range."""
+        if start > end:
+            msg = "start must be <= end"
+            raise ValueError(msg)
+        span = end - start + 1
+        offset = min(span - 1, int(self._next_fraction() * span))
+        return start + offset
+
+    def uniform(self, start: float, end: float) -> float:
+        """Return deterministic float in range."""
+        if start > end:
+            msg = "start must be <= end"
+            raise ValueError(msg)
+        return start + (end - start) * self._next_fraction()
+
+    def choice(self, items: list[T]) -> T:
+        """Return deterministic item from a non-empty list."""
+        if not items:
+            msg = "items must not be empty"
+            raise ValueError(msg)
+        index = min(len(items) - 1, int(self._next_fraction() * len(items)))
+        return items[index]
+
+
+def _echo(message: str = "") -> None:
+    """Write a user-facing message to stdout."""
+    sys.stdout.write(f"{message}\n")
 
 
 def load_active_projects() -> list[dict[str, str]]:
     """Load all active projects from the hardcoded registry."""
     registry = build_default_stream_project_registry()
     projects = [{"id": project.id, "name": project.name} for project in registry.active_projects()]
-    print(f"✅ Loaded {len(projects)} active projects\n")
+    _echo(f"✅ Loaded {len(projects)} active projects\n")
     return projects
 
 
-def generate_baseline_data() -> dict[str, int]:
+def generate_baseline_data(rng: DeterministicRng) -> dict[str, int]:
     """Generate random baseline test coverage data."""
-    manual_total = random.randint(100, 2000)  # noqa: S311
-    automated_total = random.randint(50, 1500)  # noqa: S311
+    manual_total = rng.randint(100, 2000)
+    automated_total = rng.randint(50, 1500)
 
     # Created/Updated: 5-15% of totals with some variation
-    manual_activity_rate = random.uniform(0.05, 0.15)  # noqa: S311
-    automated_activity_rate = random.uniform(0.05, 0.15)  # noqa: S311
+    manual_activity_rate = rng.uniform(0.05, 0.15)
+    automated_activity_rate = rng.uniform(0.05, 0.15)
 
     return {
         "manual_total": manual_total,
         "automated_total": automated_total,
-        "manual_created": int(manual_total * manual_activity_rate * random.uniform(0.4, 0.7)),  # noqa: S311
-        "manual_updated": int(manual_total * manual_activity_rate * random.uniform(0.3, 0.6)),  # noqa: S311
-        "automated_created": int(automated_total * automated_activity_rate * random.uniform(0.4, 0.7)),  # noqa: S311
-        "automated_updated": int(automated_total * automated_activity_rate * random.uniform(0.3, 0.6)),  # noqa: S311
+        "manual_created": int(manual_total * manual_activity_rate * rng.uniform(0.4, 0.7)),
+        "manual_updated": int(manual_total * manual_activity_rate * rng.uniform(0.3, 0.6)),
+        "automated_created": int(automated_total * automated_activity_rate * rng.uniform(0.4, 0.7)),
+        "automated_updated": int(automated_total * automated_activity_rate * rng.uniform(0.3, 0.6)),
     }
 
 
 def apply_trend(
     previous: dict[str, int],
     trend_direction: str,
+    rng: DeterministicRng,
 ) -> dict[str, int]:
     """Apply trend to previous month's data (3-15% growth or 3-10% decline)."""
-    trend_factor = random.uniform(1.03, 1.15) if trend_direction == "increasing" else random.uniform(0.9, 0.97)  # noqa: S311
+    trend_factor = rng.uniform(1.03, 1.15) if trend_direction == "increasing" else rng.uniform(0.9, 0.97)
 
     # Add random noise
-    noise = random.uniform(0.98, 1.02)  # noqa: S311
+    noise = rng.uniform(0.98, 1.02)
     final_factor = trend_factor * noise
 
     # Apply to all fields
@@ -120,19 +168,20 @@ def _seed_project_data(
     project_config: dict[str, str],
     time_windows: list[TimeWindow],
     submitter: SubmitProjectDataUseCase,
+    rng: DeterministicRng,
 ) -> tuple[int, int]:
     project_id_str = project_config["id"]
     project_name = project_config["name"]
     project_id = ProjectId.from_raw(project_id_str)
 
-    trend_direction = random.choice(["increasing", "decreasing"])  # noqa: S311
+    trend_direction = rng.choice(["increasing", "decreasing"])
     trend_emoji = "📈" if trend_direction == "increasing" else "📉"
 
-    print(f"\n{trend_emoji} {project_name} ({project_id_str}) - {trend_direction}")
+    _echo(f"\n{trend_emoji} {project_name} ({project_id_str}) - {trend_direction}")
 
-    data_month1 = generate_baseline_data()
-    data_month2 = apply_trend(data_month1, trend_direction)
-    data_month3 = apply_trend(data_month2, trend_direction)
+    data_month1 = generate_baseline_data(rng)
+    data_month2 = apply_trend(data_month1, trend_direction, rng)
+    data_month3 = apply_trend(data_month2, trend_direction, rng)
     all_month_data = [data_month1, data_month2, data_month3]
 
     submissions_count = 0
@@ -157,11 +206,11 @@ def _seed_project_data(
         warnings_count += len(result.warnings)
 
         if result.has_warnings:
-            print(f"  ⚠️  Dashboard warnings for {time_window.to_iso_month()}:")
+            _echo(f"  ⚠️  Dashboard warnings for {time_window.to_iso_month()}:")
             for warning in result.warnings:
-                print(f"     - {warning}")
+                _echo(f"     - {warning}")
 
-        print(
+        _echo(
             f"  {time_window.to_iso_month()}: "
             f"M={data['manual_total']:4d}, "
             f"A={data['automated_total']:4d}, "
@@ -175,17 +224,17 @@ def seed_database() -> None:
     """Seed the database with pseudo-random data."""
     settings = EnvSettingsAdapter().load()
 
-    print("=" * 80)
-    print("DATABASE SEEDING SCRIPT")
-    print("=" * 80)
-    print("\nGenerating pseudo-random test coverage data for:")
-    print("  - All active projects")
-    print("  - Months: 2025-11, 2025-12, 2026-01")
-    print("  - Random increasing/decreasing trends")
-    print("=" * 80 + "\n")
+    _echo("=" * 80)
+    _echo("DATABASE SEEDING SCRIPT")
+    _echo("=" * 80)
+    _echo("\nGenerating pseudo-random test coverage data for:")
+    _echo("  - All active projects")
+    _echo("  - Months: 2025-11, 2025-12, 2026-01")
+    _echo("  - Random increasing/decreasing trends")
+    _echo("=" * 80 + "\n")
 
     # Initialize adapters
-    print("Step 1: Initializing adapters...")
+    _echo("Step 1: Initializing adapters...")
     storage = SQLiteAdapter(
         database_url=settings.database_url,
         echo=settings.database_echo,
@@ -195,15 +244,15 @@ def seed_database() -> None:
     dashboard_adapter = _build_dashboard_adapter(settings=settings, storage=storage)
 
     metrics_adapter = InMemoryMetricsAdapter()
-    print("✅ Adapters initialized\n")
+    _echo("✅ Adapters initialized\n")
 
     # Clear existing data
-    print("Step 2: Clearing existing submissions...")
+    _echo("Step 2: Clearing existing submissions...")
     storage.clear_all_submissions()
-    print("✅ Database cleared\n")
+    _echo("✅ Database cleared\n")
 
     # Load projects
-    print("Step 3: Loading active projects...")
+    _echo("Step 3: Loading active projects...")
     projects = load_active_projects()
 
     # Create use case
@@ -221,40 +270,32 @@ def seed_database() -> None:
     ]
 
     # Seed data
-    print("Step 4: Generating and submitting data...")
+    _echo("Step 4: Generating and submitting data...")
     total_submissions = 0
     total_warnings = 0
+    rng = DeterministicRng(seed="xm-qa-seed-42")
 
     for project_config in projects:
         project_submissions, project_warnings = _seed_project_data(
             project_config=project_config,
             time_windows=time_windows,
             submitter=submitter,
+            rng=rng,
         )
         total_submissions += project_submissions
         total_warnings += project_warnings
 
-    print("\n" + "=" * 80)
-    print(f"✅ SUCCESS: Seeded {total_submissions} submissions for {len(projects)} projects")
+    _echo("\n" + "=" * 80)
+    _echo(f"✅ SUCCESS: Seeded {total_submissions} submissions for {len(projects)} projects")
     if total_warnings:
-        print(f"⚠️  Dashboard warnings encountered: {total_warnings}")
-    print("=" * 80)
-    print("\nNext steps:")
-    print("  1. View the dashboard: python scripts/serve_dashboard.py")
-    print("  2. Check the database: sqlite3 qa_chatbot.db")
-    print("  3. Query submissions: SELECT project_id, month, created_at FROM submissions;")
-    print()
+        _echo(f"⚠️  Dashboard warnings encountered: {total_warnings}")
+    _echo("=" * 80)
+    _echo("\nNext steps:")
+    _echo("  1. View the dashboard: python scripts/serve_dashboard.py")
+    _echo("  2. Check the database: sqlite3 qa_chatbot.db")
+    _echo("  3. Query submissions: SELECT project_id, month, created_at FROM submissions;")
+    _echo()
 
 
 if __name__ == "__main__":
-    # Set random seed for reproducibility (optional - comment out for true randomness)
-    random.seed(42)
-
-    try:
-        seed_database()
-    except Exception as e:
-        print(f"\n❌ FATAL ERROR: {e}")
-        import traceback
-
-        traceback.print_exc()
-        raise
+    seed_database()

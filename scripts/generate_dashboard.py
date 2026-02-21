@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 import logging
-import traceback
+import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -27,7 +27,10 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-# ruff: noqa: T201
+
+def _echo(message: str = "") -> None:
+    """Write a user-facing message to stdout."""
+    sys.stdout.write(f"{message}\n")
 
 
 def parse_args() -> argparse.Namespace:
@@ -69,14 +72,14 @@ def generate_dashboards(
     """Generate all dashboard views from existing database data."""
     configure_logging(LoggingSettings(level=log_level, log_format=settings.log_format))
 
-    print("=" * 80)
-    print("DASHBOARD GENERATION SCRIPT")
-    print("=" * 80)
-    print(f"\nDatabase: {database_url}")
-    print(f"Output directory: {output_dir}")
-    print(f"Jira base URL: {settings.jira_base_url}")
-    print(f"Months to include: {months_limit}")
-    print("=" * 80 + "\n")
+    _echo("=" * 80)
+    _echo("DASHBOARD GENERATION SCRIPT")
+    _echo("=" * 80)
+    _echo(f"\nDatabase: {database_url}")
+    _echo(f"Output directory: {output_dir}")
+    _echo(f"Jira base URL: {settings.jira_base_url}")
+    _echo(f"Months to include: {months_limit}")
+    _echo("=" * 80 + "\n")
 
     storage = _build_storage(
         database_url=database_url,
@@ -86,7 +89,7 @@ def generate_dashboards(
     recent_months, projects = _load_generation_inputs(storage=storage, months_limit=months_limit)
     if recent_months is None or projects is None:
         return
-    print(f"📊 Found {len(projects)} projects and {len(recent_months)} recent months\n")
+    _echo(f"📊 Found {len(projects)} projects and {len(recent_months)} recent months\n")
     generated_files, overview_path = _generate_views(
         dashboard=dashboard,
         projects=projects,
@@ -151,14 +154,14 @@ def _load_generation_inputs(
     LOGGER.info("Fetching recent months from database")
     recent_months = storage.get_recent_months(limit=months_limit)
     if not recent_months:
-        print("❌ No data found in database. Nothing to generate.")
-        print("\nTip: Run 'python scripts/seed_database.py' to populate the database.\n")
+        _echo("❌ No data found in database. Nothing to generate.")
+        _echo("\nTip: Run 'python scripts/seed_database.py' to populate the database.\n")
         return None, None
 
     LOGGER.info("Fetching all projects from database")
     projects = storage.get_all_projects()
     if not projects:
-        print("❌ No projects found in database. Nothing to generate.")
+        _echo("❌ No projects found in database. Nothing to generate.")
         return None, None
     return recent_months, projects
 
@@ -170,52 +173,47 @@ def _generate_views(
 ) -> tuple[list[Path], Path]:
     generated_files: list[Path] = []
     latest_month = recent_months[0]
-    print(f"Generating overview dashboard for {latest_month.to_iso_month()}...")
+    _echo(f"Generating overview dashboard for {latest_month.to_iso_month()}...")
     overview_path = dashboard.generate_overview(latest_month)
     generated_files.append(overview_path)
-    print(f"  ✅ {overview_path}")
+    _echo(f"  ✅ {overview_path}")
 
-    print(f"\nGenerating project detail dashboards for {len(projects)} projects...")
+    _echo(f"\nGenerating project detail dashboards for {len(projects)} projects...")
     for project in projects:
         project_path = dashboard.generate_project_detail(project, recent_months)
         generated_files.append(project_path)
-        print(f"  ✅ {project_path}")
+        _echo(f"  ✅ {project_path}")
 
-    print("\nGenerating trends dashboard...")
+    _echo("\nGenerating trends dashboard...")
     trends_path = dashboard.generate_trends(projects, recent_months)
     generated_files.append(trends_path)
-    print(f"  ✅ {trends_path}")
+    _echo(f"  ✅ {trends_path}")
     return generated_files, overview_path
 
 
 def _print_summary(output_dir: Path, generated_files: list[Path], overview_path: Path) -> None:
-    print("\n" + "=" * 80)
-    print(f"✅ SUCCESS: Generated {len(generated_files)} dashboard files")
-    print("=" * 80)
-    print(f"\nOutput directory: {output_dir}")
-    print("\nNext steps:")
-    print("  1. Serve the dashboard: python scripts/serve_dashboard.py")
-    print(f"  2. Open in browser: http://127.0.0.1:8000/{overview_path.name}")
-    print("  3. Confluence-ready files are generated as *.confluence.html in the same directory")
-    print()
+    _echo("\n" + "=" * 80)
+    _echo(f"✅ SUCCESS: Generated {len(generated_files)} dashboard files")
+    _echo("=" * 80)
+    _echo(f"\nOutput directory: {output_dir}")
+    _echo("\nNext steps:")
+    _echo("  1. Serve the dashboard: python scripts/serve_dashboard.py")
+    _echo(f"  2. Open in browser: http://127.0.0.1:8000/{overview_path.name}")
+    _echo("  3. Confluence-ready files are generated as *.confluence.html in the same directory")
+    _echo()
 
 
 def main() -> None:
     """Entry point for the dashboard generation script."""
     settings = EnvSettingsAdapter().load()
     args = parse_args()
-    try:
-        generate_dashboards(
-            database_url=args.database_url or settings.database_url,
-            output_dir=args.output_dir or Path(settings.dashboard_output_dir),
-            months_limit=args.months,
-            log_level=args.log_level or settings.log_level,
-            settings=settings,
-        )
-    except Exception as e:
-        print(f"\n❌ FATAL ERROR: {e}")
-        traceback.print_exc()
-        raise
+    generate_dashboards(
+        database_url=args.database_url or settings.database_url,
+        output_dir=args.output_dir or Path(settings.dashboard_output_dir),
+        months_limit=args.months,
+        log_level=args.log_level or settings.log_level,
+        settings=settings,
+    )
 
 
 if __name__ == "__main__":
