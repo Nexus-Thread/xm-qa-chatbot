@@ -13,10 +13,10 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "alembic>=1.18.4",
-    "gradio>=6.5.1",
+    "gradio>=6.6.0",
     "openai>=2.21.0",
     "pydantic>=2.12.5",
-    "pydantic-settings>=2.13.0",
+    "pydantic-settings>=2.13.1",
     "pyyaml>=6.0.2",
     "SQLAlchemy>=2.0.46",
 ]
@@ -28,7 +28,7 @@ dev = [
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
     "pytest-xdist>=3.8.0",
-    "ruff>=0.15.1",
+    "ruff>=0.15.2",
     "types-pyyaml>=6.0.12.20250915",
 ]
 
