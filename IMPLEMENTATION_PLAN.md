@@ -21,6 +21,10 @@ Only **pending** chunks are listed below. Completed chunks were removed from thi
 
 ## Phase 1 — Critical security + CI foundations
 
+- [x] **CH-01: Environment file hygiene** (`SEC-01`, `CFG-01`)
+  - Deliverables: `.env` removed from git tracking, `.env` added to `.gitignore`, `.env.example` added with placeholder values
+  - Acceptance: local secret file stays untracked and onboarding uses `.env.example`
+
 - [x] **CH-03: Add GitLab CI workflow** (`CI-01`)
   - Deliverables: `.gitlab-ci.yml` running format-check, lint, typecheck, tests
   - Acceptance: pipeline triggers on push/merge requests and passes on main
