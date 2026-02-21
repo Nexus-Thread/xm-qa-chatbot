@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import InitVar, dataclass, field
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypedDict, Unpack
 from uuid import UUID, uuid4
 
 from qa_chatbot.domain.exceptions import InvalidConfigurationError
@@ -12,6 +12,16 @@ from qa_chatbot.domain.value_objects import SubmissionMetrics
 
 if TYPE_CHECKING:
     from qa_chatbot.domain.value_objects import ProjectId, TestCoverageMetrics, TimeWindow
+
+
+class _SubmissionCreateKwargs(TypedDict, total=False):
+    """Allowed keyword arguments for submission creation."""
+
+    test_coverage: TestCoverageMetrics | None
+    overall_test_cases: int | None
+    supported_releases_count: int | None
+    raw_conversation: str | None
+    created_at: datetime | None
 
 
 @dataclass(frozen=True)
@@ -49,18 +59,33 @@ class Submission:
         return self._metrics
 
     @classmethod
-    def create(  # noqa: PLR0913
+    def create(
         cls,
         project_id: ProjectId,
         month: TimeWindow,
-        test_coverage: TestCoverageMetrics | None = None,
-        overall_test_cases: int | None = None,
-        supported_releases_count: int | None = None,
-        raw_conversation: str | None = None,
-        created_at: datetime | None = None,
         metrics: SubmissionMetrics | None = None,
+        **kwargs: Unpack[_SubmissionCreateKwargs],
     ) -> Submission:
         """Create a submission with generated identifiers."""
+        allowed_fields = {
+            "test_coverage",
+            "overall_test_cases",
+            "supported_releases_count",
+            "raw_conversation",
+            "created_at",
+        }
+        unexpected_fields = set(kwargs) - allowed_fields
+        if unexpected_fields:
+            fields = ", ".join(sorted(unexpected_fields))
+            msg = f"Unsupported submission creation fields: {fields}"
+            raise InvalidConfigurationError(msg)
+
+        test_coverage = kwargs.get("test_coverage")
+        overall_test_cases = kwargs.get("overall_test_cases")
+        supported_releases_count = kwargs.get("supported_releases_count")
+        raw_conversation = kwargs.get("raw_conversation")
+        created_at = kwargs.get("created_at")
+
         if metrics is not None:
             if test_coverage is not None or overall_test_cases is not None or supported_releases_count is not None:
                 msg = "Provide either metrics or scalar metric fields, not both"

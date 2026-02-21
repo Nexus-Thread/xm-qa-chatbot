@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
 
 class OpenAIResponseError(ValueError):
@@ -19,7 +18,7 @@ class OpenAIResponseUsage:
     total_tokens: int | None
 
 
-def extract_message_content(response: Any) -> str:  # noqa: ANN401
+def extract_message_content(response: object) -> str:
     """Extract content from the first model response choice."""
     choices = getattr(response, "choices", None)
     if not choices:
@@ -39,7 +38,7 @@ def extract_message_content(response: Any) -> str:  # noqa: ANN401
     return content
 
 
-def extract_usage(response: Any) -> OpenAIResponseUsage | None:  # noqa: ANN401
+def extract_usage(response: object) -> OpenAIResponseUsage | None:
     """Extract token usage metadata from a model response."""
     usage = getattr(response, "usage", None)
     if usage is None:

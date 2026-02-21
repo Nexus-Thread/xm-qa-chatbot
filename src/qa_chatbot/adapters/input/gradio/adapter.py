@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 import gradio
 
-from .conversation_manager import ConversationManager, ConversationSession  # noqa: TC001
 from .rate_limiter import RateLimiter
 from .settings import GradioSettings
 from .utils import sanitize_input, today
+
+if TYPE_CHECKING:
+    from .conversation_manager import ConversationManager, ConversationSession
 
 LOGGER = logging.getLogger(__name__)
 
