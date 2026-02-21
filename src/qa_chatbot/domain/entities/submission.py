@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass, field
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
@@ -26,26 +26,27 @@ class Submission:
     supported_releases_count: int | None
     created_at: datetime
     raw_conversation: str | None = None
+    _validated_metrics: InitVar[SubmissionMetrics | None] = None
+    _metrics: SubmissionMetrics = field(init=False, repr=False, compare=False)
 
-    def __post_init__(self) -> None:
+    def __post_init__(self, _validated_metrics: SubmissionMetrics | None) -> None:
         """Validate submission invariants."""
         if self.created_at.tzinfo is None or self.created_at.utcoffset() is None:
             msg = "Submission created_at must be timezone-aware"
             raise InvalidConfigurationError(msg)
-        SubmissionMetrics(
-            test_coverage=self.test_coverage,
-            overall_test_cases=self.overall_test_cases,
-            supported_releases_count=self.supported_releases_count,
-        )
+        metrics = _validated_metrics
+        if metrics is None:
+            metrics = SubmissionMetrics(
+                test_coverage=self.test_coverage,
+                overall_test_cases=self.overall_test_cases,
+                supported_releases_count=self.supported_releases_count,
+            )
+        object.__setattr__(self, "_metrics", metrics)
 
     @property
     def metrics(self) -> SubmissionMetrics:
         """Return the validated submission metrics payload."""
-        return SubmissionMetrics(
-            test_coverage=self.test_coverage,
-            overall_test_cases=self.overall_test_cases,
-            supported_releases_count=self.supported_releases_count,
-        )
+        return self._metrics
 
     @classmethod
     def create(  # noqa: PLR0913
@@ -81,4 +82,5 @@ class Submission:
             supported_releases_count=resolved_metrics.supported_releases_count,
             raw_conversation=raw_conversation,
             created_at=created_at or datetime.now(tz=UTC),
+            _validated_metrics=resolved_metrics,
         )

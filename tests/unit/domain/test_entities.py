@@ -15,6 +15,7 @@ from qa_chatbot.domain import (
     ReportingPeriod,
     StreamId,
     Submission,
+    SubmissionMetrics,
     TestCoverageMetrics,
     TimeWindow,
 )
@@ -142,6 +143,44 @@ def test_submission_create_sets_defaults(
 
     assert submission.id is not None
     assert submission.created_at == datetime(2026, 1, 31, 12, 0, 0, tzinfo=UTC)
+
+
+def test_submission_metrics_property_returns_cached_instance(
+    project_id_a: ProjectId,
+    time_window_jan: TimeWindow,
+    test_coverage_done: TestCoverageMetrics,
+) -> None:
+    """Return the same metrics object instance across repeated property access."""
+    submission = Submission.create(
+        project_id=project_id_a,
+        month=time_window_jan,
+        test_coverage=test_coverage_done,
+    )
+
+    first_metrics = submission.metrics
+    second_metrics = submission.metrics
+
+    assert first_metrics is second_metrics
+
+
+def test_submission_create_with_metrics_reuses_validated_metrics(
+    project_id_a: ProjectId,
+    time_window_jan: TimeWindow,
+) -> None:
+    """Reuse provided metrics object instead of rebuilding it during creation."""
+    provided_metrics = SubmissionMetrics(
+        test_coverage=TestCoverageMetrics(manual_total=10, automated_total=5),
+        overall_test_cases=15,
+        supported_releases_count=2,
+    )
+
+    submission = Submission.create(
+        project_id=project_id_a,
+        month=time_window_jan,
+        metrics=provided_metrics,
+    )
+
+    assert submission.metrics is provided_metrics
 
 
 def test_reporting_period_for_month_builds_expected_bounds() -> None:

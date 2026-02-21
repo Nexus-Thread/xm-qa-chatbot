@@ -127,7 +127,7 @@ This is a living checklist. Each top-level checkbox is one implementation chunk 
   - Deliverables: avoid full-month Python-side filtering when computing totals
   - Acceptance: aggregation path is measurably faster and correctness is test-covered
 
-- [ ] **CH-23: Remove redundant submission metrics object creation** (`PERF-04`)
+- [x] **CH-23: Remove redundant submission metrics object creation** (`PERF-04`)
   - Deliverables: avoid throwaway validation object in `Submission` initialization
   - Acceptance: same validation guarantees with lower object churn
 
