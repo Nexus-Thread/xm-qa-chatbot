@@ -96,4 +96,5 @@
 - `tests/unit/adapters/` - Adapter unit tests (includes HTML snapshots)
 - `tests/unit/config/` - Settings and logging configuration tests
 - `tests/integration/adapters/` - Adapter integration tests with real integrations
-- `tests/e2e/` - End-to-end chatbot conversation coverage
+- `tests/integration/adapters/input/gradio/` - Conversation-flow integration tests for Gradio input adapter
+- `tests/e2e/` - Reserved for future browser-level Playwright end-to-end tests

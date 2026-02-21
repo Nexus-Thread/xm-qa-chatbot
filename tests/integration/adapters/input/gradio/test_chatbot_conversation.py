@@ -1,4 +1,4 @@
-"""End-to-end tests for the Gradio conversation flow."""
+"""Integration tests for the Gradio conversation flow."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ from qa_chatbot.domain import (
     build_default_stream_project_registry,
 )
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 if TYPE_CHECKING:
     from qa_chatbot.domain.registries import StreamProjectRegistry

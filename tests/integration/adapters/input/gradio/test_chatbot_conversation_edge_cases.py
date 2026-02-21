@@ -1,4 +1,4 @@
-"""Edge-case tests for conversation manager branches."""
+"""Integration tests for conversation manager edge branches."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ from qa_chatbot.domain import (
     build_default_stream_project_registry,
 )
 
-pytestmark = pytest.mark.e2e
+pytestmark = pytest.mark.integration
 
 if TYPE_CHECKING:
     from qa_chatbot.domain.registries import StreamProjectRegistry

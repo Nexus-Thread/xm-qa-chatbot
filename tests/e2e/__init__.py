@@ -1,1 +1,1 @@
-"""E2E tests for the QA chatbot."""
+"""Reserved package for future browser-level Playwright e2e tests."""
