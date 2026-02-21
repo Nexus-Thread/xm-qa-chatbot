@@ -83,7 +83,7 @@ This is a living checklist. Each top-level checkbox is one implementation chunk 
   - Deliverables: unit-level mapping tests using mocked OpenAI interactions
   - Acceptance: request/response contract validated without live endpoint
 
-- [ ] **CH-14: Clean up snapshot leftovers** (`TEST-02`)
+- [x] **CH-14: Clean up snapshot leftovers** (`TEST-02`)
   - Deliverables: remove `*.prev` snapshot files and ignore future leftovers
   - Acceptance: repo contains no `.prev` snapshot artifacts
 
