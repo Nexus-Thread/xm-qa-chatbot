@@ -33,6 +33,7 @@
 - `09-tooling-and-ci.md` - Local quality gate, CI expectations
 - `10-documentation-standards.md` - Clear, concise docstrings and comments
 - `11-logging-conventions.md` - Module-level logger standard and exceptions
+- `12-command-execution-safety.md` - Hard ban on inline interpreter heredocs; require temp scripts and non-interactive git usage
 
 ## Workflows
 - `workflows/update-repo-navigation.md` - Generate project-specific navigation maps on demand
@@ -49,6 +50,7 @@ Use this map to keep "Must" rules enforceable, not just advisory.
 | Module/file structure conventions | Code review | Optional repository audit script |
 | Docs/ADR/changelog updates | PR checklist/review | Release checklist |
 | Logging conventions | `ruff` + code review | Runtime log sampling |
+| Command execution safety | Process discipline (no `python - <<'PY'` patterns; git `--no-pager`/non-interactive) | PR review |
 
 ## Scope
 These rules apply to Python projects using hexagonal architecture unless explicitly stated otherwise.

@@ -155,3 +155,22 @@ pytest -m integration --no-cov
 pytest -m e2e --no-cov
 pytest -m "not slow" --no-cov
 ```
+
+Playwright e2e tests require Chromium binaries:
+
+```bash
+python -m playwright install chromium
+pytest --browser chromium tests/e2e/test_chatbot_positive_flow_playwright.py -m e2e --no-cov
+```
+
+When using `pytest-playwright`, you can also run marker-based e2e suites with an explicit browser:
+
+```bash
+pytest --browser chromium -m e2e --no-cov
+```
+
+Or run a single Playwright e2e file directly:
+
+```bash
+pytest tests/e2e/test_chatbot_positive_flow_playwright.py -m e2e --no-cov
+```

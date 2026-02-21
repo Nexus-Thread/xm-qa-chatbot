@@ -97,4 +97,4 @@
 - `tests/unit/config/` - Settings and logging configuration tests
 - `tests/integration/adapters/` - Adapter integration tests with real integrations
 - `tests/integration/adapters/input/gradio/` - Conversation-flow integration tests for Gradio input adapter
-- `tests/e2e/` - Reserved for future browser-level Playwright end-to-end tests
+- `tests/e2e/` - Browser-level Playwright end-to-end tests
