@@ -275,13 +275,16 @@ def test_sqlite_adapter_applies_busy_timeout_from_configuration(tmp_path: Path) 
 def test_sqlite_adapter_skips_pragmas_for_non_sqlite_backend(tmp_path: Path) -> None:
     """Skip SQLite pragma initialization for non-SQLite backends."""
     adapter = SQLiteAdapter(database_url=f"sqlite:///{tmp_path / 'skip_pragmas.db'}")
-    with patch("sqlalchemy.engine.url.URL.get_backend_name", return_value="postgresql"):
-        adapter.initialize_schema()
+    try:
+        with patch("sqlalchemy.engine.url.URL.get_backend_name", return_value="postgresql"):
+            adapter.initialize_schema()
 
-    with adapter.engine.connect() as connection:
-        journal_mode = connection.execute(text("PRAGMA journal_mode")).scalar_one()
+        with adapter.engine.connect() as connection:
+            journal_mode = connection.execute(text("PRAGMA journal_mode")).scalar_one()
 
-    assert str(journal_mode).lower() != "wal"
+        assert str(journal_mode).lower() != "wal"
+    finally:
+        adapter.engine.dispose()
 
 
 def test_sqlite_schema_rejects_negative_scalar_metrics(sqlite_adapter: SQLiteAdapter) -> None:

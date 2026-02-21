@@ -46,6 +46,12 @@ markers = [
     "e2e: tests that exercise end-to-end user-facing flows",
     "slow: tests with longer runtime or external dependency setup",
 ]
+filterwarnings = [
+    'ignore:.*HTTP_422_UNPROCESSABLE_ENTITY.*HTTP_422_UNPROCESSABLE_CONTENT.*:DeprecationWarning:gradio\.routes',
+    'ignore:.*asyncio\.iscoroutinefunction.*inspect\.iscoroutinefunction\(\).*:DeprecationWarning:gradio\.utils',
+    'ignore:.*future\.no_silent_downcasting.*:pandas.errors.Pandas4Warning:contextlib',
+    'ignore:The copy keyword is deprecated and will be removed in a future version\.:pandas.errors.Pandas4Warning:gradio\.queueing',
+]
 
 [tool.ruff]
 target-version = "py311"
