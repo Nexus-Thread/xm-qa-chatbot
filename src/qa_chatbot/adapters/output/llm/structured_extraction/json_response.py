@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING, Any, TypeVar
+import logging
+from typing import Any, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
@@ -11,9 +12,7 @@ from .exceptions import LLMExtractionError
 
 SchemaT = TypeVar("SchemaT", bound=BaseModel)
 MAX_LOGGED_PAYLOAD_CHARS = 512
-
-if TYPE_CHECKING:
-    import logging
+LOGGER = logging.getLogger(__name__)
 
 
 def parse_json_payload(payload: str) -> dict[str, Any]:
@@ -28,13 +27,12 @@ def parse_json_payload(payload: str) -> dict[str, Any]:
 def parse_schema_payload(
     payload: dict[str, Any],
     schema: type[SchemaT],
-    logger: logging.Logger,
 ) -> SchemaT:
     """Validate payload against a Pydantic schema."""
     try:
         return schema.model_validate(payload)
     except ValidationError as err:
-        logger.exception(
+        LOGGER.exception(
             "Schema validation failed",
             extra={
                 "schema": schema.__name__,

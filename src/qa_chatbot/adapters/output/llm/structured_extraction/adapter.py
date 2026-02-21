@@ -211,7 +211,7 @@ class OpenAIStructuredExtractionAdapter(StructuredExtractionPort):
 
     def _parse_schema(self, payload: dict[str, Any], schema: type[SchemaT]) -> SchemaT:
         """Validate payload against a Pydantic schema."""
-        return parse_schema_payload(payload, schema, LOGGER)
+        return parse_schema_payload(payload, schema)
 
     def _extract_test_coverage_data(
         self,
