@@ -10,6 +10,8 @@ from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWi
 # Test data constants
 EXPECTED_MANUAL_TOTAL = 8
 EXPECTED_LATEST_MANUAL_TOTAL = 9
+EXPECTED_BATCH_MONTH_CALLS = 2
+EXPECTED_PROJECT_CALLS_FOR_TRENDS = 0
 
 
 class FakeStoragePort:
@@ -18,6 +20,8 @@ class FakeStoragePort:
     def __init__(self, submissions: list[Submission]) -> None:
         """Store submissions for queries."""
         self._submissions = submissions
+        self.get_submissions_by_project_calls = 0
+        self.get_submissions_by_month_calls = 0
 
     def save_submission(self, submission: Submission) -> None:
         """Persist a submission in memory."""
@@ -25,6 +29,7 @@ class FakeStoragePort:
 
     def get_submissions_by_project(self, project_id: ProjectId, month: TimeWindow) -> list[Submission]:
         """Return submissions for a project and month."""
+        self.get_submissions_by_project_calls += 1
         return [submission for submission in self._submissions if submission.project_id == project_id and submission.month == month]
 
     def get_all_projects(self) -> list[ProjectId]:
@@ -33,6 +38,7 @@ class FakeStoragePort:
 
     def get_submissions_by_month(self, month: TimeWindow) -> list[Submission]:
         """Return submissions for a reporting month."""
+        self.get_submissions_by_month_calls += 1
         return [submission for submission in self._submissions if submission.month == month]
 
     def get_recent_months(self, limit: int) -> list[TimeWindow]:
@@ -128,6 +134,28 @@ def test_build_trends_returns_series_for_each_project() -> None:
 
     series_labels = [series.label for series in trends.qa_metric_series["manual_total"]]
     assert series_labels == ["Alpha", "Beta"]
+
+
+def test_build_trends_batches_month_queries() -> None:
+    """Query storage once per month when building trends."""
+    project_a = ProjectId("Alpha")
+    project_b = ProjectId("Beta")
+    month_jan = TimeWindow.from_year_month(2026, 1)
+    month_feb = TimeWindow.from_year_month(2026, 2)
+    submissions = [
+        _submission(project_a, month_jan, manual_total=4, created_at=datetime(2026, 1, 2, tzinfo=UTC)),
+        _submission(project_b, month_jan, manual_total=9, created_at=datetime(2026, 1, 2, tzinfo=UTC)),
+        _submission(project_a, month_feb, manual_total=10, created_at=datetime(2026, 2, 2, tzinfo=UTC)),
+    ]
+    storage = FakeStoragePort(submissions)
+    use_case = GetDashboardDataUseCase(storage_port=storage)
+
+    trends = use_case.build_trends([project_a, project_b], [month_jan, month_feb])
+
+    assert trends.qa_metric_series["manual_total"][0].values == [4, 10]
+    assert trends.qa_metric_series["manual_total"][1].values == [9, None]
+    assert storage.get_submissions_by_month_calls == EXPECTED_BATCH_MONTH_CALLS
+    assert storage.get_submissions_by_project_calls == EXPECTED_PROJECT_CALLS_FOR_TRENDS
 
 
 def test_build_project_detail_returns_empty_snapshot_for_missing_month() -> None:

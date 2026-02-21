@@ -51,10 +51,29 @@ class GetDashboardDataUseCase:
 
     def build_trends(self, projects: list[ProjectId], months: list[TimeWindow]) -> TrendsDashboardData:
         """Build trends data for projects across months."""
+        latest_by_project_month = self._latest_submissions_by_project_month(months)
         qa_metric_series = {
-            "manual_total": self._trend_series(projects, months, "test_coverage", "manual_total"),
-            "automated_total": self._trend_series(projects, months, "test_coverage", "automated_total"),
-            "percentage_automation": self._trend_series(projects, months, "test_coverage", "percentage_automation"),
+            "manual_total": self._trend_series(
+                projects,
+                months,
+                latest_by_project_month,
+                "test_coverage",
+                "manual_total",
+            ),
+            "automated_total": self._trend_series(
+                projects,
+                months,
+                latest_by_project_month,
+                "test_coverage",
+                "automated_total",
+            ),
+            "percentage_automation": self._trend_series(
+                projects,
+                months,
+                latest_by_project_month,
+                "test_coverage",
+                "percentage_automation",
+            ),
         }
         return TrendsDashboardData(
             projects=projects,
@@ -67,6 +86,7 @@ class GetDashboardDataUseCase:
         self,
         projects: list[ProjectId],
         months: list[TimeWindow],
+        latest_by_project_month: dict[tuple[str, str], Submission],
         section: str,
         field: str,
     ) -> list[TrendSeries]:
@@ -74,15 +94,29 @@ class GetDashboardDataUseCase:
         for project in projects:
             values: list[float | int | None] = []
             for month in months:
-                submissions = self.storage_port.get_submissions_by_project(project, month)
-                if not submissions:
+                key = (project.value, month.to_iso_month())
+                latest = latest_by_project_month.get(key)
+                if latest is None:
                     values.append(None)
                     continue
-                latest = self._latest_submission(submissions)
                 value = self._extract_section_value(latest, section, field)
                 values.append(value)
             series.append(TrendSeries(label=project.value, values=values))
         return series
+
+    def _latest_submissions_by_project_month(
+        self,
+        months: list[TimeWindow],
+    ) -> dict[tuple[str, str], Submission]:
+        """Build a lookup of latest submissions by project and month."""
+        latest_by_project_month: dict[tuple[str, str], Submission] = {}
+        for month in months:
+            for submission in self.storage_port.get_submissions_by_month(month):
+                key = (submission.project_id.value, submission.month.to_iso_month())
+                existing = latest_by_project_month.get(key)
+                if existing is None or submission.created_at > existing.created_at:
+                    latest_by_project_month[key] = submission
+        return latest_by_project_month
 
     def _extract_section_value(
         self,

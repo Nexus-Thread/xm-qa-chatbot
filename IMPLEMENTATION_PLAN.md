@@ -119,7 +119,7 @@ This is a living checklist. Each top-level checkbox is one implementation chunk 
 
 ## Phase 6 — Performance and strategic refactor
 
-- [ ] **CH-21: Batch trend queries for dashboard use case** (`PERF-01`)
+- [x] **CH-21: Batch trend queries for dashboard use case** (`PERF-01`)
   - Deliverables: replace N×M query pattern with batch retrieval strategy
   - Acceptance: fewer DB round trips and measured improvement on representative data
 
