@@ -27,13 +27,14 @@ class SubmitProjectDataUseCase:
 
     def execute(self, command: SubmissionCommand) -> Submission:
         """Persist a project submission, merging with existing data for the same project/month."""
+        submit_extra = self._log_extra(
+            correlation_id=command.correlation_id,
+            project_id=str(command.project_id),
+            time_window=str(command.time_window),
+        )
         LOGGER.info(
             "Submitting project data",
-            extra={
-                "component": self.__class__.__name__,
-                "project_id": str(command.project_id),
-                "time_window": str(command.time_window),
-            },
+            extra=submit_extra,
         )
         merged_metrics = self._merge_with_existing(command)
         submission = Submission.create(
@@ -47,15 +48,16 @@ class SubmitProjectDataUseCase:
         if self.metrics_port is not None:
             self.metrics_port.record_submission(submission.project_id, submission.month)
         if self.dashboard_port is not None:
-            self._generate_dashboards(submission)
+            self._generate_dashboards(submission, command.correlation_id)
+        saved_extra = self._log_extra(
+            correlation_id=command.correlation_id,
+            submission_id=submission.id,
+            project_id=str(submission.project_id),
+            time_window=str(submission.month),
+        )
         LOGGER.info(
             "Submission saved",
-            extra={
-                "component": self.__class__.__name__,
-                "submission_id": submission.id,
-                "project_id": str(submission.project_id),
-                "time_window": str(submission.month),
-            },
+            extra=saved_extra,
         )
         return submission
 
@@ -74,7 +76,7 @@ class SubmitProjectDataUseCase:
         existing = max(existing_submissions, key=lambda s: s.created_at)
         return command.metrics.merge_with(existing.metrics)
 
-    def _generate_dashboards(self, submission: Submission) -> None:
+    def _generate_dashboards(self, submission: Submission, correlation_id: str | None) -> None:
         """Generate dashboards without failing the submission flow on render errors."""
         if self.dashboard_port is None:
             return
@@ -100,13 +102,24 @@ class SubmitProjectDataUseCase:
             try:
                 operation()
             except DomainError as err:
+                dashboard_error_extra = self._log_extra(
+                    correlation_id=correlation_id,
+                    view=view,
+                    project_id=str(submission.project_id),
+                    time_window=str(submission.month),
+                    error_type=type(err).__name__,
+                )
                 LOGGER.exception(
                     "Dashboard generation failed",
-                    extra={
-                        "component": self.__class__.__name__,
-                        "view": view,
-                        "project_id": str(submission.project_id),
-                        "time_window": str(submission.month),
-                        "error_type": type(err).__name__,
-                    },
+                    extra=dashboard_error_extra,
                 )
+
+    def _log_extra(self, *, correlation_id: str | None, **extra: object) -> dict[str, object]:
+        """Build structured log context for this use case."""
+        payload: dict[str, object] = {
+            "component": self.__class__.__name__,
+            **extra,
+        }
+        if correlation_id is not None:
+            payload["correlation_id"] = correlation_id
+        return payload

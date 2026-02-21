@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import TYPE_CHECKING
+from uuid import uuid4
 
 from qa_chatbot.adapters.input.gradio import formatters
 from qa_chatbot.application.dtos import SubmissionCommand
@@ -43,6 +44,7 @@ class ConversationState(StrEnum):
 class ConversationSession:
     """Conversation session state."""
 
+    session_id: str = field(default_factory=lambda: uuid4().hex)
     state: ConversationState = ConversationState.PROJECT_ID
     stream_project: ProjectId | None = None
     time_window: TimeWindow | None = None
@@ -341,6 +343,7 @@ class ConversationManager:
                 supported_releases_count=session.supported_releases_count,
             ),
             raw_conversation=raw_conversation,
+            correlation_id=session.session_id,
         )
 
     @staticmethod
@@ -399,6 +402,7 @@ class ConversationManager:
     def _restart_session(self, session: ConversationSession, today: date) -> tuple[str, ConversationSession]:
         """Restart the session after saving."""
         new_session, welcome = self.start_session(today)
+        session.session_id = new_session.session_id
         session.state = new_session.state
         session.stream_project = new_session.stream_project
         session.time_window = new_session.time_window

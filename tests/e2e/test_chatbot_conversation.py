@@ -172,19 +172,25 @@ def _build_manager(*, llm: FakeLLM | None = None, storage: FakeStorage | None = 
 def test_conversation_happy_path(conversation_manager: ConversationManager) -> None:
     """Walk through the full conversation flow and save."""
     session, welcome = conversation_manager.start_session(date(2026, 1, 15))
+    session_id = session.session_id
     assert "stream/project" in welcome
+    assert session_id
 
     response, session = conversation_manager.handle_message("QA Project", session, date(2026, 1, 15))
     assert "reporting month" in response
+    assert session.session_id == session_id
 
     response, session = conversation_manager.handle_message("2026-01", session, date(2026, 1, 15))
     assert "test coverage" in response
+    assert session.session_id == session_id
 
     response, session = conversation_manager.handle_message("coverage", session, date(2026, 1, 15))
     assert "captured" in response.lower()
+    assert session.session_id == session_id
 
     response, session = conversation_manager.handle_message("yes", session, date(2026, 1, 15))
     assert "saved" in response.lower()
+    assert session.session_id == session_id
 
     assert session.state.name == "SAVED"
 
@@ -257,6 +263,7 @@ def test_saved_state_requires_restart_keyword(conversation_manager: Conversation
 def test_saved_state_start_over_resets_session(conversation_manager: ConversationManager) -> None:
     """Restart should reset state and return welcome message."""
     session, _ = conversation_manager.start_session(date(2026, 1, 15))
+    previous_session_id = session.session_id
     session.state = session.state.SAVED
     session.stream_project = ProjectId("qa-project")
 
@@ -265,6 +272,7 @@ def test_saved_state_start_over_resets_session(conversation_manager: Conversatio
     assert "stream/project" in response
     assert restarted_session.state.name == "PROJECT_ID"
     assert restarted_session.stream_project is None
+    assert restarted_session.session_id != previous_session_id
 
 
 def test_empty_message_is_rejected_without_state_change(conversation_manager: ConversationManager) -> None:

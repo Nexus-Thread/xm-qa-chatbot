@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from types import SimpleNamespace
 from typing import TYPE_CHECKING, Literal, Self, cast
@@ -13,6 +14,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from datetime import date
 
+    from _pytest.logging import LogCaptureFixture
     from _pytest.monkeypatch import MonkeyPatch
 
     from qa_chatbot.adapters.input.gradio.conversation_manager import ConversationManager
@@ -153,7 +155,10 @@ def test_launch_uses_configured_server_options(monkeypatch: MonkeyPatch) -> None
     }
 
 
-def test_build_ui_registers_callbacks_and_processes_messages(monkeypatch: MonkeyPatch) -> None:
+def test_build_ui_registers_callbacks_and_processes_messages(
+    monkeypatch: MonkeyPatch,
+    caplog: LogCaptureFixture,
+) -> None:
     """Launch should wire callbacks for initialize, submit, and reset paths."""
     harness = _patch_gradio(monkeypatch)
     manager = _FakeConversationManager()
@@ -175,22 +180,39 @@ def test_build_ui_registers_callbacks_and_processes_messages(monkeypatch: Monkey
     assert initialized_session.state.name == "PROJECT_ID"
     assert initialized_history == [{"role": "assistant", "content": "Welcome"}]
 
+    logger_name = "qa_chatbot.adapters.input.gradio.adapter"
+
     monkeypatch.setattr(gradio_adapter_module.RateLimiter, "allow", lambda *_: False)
-    _, blocked_history, blocked_session = harness.textbox.submit_handler("  hello world  ", [], None)
+    with caplog.at_level(logging.INFO, logger=logger_name):
+        _, blocked_history, blocked_session = harness.textbox.submit_handler("  hello world  ", [], None)
     assert blocked_session is not None
     assert manager.handled_messages == []
     assert blocked_history[-2] == {"role": "user", "content": "hello"}
     assert blocked_history[-1] == {"role": "assistant", "content": RATE_LIMITED_MESSAGE}
 
+    blocked_events = [
+        record for record in caplog.records if getattr(record, "event", None) in {"session_started", "message_received", "rate_limited"}
+    ]
+    assert blocked_events
+    blocked_session_id = getattr(blocked_events[-1], "session_id", None)
+    assert blocked_session_id
+    assert all(getattr(record, "session_id", None) == blocked_session_id for record in blocked_events[-3:])
+
     monkeypatch.setattr(gradio_adapter_module.RateLimiter, "allow", lambda *_: True)
-    _, allowed_history, _ = harness.textbox.submit_handler(
-        "  hello world  ",
-        [],
-        ConversationSession(),
-    )
+    allowed_session = ConversationSession(session_id="session-allowed")
+    with caplog.at_level(logging.INFO, logger=logger_name):
+        _, allowed_history, _ = harness.textbox.submit_handler(
+            "  hello world  ",
+            [],
+            allowed_session,
+        )
     assert manager.handled_messages == ["hello"]
     assert allowed_history[-2] == {"role": "user", "content": "hello"}
     assert allowed_history[-1] == {"role": "assistant", "content": "handled:hello"}
+
+    allowed_events = [record for record in caplog.records if getattr(record, "event", None) in {"message_received", "message_handled"}]
+    assert getattr(allowed_events[-2], "session_id", None) == "session-allowed"
+    assert getattr(allowed_events[-1], "session_id", None) == "session-allowed"
 
     reset_session, reset_history = harness.button.click_handler()
     assert reset_session.state.name == "PROJECT_ID"

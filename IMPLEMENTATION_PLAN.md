@@ -111,7 +111,7 @@ This is a living checklist. Each top-level checkbox is one implementation chunk 
   - Deliverables: production-selectable JSON log formatter via settings
   - Acceptance: logs are structured when JSON mode enabled
 
-- [ ] **CH-20: Add conversation correlation IDs in logs** (`OBS-03`)
+- [x] **CH-20: Add conversation correlation IDs in logs** (`OBS-03`)
   - Deliverables: session/request ID propagation from input adapter through logs
   - Acceptance: a single conversation can be traced end-to-end via shared ID
 

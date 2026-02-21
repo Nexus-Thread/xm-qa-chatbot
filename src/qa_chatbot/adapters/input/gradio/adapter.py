@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import logging
+
 import gradio
 
 from .conversation_manager import ConversationManager, ConversationSession  # noqa: TC001
 from .rate_limiter import RateLimiter
 from .settings import GradioSettings
 from .utils import sanitize_input, today
+
+LOGGER = logging.getLogger(__name__)
 
 
 class GradioAdapter:
@@ -43,6 +47,15 @@ class GradioAdapter:
 
             def initialize() -> tuple[ConversationSession, list[dict[str, str]]]:
                 session, welcome = self._manager.start_session(today())
+                LOGGER.info(
+                    "Started conversation session",
+                    extra={
+                        "component": self.__class__.__name__,
+                        "session_id": session.session_id,
+                        "state": session.state.value,
+                        "event": "session_started",
+                    },
+                )
                 return session, [{"role": "assistant", "content": welcome}]
 
             def respond(
@@ -53,12 +66,48 @@ class GradioAdapter:
                 current_date = today()
                 if session is None:
                     session, welcome = self._manager.start_session(current_date)
+                    LOGGER.info(
+                        "Started conversation session",
+                        extra={
+                            "component": self.__class__.__name__,
+                            "session_id": session.session_id,
+                            "state": session.state.value,
+                            "event": "session_started",
+                        },
+                    )
                     history = [*history, {"role": "assistant", "content": welcome}]
                 sanitized = sanitize_input(message, self._settings.input_max_chars)
+                LOGGER.info(
+                    "Received user message",
+                    extra={
+                        "component": self.__class__.__name__,
+                        "session_id": session.session_id,
+                        "state": session.state.value,
+                        "event": "message_received",
+                    },
+                )
                 if not self._rate_limiter.allow(session):
                     response = "You're sending messages too quickly. Please wait a moment before trying again."
+                    LOGGER.warning(
+                        "Rate limit exceeded",
+                        extra={
+                            "component": self.__class__.__name__,
+                            "session_id": session.session_id,
+                            "state": session.state.value,
+                            "event": "rate_limited",
+                        },
+                    )
                 else:
                     response, session = self._manager.handle_message(sanitized, session, current_date)
+                    LOGGER.info(
+                        "Handled user message",
+                        extra={
+                            "component": self.__class__.__name__,
+                            "session_id": session.session_id,
+                            "state": session.state.value,
+                            "event": "message_handled",
+                        },
+                    )
                 history = [
                     *history,
                     {"role": "user", "content": sanitized},
@@ -68,6 +117,15 @@ class GradioAdapter:
 
             def reset() -> tuple[ConversationSession, list[dict[str, str]]]:
                 session, welcome = self._manager.start_session(today())
+                LOGGER.info(
+                    "Started conversation session",
+                    extra={
+                        "component": self.__class__.__name__,
+                        "session_id": session.session_id,
+                        "state": session.state.value,
+                        "event": "session_started",
+                    },
+                )
                 return session, [{"role": "assistant", "content": welcome}]
 
             app.load(initialize, outputs=[session_state, chat_history])

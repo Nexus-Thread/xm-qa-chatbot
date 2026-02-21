@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from qa_chatbot.application.dtos import SubmissionCommand
 from qa_chatbot.application.use_cases import SubmitProjectDataUseCase
 from qa_chatbot.domain import DomainError, ProjectId, Submission, SubmissionMetrics, TestCoverageMetrics, TimeWindow
+
+if TYPE_CHECKING:
+    from _pytest.logging import LogCaptureFixture
 
 EXPECTED_MERGED_MANUAL_TOTAL = 8
 EXPECTED_MERGED_AUTOMATED_TOTAL = 7
@@ -94,7 +99,7 @@ def _command(
     month: TimeWindow,
     manual_total: int | None,
     automated_total: int | None,
-    created_at: datetime,
+    correlation_id: str | None = None,
 ) -> SubmissionCommand:
     return SubmissionCommand(
         project_id=project_id,
@@ -105,7 +110,8 @@ def _command(
             supported_releases_count=None,
         ),
         raw_conversation="test",
-        created_at=created_at,
+        created_at=datetime(2026, 1, 2, tzinfo=UTC),
+        correlation_id=correlation_id,
     )
 
 
@@ -132,7 +138,6 @@ def test_execute_merges_with_existing_submission() -> None:
             month=month,
             manual_total=None,
             automated_total=7,
-            created_at=datetime(2026, 1, 2, tzinfo=UTC),
         )
     )
 
@@ -142,7 +147,7 @@ def test_execute_merges_with_existing_submission() -> None:
     assert created.metrics.supported_releases_count == EXPECTED_MERGED_RELEASES_COUNT
 
 
-def test_execute_survives_dashboard_generation_failure() -> None:
+def test_execute_survives_dashboard_generation_failure(caplog: LogCaptureFixture) -> None:
     """Persist submission even when one dashboard view fails."""
     month = TimeWindow.from_year_month(2026, 1)
     project_id = ProjectId("project-a")
@@ -155,17 +160,27 @@ def test_execute_survives_dashboard_generation_failure() -> None:
         metrics_port=metrics,
     )
 
-    created = use_case.execute(
-        _command(
-            project_id=project_id,
-            month=month,
-            manual_total=3,
-            automated_total=5,
-            created_at=datetime(2026, 1, 2, tzinfo=UTC),
+    logger_name = "qa_chatbot.application.use_cases.submit_project_data"
+    with caplog.at_level(logging.INFO, logger=logger_name):
+        created = use_case.execute(
+            _command(
+                project_id=project_id,
+                month=month,
+                manual_total=3,
+                automated_total=5,
+                correlation_id="session-123",
+            )
         )
-    )
 
     assert created in storage.submissions
     assert metrics.calls == [(project_id, month)]
     assert dashboard.detail_calls == 1
     assert dashboard.trends_calls == 1
+
+    submit_record = next(record for record in caplog.records if record.getMessage() == "Submitting project data")
+    saved_record = next(record for record in caplog.records if record.getMessage() == "Submission saved")
+    dashboard_error_record = next(record for record in caplog.records if record.getMessage() == "Dashboard generation failed")
+
+    assert getattr(submit_record, "correlation_id", None) == "session-123"
+    assert getattr(saved_record, "correlation_id", None) == "session-123"
+    assert getattr(dashboard_error_record, "correlation_id", None) == "session-123"

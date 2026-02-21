@@ -20,3 +20,4 @@ class SubmissionCommand:
     metrics: SubmissionMetrics
     raw_conversation: str | None = None
     created_at: datetime | None = None
+    correlation_id: str | None = None
