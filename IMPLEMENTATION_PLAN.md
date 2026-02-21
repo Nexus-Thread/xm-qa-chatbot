@@ -21,9 +21,9 @@ Only **pending** chunks are listed below. Completed chunks were removed from thi
 
 ## Phase 1 — Critical security + CI foundations
 
-- [ ] **CH-03: Add GitHub Actions CI workflow** (`CI-01`)
-  - Deliverables: `.github/workflows/ci.yml` running format-check, lint, typecheck, tests
-  - Acceptance: workflow triggers on push/PR and passes on main
+- [x] **CH-03: Add GitLab CI workflow** (`CI-01`)
+  - Deliverables: `.gitlab-ci.yml` running format-check, lint, typecheck, tests
+  - Acceptance: pipeline triggers on push/merge requests and passes on main
 
 - [ ] **CH-04: Dependency vulnerability scanning** (`SEC-04`, `DEP-01`)
   - Deliverables: `pip-audit` in dev toolchain + pre-commit + CI; add Dependabot config

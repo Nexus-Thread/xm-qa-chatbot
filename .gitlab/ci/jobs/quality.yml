@@ -1,0 +1,16 @@
+quality_gate:
+  image: python:3.11-slim
+  stage: quality
+  before_script:
+    - python --version
+    - pip install --upgrade pip
+    - pip install uv
+    - uv sync --group dev
+  script:
+    - uv run ruff format --check .
+    - uv run ruff check .
+    - uv run mypy src/ tests/
+    - uv run pytest tests/
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: "$CI_COMMIT_BRANCH"
