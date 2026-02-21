@@ -24,6 +24,8 @@ from qa_chatbot.domain import ProjectId, Submission, TestCoverageMetrics, TimeWi
 if TYPE_CHECKING:
     from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter
 
+TEST_JIRA_API_TOKEN = UUID(int=0).hex
+
 
 @dataclass(frozen=True)
 class SnapshotFile:
@@ -126,7 +128,7 @@ def dashboard_adapter(sqlite_adapter: SQLiteAdapter, tmp_path: Path) -> HtmlDash
         registry=registry,
         jira_base_url="https://jira.example.com",
         jira_username="jira-user@example.com",
-        jira_api_token="token",  # noqa: S106
+        jira_api_token=TEST_JIRA_API_TOKEN,
     )
     report_use_case = GenerateMonthlyReportUseCase(
         storage_port=sqlite_adapter,
@@ -342,7 +344,7 @@ def test_generate_overview_renders_configured_asset_script_urls(
         registry=registry,
         jira_base_url="https://jira.example.com",
         jira_username="jira-user@example.com",
-        jira_api_token="token",  # noqa: S106
+        jira_api_token=TEST_JIRA_API_TOKEN,
     )
     report_use_case = GenerateMonthlyReportUseCase(
         storage_port=sqlite_adapter,

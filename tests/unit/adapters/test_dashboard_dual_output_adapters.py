@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
+from uuid import UUID
 
 import pytest
 
@@ -21,6 +22,8 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter
+
+TEST_JIRA_API_TOKEN = UUID(int=0).hex
 
 
 @dataclass
@@ -142,7 +145,7 @@ def test_confluence_dashboard_adapter_generates_local_artifacts(
         registry=registry,
         jira_base_url="https://jira.example.com",
         jira_username="jira-user@example.com",
-        jira_api_token="token",  # noqa: S106
+        jira_api_token=TEST_JIRA_API_TOKEN,
     )
     report_use_case = GenerateMonthlyReportUseCase(
         storage_port=sqlite_adapter,

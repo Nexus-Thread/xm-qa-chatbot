@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from urllib.parse import unquote_plus
+from uuid import UUID
 
 import pytest
 
@@ -32,6 +33,7 @@ LEAKAGE_DENOMINATOR_MIN = 8
 LEAKAGE_DENOMINATOR_MAX = 40
 LEAKAGE_RATE_MIN = 0.0
 LEAKAGE_RATE_MAX = 100.0
+TEST_JIRA_API_TOKEN = UUID(int=0).hex
 
 
 def _build_adapter(registry: StreamProjectRegistry) -> MockJiraAdapter:
@@ -39,7 +41,7 @@ def _build_adapter(registry: StreamProjectRegistry) -> MockJiraAdapter:
         registry=registry,
         jira_base_url="https://jira.example.com",
         jira_username="jira-user@example.com",
-        jira_api_token="token",  # noqa: S106
+        jira_api_token=TEST_JIRA_API_TOKEN,
     )
 
 

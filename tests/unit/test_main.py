@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
+from uuid import UUID
 
 import qa_chatbot.main
 
@@ -24,7 +25,7 @@ def test_main_wires_components(monkeypatch: pytest.MonkeyPatch) -> None:
         dashboard_plotly_script_src="https://cdn.plot.ly/plotly-2.27.0.min.js",
         jira_base_url="https://jira.example.com",
         jira_username="jira-user@example.com",
-        jira_api_token="token",  # noqa: S106
+        jira_api_token=UUID(int=0).hex,
         openai_base_url="http://localhost",
         openai_api_key="test",
         openai_model="gpt-test",
