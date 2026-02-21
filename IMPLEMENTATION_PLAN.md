@@ -79,7 +79,7 @@ This is a living checklist. Each top-level checkbox is one implementation chunk 
 
 ## Phase 4 — Testing and developer experience
 
-- [ ] **CH-13: Add contract tests for structured extraction port** (`TEST-04`)
+- [x] **CH-13: Add contract tests for structured extraction port** (`TEST-04`)
   - Deliverables: unit-level mapping tests using mocked OpenAI interactions
   - Acceptance: request/response contract validated without live endpoint
 
