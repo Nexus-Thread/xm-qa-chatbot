@@ -12,7 +12,7 @@ __pycache__/
 .coverage
 
 .env
-qa_chatbot.db
+qa_chatbot.db*
 
 tests/
 docs/

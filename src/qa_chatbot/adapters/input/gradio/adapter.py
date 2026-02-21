@@ -7,12 +7,13 @@ from typing import TYPE_CHECKING
 
 import gradio
 
+from .conversation_manager import ConversationSession
 from .rate_limiter import RateLimiter
 from .settings import GradioSettings
 from .utils import sanitize_input, today
 
 if TYPE_CHECKING:
-    from .conversation_manager import ConversationManager, ConversationSession
+    from .conversation_manager import ConversationManager
 
 LOGGER = logging.getLogger(__name__)
 
@@ -79,6 +80,9 @@ class GradioAdapter:
                         },
                     )
                     history = [*history, {"role": "assistant", "content": welcome}]
+                elif not isinstance(session, ConversationSession):
+                    msg = "Unexpected conversation session state"
+                    raise TypeError(msg)
                 sanitized = sanitize_input(message, self._settings.input_max_chars)
                 LOGGER.info(
                     "Received user message",
