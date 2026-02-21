@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 from unittest.mock import patch
 
@@ -9,15 +10,15 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
-from qa_chatbot.domain import StorageOperationError
+from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter
+from qa_chatbot.domain import StorageOperationError, Submission, TestCoverageMetrics
 
 pytestmark = pytest.mark.integration
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter
-    from qa_chatbot.domain import ProjectId, Submission, TimeWindow
+    from qa_chatbot.domain import ProjectId, TimeWindow
 
 # Test data constants
 INITIAL_MANUAL_TOTAL = 10
@@ -53,8 +54,6 @@ def test_sqlite_adapter_resubmission_replaces_data(
     time_window_jan: TimeWindow,
 ) -> None:
     """Resubmitting data for same project/month replaces the previous submission."""
-    from qa_chatbot.domain import Submission, TestCoverageMetrics  # noqa: PLC0415
-
     # Submit initial data
     sqlite_adapter.save_submission(submission_project_a_jan)
 
@@ -102,8 +101,6 @@ def test_sqlite_adapter_returns_recent_months_descending_with_limit(
     time_window_feb: TimeWindow,
 ) -> None:
     """Return recent months in descending order and honor limit."""
-    from qa_chatbot.domain import Submission, TestCoverageMetrics  # noqa: PLC0415
-
     sqlite_adapter.save_submission(submission_project_a_jan)
     sqlite_adapter.save_submission(
         Submission.create(
@@ -126,10 +123,6 @@ def test_sqlite_adapter_aggregates_overall_test_cases_for_month(
     time_window_feb: TimeWindow,
 ) -> None:
     """Aggregate overall test cases from all projects for a selected month."""
-    from datetime import UTC, datetime  # noqa: PLC0415
-
-    from qa_chatbot.domain import Submission, TestCoverageMetrics  # noqa: PLC0415
-
     sqlite_adapter.save_submission(
         Submission.create(
             project_id=project_id_a,
@@ -166,10 +159,6 @@ def test_sqlite_adapter_aggregates_overall_test_cases_using_latest_submission(
     time_window_jan: TimeWindow,
 ) -> None:
     """Use latest submission values when aggregating a project's monthly totals."""
-    from datetime import UTC, datetime  # noqa: PLC0415
-
-    from qa_chatbot.domain import Submission, TestCoverageMetrics  # noqa: PLC0415
-
     sqlite_adapter.save_submission(
         Submission.create(
             project_id=project_id_a,
@@ -200,10 +189,6 @@ def test_sqlite_adapter_returns_none_for_overall_test_cases_without_complete_cov
     time_window_feb: TimeWindow,
 ) -> None:
     """Return None when no complete coverage totals are available for a month."""
-    from datetime import UTC, datetime  # noqa: PLC0415
-
-    from qa_chatbot.domain import Submission, TestCoverageMetrics  # noqa: PLC0415
-
     sqlite_adapter.save_submission(
         Submission.create(
             project_id=project_id_a,
@@ -272,8 +257,6 @@ def test_sqlite_adapter_initializes_wal_mode(sqlite_adapter: SQLiteAdapter) -> N
 
 def test_sqlite_adapter_applies_busy_timeout_from_configuration(tmp_path: Path) -> None:
     """Apply busy_timeout pragma from configured timeout seconds."""
-    from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter  # noqa: PLC0415
-
     timeout_seconds = 12.5
     database_path = tmp_path / "busy_timeout.db"
     adapter = SQLiteAdapter(
@@ -291,8 +274,6 @@ def test_sqlite_adapter_applies_busy_timeout_from_configuration(tmp_path: Path) 
 
 def test_sqlite_adapter_skips_pragmas_for_non_sqlite_backend(tmp_path: Path) -> None:
     """Skip SQLite pragma initialization for non-SQLite backends."""
-    from qa_chatbot.adapters.output.persistence.sqlite import SQLiteAdapter  # noqa: PLC0415
-
     adapter = SQLiteAdapter(database_url=f"sqlite:///{tmp_path / 'skip_pragmas.db'}")
     with patch("sqlalchemy.engine.url.URL.get_backend_name", return_value="postgresql"):
         adapter.initialize_schema()
