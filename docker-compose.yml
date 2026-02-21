@@ -1,0 +1,11 @@
+services:
+  qa-chatbot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: qa-chatbot:latest
+    env_file:
+      - .env
+    ports:
+      - "7860:7860"
+    restart: unless-stopped

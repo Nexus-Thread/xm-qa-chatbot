@@ -14,6 +14,35 @@ Project navigation map: [docs/project-navigation.md](docs/project-navigation.md)
    ```
 3. Open the UI at `http://localhost:7860`.
 
+## Running with Docker
+
+1. Build the image:
+   ```bash
+   docker build -t qa-chatbot:latest .
+   ```
+2. Run the container:
+   ```bash
+   docker run --rm -p 7860:7860 --env-file .env qa-chatbot:latest
+   ```
+3. Open the UI at `http://localhost:7860`.
+
+When running in Docker, `OPENAI_BASE_URL=http://localhost:11434/v1` points to the container itself.
+If your Ollama/OpenAI-compatible endpoint runs on the host machine, use
+`OPENAI_BASE_URL=http://host.docker.internal:11434/v1`.
+
+### Running with Docker Compose
+
+1. Create `.env` (if not present):
+   ```bash
+   cp .env.example .env
+   ```
+2. Build and run:
+   ```bash
+   docker compose up --build
+   ```
+
+The Compose setup uses `Dockerfile` for the build and loads variables from `.env` by default.
+
 ## Dashboard artifacts
 
 Each submission refreshes static dashboard files under `DASHBOARD_OUTPUT_DIR` (default: `./dashboard_html`).
