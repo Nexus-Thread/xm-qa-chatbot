@@ -93,6 +93,7 @@ Transport behavior is configurable via `OPENAI_VERIFY_SSL` and `OPENAI_TIMEOUT_S
 | `GRADIO_SERVER_PORT` | `7860` | Local port used by the Gradio UI server. | `7860` |
 | `GRADIO_SHARE` | `false` | Enables public Gradio share URL generation. | `false` |
 | `LOG_LEVEL` | `INFO` | Application logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`). | `DEBUG` |
+| `LOG_FORMAT` | `text` | Application log formatter mode (`text` or `json`) for human-readable or structured output. | `json` |
 | `INPUT_MAX_CHARS` | `2000` | Maximum user message length accepted by the chat input adapter. | `4000` |
 | `RATE_LIMIT_REQUESTS` | `8` | Maximum chat requests allowed per rate-limit window. | `10` |
 | `RATE_LIMIT_WINDOW_SECONDS` | `60` | Rate-limit window size, in seconds. | `60` |

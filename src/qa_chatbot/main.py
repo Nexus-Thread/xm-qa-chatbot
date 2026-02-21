@@ -33,6 +33,7 @@ def main() -> None:
     configure_logging(
         LoggingSettings(
             level=settings.log_level,
+            log_format=settings.log_format,
         )
     )
     storage = SQLiteAdapter(

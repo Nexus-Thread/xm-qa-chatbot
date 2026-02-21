@@ -103,11 +103,11 @@ This is a living checklist. Each top-level checkbox is one implementation chunk 
   - Deliverables: `docs/runbook.md` for top operational failures and recovery steps
   - Acceptance: includes at least LLM timeout, DB lock, dashboard render failure scenarios
 
-- [ ] **CH-18: Enrich ADRs with full decision records** (`DOC-01`)
+- [x] **CH-18: Enrich ADRs with full decision records** (`DOC-01`)
   - Deliverables: update ADR-001..ADR-004 with Context, Decision, Consequences, Alternatives
   - Acceptance: each ADR explains trade-offs and follow-up implications
 
-- [ ] **CH-19: Add JSON logging option** (`OBS-02`)
+- [x] **CH-19: Add JSON logging option** (`OBS-02`)
   - Deliverables: production-selectable JSON log formatter via settings
   - Acceptance: logs are structured when JSON mode enabled
 

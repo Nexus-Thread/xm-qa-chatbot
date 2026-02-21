@@ -48,7 +48,7 @@ def run_server(directory: Path, host: str, port: int) -> None:
 def main() -> None:
     """Entry point for the dashboard server."""
     args = parse_args()
-    configure_logging(LoggingSettings(level="INFO"))
+    configure_logging(LoggingSettings(level="INFO", log_format="text"))
     run_server(args.directory, args.host, args.port)
 
 

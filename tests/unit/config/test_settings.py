@@ -30,6 +30,7 @@ def test_settings_loads_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.jira_base_url == "https://jira.example.com"
     assert settings.jira_username == "jira-user@example.com"
     assert settings.jira_api_token
+    assert settings.log_format == "text"
 
 
 def test_settings_rejects_empty_values(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -55,6 +56,23 @@ def test_settings_normalizes_log_level(monkeypatch: pytest.MonkeyPatch) -> None:
     settings = EnvSettingsAdapter().load()
 
     assert settings.log_level == "WARNING"
+
+
+def test_settings_rejects_invalid_log_format(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Raise when log format is not allowed."""
+    monkeypatch.setenv("LOG_FORMAT", "yaml")
+
+    with pytest.raises(InvalidConfigurationError):
+        EnvSettingsAdapter().load()
+
+
+def test_settings_normalizes_log_format(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Normalize log format to lowercase."""
+    monkeypatch.setenv("LOG_FORMAT", "JSON")
+
+    settings = EnvSettingsAdapter().load()
+
+    assert settings.log_format == "json"
 
 
 def test_settings_rejects_invalid_openai_max_retries(monkeypatch: pytest.MonkeyPatch) -> None:

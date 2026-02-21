@@ -40,6 +40,7 @@ class EnvSettings(BaseSettings):
     server_port: int = Field(default=7860, validation_alias="GRADIO_SERVER_PORT", ge=1, le=65535)
     share: bool = Field(default=False, validation_alias="GRADIO_SHARE")
     log_level: str = Field(default="INFO", validation_alias="LOG_LEVEL")
+    log_format: str = Field(default="text", validation_alias="LOG_FORMAT")
     input_max_chars: int = Field(default=2000, validation_alias="INPUT_MAX_CHARS", ge=1, le=10000)
     rate_limit_requests: int = Field(default=8, validation_alias="RATE_LIMIT_REQUESTS", ge=1, le=100)
     rate_limit_window_seconds: int = Field(default=60, validation_alias="RATE_LIMIT_WINDOW_SECONDS", ge=1, le=3600)
@@ -56,6 +57,7 @@ class EnvSettings(BaseSettings):
         self._validate_non_empty("JIRA_USERNAME", self.jira_username)
         self._validate_non_empty("JIRA_API_TOKEN", self.jira_api_token)
         self.log_level = self._normalize_log_level(self.log_level)
+        self.log_format = self._normalize_log_format(self.log_format)
 
     @staticmethod
     def _validate_non_empty(label: str, value: str) -> None:
@@ -71,5 +73,15 @@ class EnvSettings(BaseSettings):
         normalized = value.strip().upper()
         if normalized not in allowed:
             message = f"LOG_LEVEL must be one of {', '.join(sorted(allowed))}"
+            raise InvalidConfigurationError(message)
+        return normalized
+
+    @staticmethod
+    def _normalize_log_format(value: str) -> str:
+        """Normalize and validate log format."""
+        allowed = {"text", "json"}
+        normalized = value.strip().lower()
+        if normalized not in allowed:
+            message = f"LOG_FORMAT must be one of {', '.join(sorted(allowed))}"
             raise InvalidConfigurationError(message)
         return normalized

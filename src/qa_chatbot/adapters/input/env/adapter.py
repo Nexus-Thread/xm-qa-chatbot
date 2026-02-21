@@ -40,6 +40,7 @@ class EnvSettingsAdapter:
             server_port=settings.server_port,
             share=settings.share,
             log_level=settings.log_level,
+            log_format=settings.log_format,
             input_max_chars=settings.input_max_chars,
             rate_limit_requests=settings.rate_limit_requests,
             rate_limit_window_seconds=settings.rate_limit_window_seconds,

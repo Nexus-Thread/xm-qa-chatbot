@@ -1,24 +1,35 @@
 # ADR-003: Dashboard Rendering Pipeline
 
 ## Context
-The dashboard must be generated as static HTML for sharing and inspection. We need a deterministic pipeline that transforms stored submissions into templated views.
+The project needs dashboard outputs that are easy to review, share, and regenerate from persisted submission data. Consumers currently need:
+- browser-friendly static HTML for local inspection,
+- Confluence-friendly HTML artifacts for manual publishing workflows.
+
+Rendering logic must stay deterministic and testable, and should not leak template/output concerns into the domain or application core.
 
 ## Decision
-Use `GetDashboardDataUseCase` to aggregate data into dashboard DTOs and a `GenerateMonthlyReportUseCase` payload for overview rendering.
+Keep dashboard rendering behind `DashboardPort` and use a dual-output adapter composition:
+- `GetDashboardDataUseCase` and `GenerateMonthlyReportUseCase` provide application-layer data payloads,
+- `HtmlDashboardAdapter` renders browser-ready static pages,
+- `ConfluenceDashboardAdapter` renders Confluence-compatible local artifacts,
+- `CompositeDashboardAdapter` orchestrates fan-out to both output adapters from a single application boundary.
 
-Use a dual-output adapter strategy:
-- `HtmlDashboardAdapter` renders browser-ready static HTML files
-- `ConfluenceDashboardAdapter` renders Confluence-ready local artifacts (`*.confluence.html`)
-- `CompositeDashboardAdapter` fans out each dashboard generation call to both adapters
-
-Rendering occurs after each submission via `SubmitTeamDataUseCase`, and can also be triggered by `scripts/generate_dashboard.py`.
+Rendering is triggered both from submission workflows and explicit script-driven generation.
 
 ## Consequences
-Dashboard generation remains deterministic and testable in the adapter layer. The same submission event now produces two local output formats from one application boundary (`DashboardPort`).
-
-Confluence publishing is intentionally local-first in this phase: artifacts are generated for review/import, while direct Confluence API publishing remains a future extension behind adapter boundaries.
+- Positive:
+  - Rendering concerns stay isolated in adapters, preserving hexagonal boundaries.
+  - A single generation event can produce multiple output formats consistently.
+  - Snapshot and adapter-level tests can validate output determinism.
+- Trade-offs:
+  - Two adapters increase template maintenance overhead.
+  - Output divergence risk must be managed when evolving templates.
+  - Local artifact generation alone does not automate publication.
+- Follow-up implications:
+  - Direct Confluence API publishing can be introduced later as another adapter strategy.
+  - Template changes should continue to be guarded by regression snapshots/tests.
 
 ## Alternatives
-- Generate HTML directly in the use case layer
-- Client-side rendering from raw API responses
-- Implement direct Confluence API publishing immediately in this phase
+- Generate HTML directly inside application use cases.
+- Move rendering to a client-side web application using raw API payloads.
+- Implement direct Confluence API publishing immediately, without local artifact-first staging.

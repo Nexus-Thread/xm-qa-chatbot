@@ -32,6 +32,7 @@ class AppSettings:
     server_port: int
     share: bool
     log_level: str
+    log_format: str
     input_max_chars: int
     rate_limit_requests: int
     rate_limit_window_seconds: int

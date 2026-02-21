@@ -67,7 +67,7 @@ def generate_dashboards(
     settings: AppSettings,
 ) -> None:
     """Generate all dashboard views from existing database data."""
-    configure_logging(LoggingSettings(level=log_level))
+    configure_logging(LoggingSettings(level=log_level, log_format=settings.log_format))
 
     print("=" * 80)
     print("DASHBOARD GENERATION SCRIPT")
