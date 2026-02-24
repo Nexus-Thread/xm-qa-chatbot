@@ -15,3 +15,11 @@ class OpenAIClientProtocol(Protocol):
         messages: list[dict[str, str]],
     ) -> object:
         """Create a chat completion response in JSON mode."""
+
+    def create_chat_completion(
+        self,
+        *,
+        model: str,
+        messages: list[dict[str, str]],
+    ) -> object:
+        """Create a plain chat completion without enforced response format."""

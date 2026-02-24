@@ -24,8 +24,8 @@ class _ChatCompletionsProtocol(Protocol):
         *,
         model: str,
         messages: list[dict[str, str]],
-        response_format: dict[str, str],
         temperature: float,
+        response_format: dict[str, str] | None = None,
     ) -> object:
         """Create a completion response from the SDK."""
 
@@ -70,9 +70,36 @@ class OpenAIClient:
         messages: list[dict[str, str]],
     ) -> object:
         """Create a JSON-formatted chat completion."""
+        return self._create_completion(
+            model=model,
+            messages=messages,
+            response_format={"type": "json_object"},
+        )
+
+    def create_chat_completion(
+        self,
+        *,
+        model: str,
+        messages: list[dict[str, str]],
+    ) -> object:
+        """Create a plain chat completion without enforced response format."""
+        return self._create_completion(
+            model=model,
+            messages=messages,
+            response_format=None,
+        )
+
+    def _create_completion(
+        self,
+        model: str,
+        messages: list[dict[str, str]],
+        *,
+        response_format: dict[str, str] | None,
+    ) -> object:
+        """Invoke the SDK chat completions API with optional JSON format and retry logic."""
         for attempt in range(self._max_retries):
             try:
-                return self._chat_completions_create(model, messages)
+                return self._chat_completions_create(model, messages, response_format=response_format)
             except APIError:
                 if attempt >= self._max_retries - 1:
                     LOGGER.exception(
@@ -104,10 +131,18 @@ class OpenAIClient:
         self,
         model: str,
         messages: list[dict[str, str]],
+        *,
+        response_format: dict[str, str] | None,
     ) -> object:
+        if response_format is not None:
+            return self._sdk_client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=0,
+                response_format=response_format,
+            )
         return self._sdk_client.chat.completions.create(
             model=model,
             messages=messages,
-            response_format={"type": "json_object"},
             temperature=0,
         )

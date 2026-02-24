@@ -62,6 +62,21 @@ class _CapturingOpenAITransportClient:
         )
         return next(self._responses)
 
+    def create_chat_completion(
+        self,
+        *,
+        model: str,
+        messages: list[dict[str, str]],
+    ) -> _FakeResponse:
+        """Capture plain chat request payload and return the next fake response."""
+        self.calls.append(
+            {
+                "model": model,
+                "messages": messages,
+            }
+        )
+        return next(self._responses)
+
 
 def test_extract_project_id_contract_maps_response_and_builds_request_prompt() -> None:
     """Map project extraction response and include prompt plus conversation in request."""

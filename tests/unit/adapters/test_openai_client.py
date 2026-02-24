@@ -120,6 +120,22 @@ def test_openai_client_creates_json_completion_with_expected_args() -> None:
     }
 
 
+def test_openai_client_creates_chat_completion_without_response_format() -> None:
+    """Delegate plain chat completion call without response_format."""
+    sdk_client = FakeSDKClient()
+    client = OpenAIClient(sdk_client=sdk_client)
+    messages = [{"role": "user", "content": "hello"}]
+
+    client.create_chat_completion(model="llama2", messages=messages)
+
+    assert sdk_client.chat.completions.last_call == {
+        "model": "llama2",
+        "messages": messages,
+        "temperature": 0,
+    }
+    assert "response_format" not in (sdk_client.chat.completions.last_call or {})
+
+
 def test_openai_client_retries_on_api_error(caplog: pytest.LogCaptureFixture) -> None:
     """Retry transport call with exponential backoff on APIError."""
     caplog.set_level(logging.WARNING)

@@ -105,6 +105,16 @@ class FakeOpenAITransportClient:
         _ = model, messages
         return self._completions.create()
 
+    def create_chat_completion(
+        self,
+        *,
+        model: str,
+        messages: list[dict[str, str]],
+    ) -> FakeResponse:
+        """Create a fake plain chat completion response."""
+        _ = model, messages
+        return self._completions.create()
+
 
 def test_extract_project_id_parses_response() -> None:
     """Parse a project identifier from JSON response."""
