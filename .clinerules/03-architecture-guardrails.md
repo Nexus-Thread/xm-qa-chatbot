@@ -1,6 +1,6 @@
 # Hexagonal architecture doctrine (hard constraints)
 
-Use this doctrine as the default architecture standard for this repo. Any deviation must be explicitly documented.
+Use this doctrine as the default architecture standard for the codebase. Any deviation must be explicitly documented.
 
 ## Core principles (non-negotiable)
 - **Dependency direction**: All dependencies point **inward** toward the domain and application core.
@@ -16,12 +16,12 @@ Use this doctrine as the default architecture standard for this repo. Any deviat
 - **Infrastructure**: Frameworks, SDKs, DB drivers, HTTP clients, serializers, etc. Lives only in adapters.
 
 ## Dependency rules (allowed/forbidden)
-✅ **Allowed**
+Allowed:
 - Domain → Domain (same layer)
 - Application → Domain
 - Adapters → Application ports + Domain (through ports or DTOs)
 
-❌ **Forbidden**
+Forbidden:
 - Domain → Application, Adapters, Infrastructure
 - Application → Adapters, Infrastructure
 - Adapter → Adapter (unless through application ports)
@@ -31,9 +31,11 @@ Use this doctrine as the default architecture standard for this repo. Any deviat
 - Pure business rules and invariants.
 - No side effects, no I/O, no framework imports.
 - Exposes domain errors and value objects.
+- Value objects should be immutable, or treated as immutable by convention, when mutation would weaken invariants.
 
 ### Application (Use Cases)
 - Orchestrates flows, validates inputs (structural validation), invokes domain logic.
+- Keeps business invariants in the domain; application-level validation should focus on command shape, authorization, orchestration, and transaction boundaries.
 - Defines ports and DTOs that are **inward-facing** and stable.
 - Handles cross-cutting concerns like transactions or unit-of-work abstractions.
 
@@ -41,17 +43,32 @@ Use this doctrine as the default architecture standard for this repo. Any deviat
 - **Input ports**: Methods used by driving adapters (CLI/HTTP/Jobs).
 - **Output ports**: Interfaces for persistence, external services, or notifications.
 - Ports are defined in the application layer only.
+- Prefer small, explicit port contracts expressed via `Protocol` or ABCs.
+- Port signatures must use domain/application types rather than transport schemas, ORM models, or framework request/response objects.
 
 ### Adapters
 - Implement ports for external systems.
 - Translate external data structures ↔ DTOs/domain objects.
 - Handle I/O, serialization, transport, retry logic.
 
+## Composition root and framework isolation
+- **Must** keep dependency wiring, service construction, and framework bootstrapping in entry points or dedicated bootstrap/composition-root modules.
+- **Must** keep framework request/response objects, ORM models, serializer models, and transport schemas inside adapters.
+- **Must** keep environment/config lookups, secret loading, and framework settings access in adapters or bootstrap modules rather than scattering them through the core.
+- **Should** keep transport/event-loop concerns at I/O boundaries; use async in the core only when business semantics truly require asynchronous contracts.
+- **Must not** let dependency-injection containers or service locators leak into domain entities or application use cases.
+
+## Transactions and side effects
+- **Must** coordinate transactions, unit-of-work boundaries, and side-effect ordering in the application layer or adapter-owned infrastructure boundaries.
+- **Must not** hide persistence commits, network retries, or message publication inside domain entities.
+- Domain events may be modeled in the core, but publication and delivery mechanics belong behind output ports/adapters.
+
 ## Module/package structure guidance
 - `domain/`: entities, value objects, domain services, domain errors.
 - `application/`: use cases + ports + DTOs.
 - `adapters/`: input (CLI/HTTP/GraphQL) and output (persistence, external APIs, messaging, etc.).
 - `infrastructure/` (optional): shared infra utilities used by adapters only.
+- Detailed file splitting, package export, and `__init__.py` mechanics are governed by `06-module-structure.md`.
 
 ## Naming conventions (layer-aware)
 - `.../ports/` for interfaces/protocols.
@@ -67,49 +84,7 @@ Use this doctrine as the default architecture standard for this repo. Any deviat
 ## Adapter directory structure
 Adapters at the same conceptual level **must** be organized uniformly to keep navigation predictable and scalable.
 
-### Directory structure rules
-- **Must** organize adapters in subdirectories (not as standalone files) when multiple adapters exist in the same parent directory.
-- **Should** use subdirectories even for simple, single-file adapters to maintain consistency and allow future expansion without restructuring.
-- **Must** name the main implementation file semantically: `adapter.py`, `parser.py`, `writer.py`, `client.py`, etc. (never repeat the directory name).
-- **Must** export public classes from the subdirectory's `__init__.py` to keep imports clean.
-
-### Pattern: output adapters
-When you have multiple output adapters (e.g., persistence, narrative, parsers), each should follow the same structure:
-
-✅ **Consistent structure**
-```
-adapters/output/
-├── persistence/
-│   ├── cache/
-│   │   ├── __init__.py       # Exports CacheAdapter
-│   │   └── adapter.py        # Implementation
-│   └── database/
-│       ├── __init__.py       # Exports DatabaseAdapter
-│       ├── adapter.py        # Main class
-│       ├── mappers.py
-│       └── queries.py
-├── messaging/
-│   ├── __init__.py
-│   └── queue_adapter.py
-└── external_api/
-    ├── __init__.py
-    └── http_client.py
-```
-
-❌ **Inconsistent structure (avoid)**
-```
-adapters/output/
-├── persistence/
-│   ├── cache.py               # ❌ Standalone file
-│   └── database/              # ✅ Subdirectory
-│       └── ...
-```
-
-### Naming conventions
-- Directory: `snake_case` (e.g., `user_repository/`, `email_client/`, `payment_gateway/`)
-- Main file: semantic name matching responsibility (e.g., `adapter.py`, `repository.py`, `client.py`)
-- Supporting files: `types.py`, `mappers.py`, `validators.py`, `serializers.py`, etc.
-
-### Exceptions
-- When there's only **one** adapter in a category and no plans for more, a single file may be acceptable.
-- Document the reasoning if deviating from the standard structure.
+- **Must** keep adapter structure consistent within the same conceptual category.
+- **Must** avoid mixing one-off standalone adapters with subdirectory-based adapters without a documented reason.
+- **Must** keep adapter naming and packaging aligned with the package-structure rules in `06-module-structure.md`.
+- For detailed directory, file naming, and export conventions, follow `06-module-structure.md`.
